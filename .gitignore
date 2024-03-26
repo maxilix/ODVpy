@@ -29,6 +29,7 @@ dvd/jump.py
 dvd/cart.py
 dvd/dlgs.py
 dvd/_sght.py
+old_main.py
 
 ### venv template
 # Virtualenv
