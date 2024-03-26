@@ -8,7 +8,7 @@ from qt.controller import QMoveController
 
 
 class QControl(QTabWidget):
-    def __init__(self, level):
+    def __init__(self, scene, level):
         super().__init__()
         self.setFixedWidth(500)
         #self.setMinimumSize(200,1000)
@@ -25,7 +25,7 @@ class QControl(QTabWidget):
         self.addTab(QLabel(section_list[1]), section_list[1])
 
         # Motion
-        self.addTab(QMoveController(level.dvd.move), section_list[2])
+        self.addTab(QMoveController(scene, level.dvd.move), section_list[2])
 
         # Sight
         self.addTab(QLabel(section_list[3]), section_list[3])

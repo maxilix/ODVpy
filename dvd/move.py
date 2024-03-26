@@ -90,7 +90,7 @@ from .section import Section, section_list
 from debug import hs_to_i, i_to_hsi
 
 
-class MovableArea(object):
+class MoveArea(object):
     def __init__(self, area, crossing_point_list=None):
         self.area = area
         if crossing_point_list is None:
@@ -101,11 +101,13 @@ class MovableArea(object):
     def set_crossing_point_list(self, crossing_point_list):
         self.crossing_point_list = crossing_point_list
 
+    def QPolygonF(self):
+        return QPolygonF([QPointF(p.x + 0.5, p.y + 0.5) for p in self.area.coor_list])
 
 class Sublayer(ReadableFromStream):
 
     def __init__(self, area_list, segment_list):
-        self.area_list = [MovableArea(area) for area in area_list]
+        self.area_list = [MoveArea(area) for area in area_list]
         self.segment_list = segment_list
         # self.crossing_point_list_list = []
 

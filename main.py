@@ -58,8 +58,10 @@ class QWindow(QMainWindow):
             q_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(q_label)
         else:
-            layout.addWidget(QViewer(self.current_level))
-            layout.addWidget(QControl(self.current_level))
+            viewer = QViewer(self.current_level)
+            control = QControl(viewer.scene, self.current_level)
+            layout.addWidget(viewer)
+            layout.addWidget(control)
 
         w = QWidget()
         w.setLayout(layout)

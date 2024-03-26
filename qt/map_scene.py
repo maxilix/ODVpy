@@ -26,7 +26,7 @@ class QMapScene(QGraphicsScene):
         self.view.setMouseTracking(True)
 
         self.max_zoom = 35
-        self.min_zoom = 0.7
+        self.min_zoom = 0.5
         self.zoom = 1
         self.zoom_factor = 1.2
 
@@ -67,15 +67,16 @@ class QMapScene(QGraphicsScene):
 
         #painter.fillPath(path, QColor(100, 100, 255))  # Remplit la forme résultante avec une couleur
 
-        self.addPath(path, pen, brush)
+        path_draw = self.addPath(path, pen, brush)
 
 
-        # self.color = QColor(255, 0, 0, 128)
-        # pen = QPen(self.color)  # Couleur du contour du polygone
-        # self.color.setAlpha(16)
-        # brush = QBrush(self.color)
-        # self.disallow_poly = dvd.move.disallow_QPolygonF(0, 0)
-        # self.disallow_poly_item = [self.addPolygon(poly, pen, brush) for poly in self.disallow_poly]
+        self.drawn_area = dict()
+
+
+
+
+
+
 
 
     def mouseMoveEvent(self, event):
@@ -121,3 +122,16 @@ class QMapScene(QGraphicsScene):
                                scene_position.y() + (size.height()/2-relative_position.y())/(1.1 * self.zoom))
         self.view.centerOn(new_position)
 
+    def add_move_area(self, indexes, move_area):
+        if indexes in self.drawn_area:
+            self.drawn_area[indexes].setVisible(True)
+        else:
+            color = QColor(255, 0, 0, 128)
+            pen = QPen(color)  # outline color
+            color.setAlpha(16)
+            brush = QBrush(color)  # fill color
+            self.drawn_area[indexes] = self.addPolygon(move_area.QPolygonF(), pen, brush)
+
+    def remove_move_area(self, indexes, move_area):
+        if indexes in self.drawn_area:
+            self.drawn_area[indexes].setVisible(False)
