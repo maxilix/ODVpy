@@ -1,4 +1,5 @@
-#!/usr/bin/enc python3
+
+import os
 
 
 TRANSPARENTS = [(0, 248, 0), (0, 0, 248)]
@@ -6,7 +7,6 @@ TRANSPARENT_GREEN = TRANSPARENTS[0]
 TRANSPARENT_BLUE = TRANSPARENTS[1]
 
 GAME_PATH = "../Desperados Wanted Dead or Alive"
-LOG_FILENAME = "./.log"
 
 
 class OriginalLevel():
@@ -17,10 +17,10 @@ class OriginalLevel():
         self.dvd = GAME_PATH
         self.dvm = GAME_PATH
         if level_index == 0:
-            self.dvd += "/demo"
-            self.dvm += "/demo"
-        self.dvd += f"/data/levels/level_{level_index:02}.dvd"
-        self.dvm += f"/data/levels/level_{level_index:02}.dvm"
+            self.dvd += f"{os.sep}demo"
+            self.dvm += f"{os.sep}demo"
+        self.dvd += f"{os.sep}data{os.sep}levels{os.sep}level_{level_index:02}.dvd"
+        self.dvm += f"{os.sep}data{os.sep}levels{os.sep}level_{level_index:02}.dvm"
 
 
 LEVEL = [OriginalLevel(i) for i in range(26)]
