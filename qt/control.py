@@ -8,7 +8,7 @@ from qt.controller import QMoveController
 
 
 class QControl(QTabWidget):
-    def __init__(self):
+    def __init__(self, level):
         super().__init__()
         self.setFixedWidth(500)
         #self.setMinimumSize(200,1000)

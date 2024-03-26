@@ -10,12 +10,19 @@ from PyQt6.QtGui import QPen, QBrush, QColor
 from qt.viewer import QViewer
 from qt.control import QControl
 
-from settings import LEVEL, LOG_FILENAME
+from settings import original_level_filename
 from debug import *
 
 from common import *
 from dvd import DvdParser
 from dvm import DvmParser
+
+
+class ODVLevel(object):
+    def __init__(self, filename):
+        self.dvd = DvdParser(filename + ".dvd")
+        self.dvm = DvmParser(filename + ".dvm")
+
 
 
 class QWindow(QMainWindow):
@@ -25,7 +32,7 @@ class QWindow(QMainWindow):
         self.setWindowTitle('Open Death Valley py')
         self.setMinimumSize(QSize(800, 600))
         self.showMaximized()
-        self.level_index = 0
+        self.current_level = None
 
         menu = self.menuBar()
         file_menu = menu.addMenu("File")
@@ -41,14 +48,19 @@ class QWindow(QMainWindow):
 
         self.update()
 
-    def load_level(self, level_index):
-        self.level_index = level_index
+    def load_level(self, index):
+        self.current_level = ODVLevel(original_level_filename(index))
         self.update()
 
     def update(self):
         layout = QHBoxLayout()
-        layout.addWidget(QViewer(self.level_index))
-        layout.addWidget(QControl())
+        if self.current_level is None:
+            q_label = QLabel("Select level")
+            q_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(q_label)
+        else:
+            layout.addWidget(QViewer(self.current_level))
+            layout.addWidget(QControl(self.current_level))
 
         # if self.level_index >= 0:
         #     w = QViewer(self.level_index)

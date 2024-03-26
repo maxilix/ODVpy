@@ -6,7 +6,6 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, Q
     QGraphicsLineItem, QVBoxLayout, QLabel
 from PyQt6.QtGui import QPen, QBrush, QColor, QPainterPath
 
-from settings import LEVEL, LOG_FILENAME
 from debug import *
 
 from common import *
@@ -18,10 +17,10 @@ from .label_view import QLabelView
 
 
 class QViewer(QWidget):
-    def __init__(self, level_index):
+    def __init__(self, level):
         super().__init__()
 
-        self.scene = QMapScene(self, level_index)
+        self.scene = QMapScene(self, level)
         self.label = QLabelView()
 
         layout = QVBoxLayout()

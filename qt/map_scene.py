@@ -8,7 +8,6 @@ from PyQt6.QtGui import QImage, QPixmap, QPolygonF
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsLineItem, QVBoxLayout, QLabel
 from PyQt6.QtGui import QPen, QBrush, QColor, QPainterPath
 
-from settings import LEVEL, LOG_FILENAME
 from debug import *
 
 from common import *
@@ -17,7 +16,7 @@ from dvm import DvmParser
 
 
 class QMapScene(QGraphicsScene):
-    def __init__(self, parent, level_index):
+    def __init__(self, parent, level):
         super().__init__(parent)
 
         self.view = QGraphicsView(self)
@@ -31,9 +30,9 @@ class QMapScene(QGraphicsScene):
         self.zoom = 1
         self.zoom_factor = 1.2
 
-        level = LEVEL[level_index]
-        dvm = DvmParser(level.dvm)
-        dvd = DvdParser(level.dvd)
+
+        dvm = level.dvm
+        dvd = level.dvd
         dvd.move.build()
 
         pixmap = QPixmap.fromImage(dvm.level_map)
