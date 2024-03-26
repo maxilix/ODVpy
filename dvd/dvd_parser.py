@@ -15,18 +15,24 @@ class DvdParser(Parser):
 		super().__init__(filename)
 
 		# Must be read in order
-		self.misc = self.stream.read(Miscellaneous)
-		self.bgnd = self.stream.read(MiniMap)
-		self.move = self.stream.read(Motion)
-		self.sght = self.stream.read(Sight)
-		self.mask = self.stream.read(Masks)
+		self._misc = self.stream.read(Miscellaneous)
+		self._bgnd = self.stream.read(MiniMap)
+		self._move = self.stream.read(Motion)
+		self._sght = self.stream.read(Sight)
+		self._mask = self.stream.read(Masks)
 
 		# self.build()
 
-	def build(self):
-		self.misc.build()
-		self.bgnd.build()
-		self.move.build()
-		# self.sght.build()
-		self.mask.build()
-		pass
+	@property
+	def move(self):
+		if not self._move.built:
+			self._move.build()
+		return self._move
+
+	# def build(self):
+	# 	self.misc.build()
+	# 	self.bgnd.build()
+	# 	self.move.build()
+	# 	# self.sght.build()
+	# 	self.mask.build()
+	# 	pass

@@ -210,28 +210,19 @@ class Motion(Section):
     def __len__(self):
         return len(self.layer_list)
 
-    def build(self):
-        stream = ByteStream(self.data)
-
-        version = stream.read(UInt)
+    def _build(self):
+        version = self._stream.read(UInt)
         assert version == 1
 
-        # part 1
-        """
-		layer 0             : ground
-		layer 1-penultimate : intermediate (roof, balcony, ...)
-		layer last          : stairs, ladder, climbing wall
-		"""
-        nb_layer = stream.read(UShort)
-        self.layer_list = [stream.read(Layer) for _ in range(nb_layer)]
+        nb_layer = self._stream.read(UShort)
+        self.layer_list = [self._stream.read(Layer) for _ in range(nb_layer)]
 
-        # part 2
-        W = stream.read(UShort)
-        stream.read(Padding, 2)
+        W = self._stream.read(UShort)
+        self._stream.read(Padding, 2)
         self.empty_flag = []
         while True:
-            flag = stream.read_raw(2)
-            nb_layer = stream.read(UShort)
+            flag = self._stream.read_raw(2)
+            nb_layer = self._stream.read(UShort)
             if nb_layer == 0:
                 self.empty_flag.append(flag)
                 continue
@@ -241,30 +232,27 @@ class Motion(Section):
                 assert nb_layer == len(self.layer_list)
                 for layer in self:
                     # print(f"\n     ----- {layer_index=} -----\n          ", end='')
-                    nb_sublayer = stream.read(UShort)
+                    nb_sublayer = self._stream.read(UShort)
                     # print("sublayer ", end='')
                     assert nb_sublayer == len(layer)
                     for sublayer in layer:
                         # print(f"\n          ----- {sublayer_index=} -----\n               ", end='')
-                        nb_area = stream.read(UShort)
+                        nb_area = self._stream.read(UShort)
                         # print("area ", end='')
                         assert nb_area == len(sublayer)
                         for area in sublayer:
                             # print(f"\n               ----- {area_index=} -----\n                    ", end='')
-                            nb_crossing_point = stream.read(UShort)
-                            area.set_crossing_point_list([stream.read(CrossingPoint) for _ in range(nb_crossing_point)])
+                            nb_crossing_point = self._stream.read(UShort)
+                            area.set_crossing_point_list([self._stream.read(CrossingPoint) for _ in range(nb_crossing_point)])
                             # last_index_read = self.layer_list[layer_index].sublayer_list[sublayer_index].a_list[-1].objectB_index_list[-1]
 
                 # print(f"\n     ", end='')
-                nb_link_path = stream.read(UShort)
-                self.link_path_list = [stream.read(LinkPath) for _ in range(nb_link_path)]
+                nb_link_path = self._stream.read(UShort)
+                self.link_path_list = [self._stream.read(LinkPath) for _ in range(nb_link_path)]
 
-                nb_objectD = stream.read(UShort)
-                stream.read_raw() # must read list of objectD TODO
+                nb_objectD = self._stream.read(UShort)
+                self._stream.read_raw()  # must read list of objectD TODO
                 break
-
-
-        super().build(stream)
 
     # def disallow_QPolygonF(self, layer_index, sublayer_index):
     #     return [QPolygonF(

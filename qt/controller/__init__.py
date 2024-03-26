@@ -1,2 +1,2 @@
 
-from .move import QMoveController
+from .move_control import QMoveController

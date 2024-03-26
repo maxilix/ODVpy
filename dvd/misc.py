@@ -1,6 +1,6 @@
-#!/usr/bin/enc python3
+
 """
-data per level:
+all data per level:
                                                                                  nuit
      [version] [    unk0    ] [            same            ] [     unk1      ] 3f TF [       unk2              ]
 L00: 0600 0000 32 0f 00 f9 ff 96 fa64 00ff c800 00ff 5000 00 32 f4 01 9a 99 59 3f 00 46 40 40 40 00 06 				demo   jour
@@ -61,14 +61,7 @@ L23 80 09 (2432) x 40 07 (1856)
 L24 80 0b (2944) x 80 06 (1664)
 L25 00 04 (1024) x c0 03 (960)
 
-
-
-
-
-
-
 """
-
 
 from common import *
 
@@ -76,23 +69,17 @@ from .section import Section, section_list
 
 
 class Miscellaneous(Section):
-	
-	section = section_list[0] # MISC
+    section = section_list[0]  # MISC
 
-	def build(self):
-		stream = ByteStream(self.data)
-
-		version = stream.read(UInt)
-		assert version == 6
-		self.unk0 = stream.read(Bytes, 5)
-		stream.read(Padding, 12, pattern=b'\x96\xfa\x64\x00\xff\xc8\x00\x00\xff\x50\x00\x00')
-		self.unk1 = stream.read(Bytes, 6)
-		stream.read(Padding, 1, pattern=b'\x3f')
-		self.night = stream.read(Bool) # length of the vision cone 
-		# WARNING stream._read() should not be used, because it read all and super().build() checks whether the entire self.data stream has been consumed
-		# if you know what you're reading, you should know the length of the reading
-		self.unk2 = stream.read_raw() # 10 bytes for level 22, 6 bytes for others, WHY?
-
-		super().build(stream)
-
-
+    def _build(self):
+        version = self._stream.read(UInt)
+        assert version == 6
+        self.unk0 = self._stream.read(Bytes, 5)
+        self._stream.read(Padding, 12, pattern=b'\x96\xfa\x64\x00\xff\xc8\x00\x00\xff\x50\x00\x00')
+        self.unk1 = self._stream.read(Bytes, 6)
+        self._stream.read(Padding, 1, pattern=b'\x3f')
+        self.night = self._stream.read(Bool)  # length of the vision cone, sound sensitivity, sprite darkening
+        # WARNING stream.read_raw() should not be used, because it read all and Section.build() checks whether the
+        # entire self.data stream has been consumed.
+        # if you know what you're reading, you should know the length of the reading
+        self.unk2 = self._stream.read_raw()  # 10 bytes for level 22, 6 bytes for others, WHY?

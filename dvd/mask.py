@@ -190,36 +190,35 @@ from debug import hs_to_i, i_to_hsi, X_MAX, Y_MAX
 class Masks(Section):
     section = section_list[4]  # MASK
 
-    def build(self):
-        stream = ByteStream(self.data)
-
-        version = stream.read(UInt)
-        nb_layer = stream.read(UShort)
+    def _build(self):
+        version = self._stream.read(UInt)
+        assert version == 4
+        nb_layer = self._stream.read(UShort)
         for layer_index in range(nb_layer):
-            nb_mask = stream.read(UShort)
+            nb_mask = self._stream.read(UShort)
             for mask_index in range(nb_mask):
-                flag = stream.read(Bytes, 1)[0]
+                flag = self._stream.read(Bytes, 1)[0]
                 if flag & 1:
-                    nb_coor = stream.read(UShort)
-                    coor_list1 = [stream.read(Coordinate) for _ in range(nb_coor)]
+                    nb_coor = self._stream.read(UShort)
+                    coor_list1 = [self._stream.read(Coordinate) for _ in range(nb_coor)]
                 if flag & 2:
-                    nb_coor = stream.read(UShort)
-                    coor_list2 = [stream.read(Coordinate) for _ in range(nb_coor)]
+                    nb_coor = self._stream.read(UShort)
+                    coor_list2 = [self._stream.read(Coordinate) for _ in range(nb_coor)]
                 if flag & 16:
-                    u4 = stream.read(UShort)
-                u5 = stream.read(UShort)
-                u6 = stream.read(UShort)
-                u7 = stream.read(UShort)
-                u8 = stream.read(UShort)
+                    u4 = self._stream.read(UShort)
+                u5 = self._stream.read(UShort)
+                u6 = self._stream.read(UShort)
+                u7 = self._stream.read(UShort)
+                u8 = self._stream.read(UShort)
 
-                count = stream.read(UShort)
-                d = stream.read(Bytes, count)
+                count = self._stream.read(UShort)
+                d = self._stream.read(Bytes, count)
 
+                self._stream.read_raw()
                 return
 
-
     def p_build(self):
-        stream = ByteStream(self.data)
+        stream = ByteStream(self._data)
 
         version = stream.print(4)
         print()

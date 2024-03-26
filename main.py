@@ -24,7 +24,6 @@ class ODVLevel(object):
         self.dvm = DvmParser(filename + ".dvm")
 
 
-
 class QWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -61,12 +60,6 @@ class QWindow(QMainWindow):
         else:
             layout.addWidget(QViewer(self.current_level))
             layout.addWidget(QControl(self.current_level))
-
-        # if self.level_index >= 0:
-        #     w = QViewer(self.level_index)
-        # else:
-        #     w = QLabel("Select level")
-        #     w.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         w = QWidget()
         w.setLayout(layout)

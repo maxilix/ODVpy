@@ -25,7 +25,7 @@ class QControl(QTabWidget):
         self.addTab(QLabel(section_list[1]), section_list[1])
 
         # Motion
-        self.addTab(QMoveController(), section_list[2])
+        self.addTab(QMoveController(level.dvd.move), section_list[2])
 
         # Sight
         self.addTab(QLabel(section_list[3]), section_list[3])
