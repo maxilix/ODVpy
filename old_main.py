@@ -34,7 +34,7 @@ def show_segments(i, j):
 
 def show_allowed_area(i, j):
     dvm.level_map.unbuild()
-    area = dvd.move.layer_list[i].sublayer_list[j].allowed_area
+    area = dvd.move.layer_list[i].sublayer_list[j].main_area
     dvm.level_map.draw_area(area)
     for a in dvd.move.layer_list[i].sublayer_list[j].objectA_list_list[0]:
         dvm.level_map.draw_cross(a.coor)
@@ -43,11 +43,11 @@ def show_allowed_area(i, j):
 
 def show_disallowed_area(i, j, k):
     dvm.level_map.unbuild()
-    area = dvd.move.layer_list[i].sublayer_list[j].disallowed_area_list[k]
+    area = dvd.move.layer_list[i].sublayer_list[j].sub_area_list[k]
     dvm.level_map.draw_area(area)
     for a in dvd.move.layer_list[i].sublayer_list[j].objectA_list_list[k+1]:
         dvm.level_map.draw_cross(a.coor)
-        for b_index in a.objectB_index_list:
+        for b_index in a.link_path_index_list:
             b = dvd.move.objectB_list[b_index]
             s = Segment(dvd.move.get_ObjectA(b.indexes_1).coor, dvd.move.get_ObjectA(b.indexes_2).coor)
             dvm.level_map.draw_segment(s)

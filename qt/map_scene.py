@@ -71,25 +71,24 @@ class QMapScene(QGraphicsScene):
         self.addPath(path, pen, brush)
 
 
-        self.color = QColor(255, 0, 0, 128)
-        pen = QPen(self.color)  # Couleur du contour du polygone
-        self.color.setAlpha(16)
-        brush = QBrush(self.color)
-        self.disallow_poly = dvd.move.disallow_QPolygonF(0, 0)
-        #print(self.disallow_poly[0])
-        self.disallow_poly_item = [self.addPolygon(poly, pen, brush) for poly in self.disallow_poly]
-        #print(self.disallow_poly_item[0].polygon())
+        # self.color = QColor(255, 0, 0, 128)
+        # pen = QPen(self.color)  # Couleur du contour du polygone
+        # self.color.setAlpha(16)
+        # brush = QBrush(self.color)
+        # self.disallow_poly = dvd.move.disallow_QPolygonF(0, 0)
+        # self.disallow_poly_item = [self.addPolygon(poly, pen, brush) for poly in self.disallow_poly]
+
 
     def mouseMoveEvent(self, event):
         pos = event.scenePos()
-        for poly_item in self.disallow_poly_item:
-            if poly_item.polygon().containsPoint(pos, Qt.FillRule.OddEvenFill):
-                self.color.setAlpha(32)
-                brush = QBrush(self.color)
-            else:
-                self.color.setAlpha(16)
-                brush = QBrush(self.color)
-            poly_item.setBrush(brush)
+        # for poly_item in self.disallow_poly_item:
+        #     if poly_item.polygon().containsPoint(pos, Qt.FillRule.OddEvenFill):
+        #         self.color.setAlpha(32)
+        #         brush = QBrush(self.color)
+        #     else:
+        #         self.color.setAlpha(16)
+        #         brush = QBrush(self.color)
+        #     poly_item.setBrush(brush)
         self.parent().label.setText(f"x:{floor(pos.x())}\ty:{floor(pos.y())}\tzoom:{round(self.zoom*100)}%")
 
     def mousePressEvent(self, event):
