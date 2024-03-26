@@ -1,18 +1,11 @@
-#!/usr/bin/enc python3
-
-
 
 import io
-#import sys
-import logging as log
+import sys
 
 from abc import ABC, abstractmethod
 from struct import pack, unpack
 
-
 from . import PaddingError
-
-
 
 
 class ReadableFromStream(ABC):
@@ -88,7 +81,7 @@ class Padding(ReadableFromStream):
 			raise PaddingError(f"{pattern} padding expected insteed of : {padding}", padding=padding)
 
 
-class ByteStream:
+class ByteStream(object):
 
 	def __init__(self, data):
 		self._io = io.BytesIO(data)

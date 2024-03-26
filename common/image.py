@@ -1,8 +1,5 @@
-#!/usr/bin/enc python3
 
-
-
-from gzip import zlib
+import gzip
 import bz2
 
 from abc import ABC, abstractmethod
@@ -58,8 +55,6 @@ class Pixmap(ABC):
 	def height(self):
 		return self._height
 
-
-
 	@abstractmethod
 	def build(self, *arg, **kwargs):
 		pass
@@ -78,14 +73,11 @@ class Pixmap(ABC):
 		self.bmp.save(filename)
 
 
-
-
 class Mask(Pixmap):
 
 	def build(self):
 		self.bmp = Image.new("1", (self.width, self.height), self.data)
 		self.draw = ImageDraw.Draw(self.bmp)
-
 
 	@Pixmap.needs
 	def draw_area(self, area, state):
@@ -103,10 +95,8 @@ class Mask(Pixmap):
 		self.draw_area(area, False)
 
 
-
-
 """
-class Elipse(Bitmap):
+class Ellipse(Bitmap):
 
 	def __init__(self, x_radius, y_radius, outline_color=None, width=1, fill_color=None):
 		total_width = x_radius*2 + width + 1
@@ -121,9 +111,6 @@ class Elipse(Bitmap):
 		self.bmp = Image.new('RGBA', (self.width, self.height), color=(0,0,0,0))
 		draw = ImageDraw.Draw(self.bmp, "RGBA")
 		draw.ellipse([(0, 0), (total_width, total_height)], fill=None, outline=None, width=1)
-
-
-
 		
 		for y in range(self.height):
 			nb_transparent_pixel = stream.read(UShort)

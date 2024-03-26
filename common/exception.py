@@ -1,5 +1,3 @@
-#!/usr/bin/enc python3
-
 
 class PaddingError(Exception):
 	def __init__(self, message, padding):            

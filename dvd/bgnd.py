@@ -1,16 +1,11 @@
-#!/usr/bin/enc python3
-"""
 
-"""
+
 import bz2
 from PIL import Image
 
-from common import *
+from common import Pixmap, ReadableFromStream, UShort, UInt, Bytes, ByteStream, String
 
 from .section import Section, section_list
-
-
-
 
 
 class LevelMiniMap(Pixmap, ReadableFromStream):
@@ -28,12 +23,6 @@ class LevelMiniMap(Pixmap, ReadableFromStream):
 	def build(self):
 		decompressed = bz2.decompress(self.data)
 		self.bmp = Image.frombytes("RGB", (self.width, self.height), decompressed, "raw", "BGR;16")
-
-
-
-
-
-
 
 
 class MiniMap(Section):

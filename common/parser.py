@@ -1,13 +1,11 @@
-#!/usr/bin/enc python3
-
-import logging as log
 
 from . import ByteStream
 
 
 extension_list = ["dvf", "dvm", "dvd"]
 
-class Parser():
+
+class Parser(object):
 
 	def __init__(self, filename):
 		assert filename[-4:] == f".{self.extension}"
@@ -17,7 +15,7 @@ class Parser():
 			temp_name = filename[:-4]
 		self.name = temp_name.replace(" ", "_")
 		self.stream = ByteStream.from_file(filename)
-		log.info(f"Parse {filename}")
+		# log.info(f"Parse {filename}")
 
 	def __repr__(self):
 		return f"<Parser {self.extension} : {self.name}>"

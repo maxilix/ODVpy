@@ -1,5 +1,3 @@
-#!/usr/bin/enc python3
-
 
 from . import ReadableFromStream, UShort
 
@@ -28,7 +26,6 @@ class Coordinate(ReadableFromStream):
 		return f"({self.x}, {self.y})"
 
 
-
 class Segment(ReadableFromStream):
 
 	def __init__(self, coor1, coor2):
@@ -50,8 +47,6 @@ class Segment(ReadableFromStream):
 		return f"{self.coor1} -> {self.coor2}"
 
 
-
-
 class Area(ReadableFromStream):
 	def __init__(self, coor_list):
 		if not (isinstance(coor_list, list) and all(isinstance(c, Coordinate) for c in coor_list)):
@@ -65,13 +60,13 @@ class Area(ReadableFromStream):
 		return cls(coor_list)
 
 
-
-
-class Cross():
+class Cross(object):
 	pass
 
-class Elipse():
+
+class Ellipse(object):
 	pass
 
-class Cicle():
+
+class Circle(object):
 	pass

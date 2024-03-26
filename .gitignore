@@ -10,6 +10,9 @@ q_tests/
 ex_*.py
 
 # others
+dvd/_bidictmaps.py
+dvd/_bitmap.py
+dvd/_common.py
 dvd/ways.py
 dvd/elem.py
 dvd/fxbk.py
@@ -24,9 +27,6 @@ dvd/buil.py
 dvd/scrp.py
 dvd/jump.py
 dvd/cart.py
-dvd/_bidictmaps.py
-dvd/_bitmap.py
-dvd/_common.py
 dvd/dlgs.py
 dvd/sght.py
 

@@ -16,21 +16,7 @@ from dvd import DvdParser
 from dvm import DvmParser
 
 
-class QViewer(QWidget):
-    def __init__(self, level_index):
-        super().__init__()
-
-        self.scene = QScene(self, level_index)
-        self.label = QLabel()
-
-        layout = QVBoxLayout()
-        layout.addWidget(self.scene.view)
-        layout.addWidget(self.label)
-
-        self.setLayout(layout)
-
-
-class QScene(QGraphicsScene):
+class QMapScene(QGraphicsScene):
     def __init__(self, parent, level_index):
         super().__init__(parent)
 

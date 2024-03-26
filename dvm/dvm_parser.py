@@ -5,7 +5,7 @@
 #import hqx
 from PIL import Image, ImageDraw
 from PyQt6.QtGui import QImage
-from gzip import zlib
+import gzip
 import bz2
 
 from common import *
