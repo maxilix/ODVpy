@@ -81,7 +81,7 @@ class QMapScene(QGraphicsScene):
         for move_area_key in self.drawn_move_area:
             if (draw := self.drawn_move_area[move_area_key]).isVisible():
                 color = draw.brush().color()
-                if draw.polygon().contains(pos): #  Qt.FillRule.OddEvenFill)):
+                if draw.polygon().containsPoint(pos, Qt.FillRule.OddEvenFill):
                     color.setAlpha(32)
                 else:
                     color.setAlpha(16)

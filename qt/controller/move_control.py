@@ -22,7 +22,7 @@ class QMotionItem(QTreeWidgetItem):
                 self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate | Qt.ItemFlag.ItemIsUserCheckable)
             case dvd.move.Sublayer:
                 self.setText(0, f"Sublayer {self.indexes[-1]}")
-                self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate | Qt.ItemFlag.ItemIsUserCheckable)
+                self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             case dvd.move.MoveArea:
                 if self.indexes[-1] == 0:
                     self.setText(0, f"Main Area")

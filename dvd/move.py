@@ -132,10 +132,12 @@ class Sublayer(ReadableFromStream):
     def QPainterPath(self):
         positive = QPainterPath()
         positive.addPolygon(self.area_list[0].QPolygonF())
-        negative = QPainterPath()
         for move_area in self.area_list[1:]:
+            negative = QPainterPath()
             negative.addPolygon(move_area.QPolygonF())
-        return positive.subtracted(negative)
+            negative.closeSubpath()
+            positive -= negative
+        return positive  # positive.subtracted(negative)
 
 
 class Layer(ReadableFromStream):
