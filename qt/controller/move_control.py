@@ -52,6 +52,7 @@ class QMoveController(QTreeWidget):
         self.layer_item = []
         self.sublayer_item = []
         self.move_area_item = []
+        self.setSelectionMode()
 
         for i, layer in enumerate(self.motion):
             self.layer_item.append(QMotionItem(self, (i,), layer))
