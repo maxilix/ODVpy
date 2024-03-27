@@ -82,7 +82,7 @@
 
 
 from PyQt6.QtCore import QPointF
-from PyQt6.QtGui import QPolygonF
+from PyQt6.QtGui import QPolygonF, QPainterPath
 
 from common import *
 
@@ -128,6 +128,14 @@ class Sublayer(ReadableFromStream):
         nb_sub_area = stream.read(UShort)
         sub_area_list = [stream.read(Area) for _ in range(nb_sub_area)]
         return cls([main_area] + sub_area_list, segment_list)
+
+    def QPainterPath(self):
+        positive = QPainterPath()
+        positive.addPolygon(self.area_list[0].QPolygonF())
+        negative = QPainterPath()
+        for move_area in self.area_list[1:]:
+            negative.addPolygon(move_area.QPolygonF())
+        return positive.subtracted(negative)
 
 
 class Layer(ReadableFromStream):

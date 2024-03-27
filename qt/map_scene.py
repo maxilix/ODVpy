@@ -5,7 +5,8 @@ from math import floor, ceil
 
 from PyQt6.QtCore import Qt, QSize, QPoint, QLineF, QRectF, QPointF
 from PyQt6.QtGui import QImage, QPixmap, QPolygonF
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsLineItem, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, \
+    QGraphicsLineItem, QVBoxLayout, QLabel
 from PyQt6.QtGui import QPen, QBrush, QColor, QPainterPath
 
 from debug import *
@@ -38,58 +39,62 @@ class QMapScene(QGraphicsScene):
         pixmap = QPixmap.fromImage(dvm.level_map)
         self.map = self.addPixmap(pixmap)
 
-        pen = QPen(QColor(0, 255, 0), 2, )
-        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-        pen.setBrush(QColor(0, 255, 0, 50))
-        #line = QLineF(10, 10, 200, 200)
-        #self.rect = QRectF(0,0,500,500)
-        #self.line = self.addLine(line, pen)
+        # pen = QPen(QColor(0, 255, 0), 2, )
+        # pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        # pen.setBrush(QColor(0, 255, 0, 50))
+        # #line = QLineF(10, 10, 200, 200)
+        # #self.rect = QRectF(0,0,500,500)
+        # #self.line = self.addLine(line, pen)
+        #
+        # self.color = QColor(0, 255, 0, 128)
+        # pen = QPen(self.color)  # Couleur du contour du polygone
+        # self.color.setAlpha(48)
+        # brush = QBrush(self.color)
+        # poly_t = QPolygonF([QPointF(100-0.5, 100-0.5), QPointF(300-0.5, 120-0.5), QPointF(350-0.5, 500-0.5), QPointF(200-0.5, 550-0.5), QPointF(50-0.5, 250-0.5)])
+        # poly_t_sub = QPolygonF([QPointF(130-0.5, 130-0.5), QPointF(150-0.5, 130-0.5), QPointF(150-0.5, 150-0.5), QPointF(130-0.5, 150-0.5)])
+        # #poly_t = poly_t.subtracted(poly_t_sub)
+        # #self.addPolygon(poly_t, pen, brush)
+        #
+        # #painter = QPainter(self)
+        # #painter.setRenderHint(QPainter.Antialiasing)  # Pour un rendu plus lisse
+        #
+        # path = QPainterPath()
+        # path.addPolygon(poly_t)
+        #
+        # hole = QPainterPath()
+        # hole.addPolygon(poly_t_sub)
+        #
+        # path = path.subtracted(hole)
+        #
+        # #painter.fillPath(path, QColor(100, 100, 255))  # Remplit la forme résultante avec une couleur
+        #
+        # path_draw = self.addPath(path, pen, brush)
 
-        self.color = QColor(0, 255, 0, 128)
-        pen = QPen(self.color)  # Couleur du contour du polygone
-        self.color.setAlpha(48)
-        brush = QBrush(self.color)
-        poly_t = QPolygonF([QPointF(100-0.5, 100-0.5), QPointF(300-0.5, 120-0.5), QPointF(350-0.5, 500-0.5), QPointF(200-0.5, 550-0.5), QPointF(50-0.5, 250-0.5)])
-        poly_t_sub = QPolygonF([QPointF(130-0.5, 130-0.5), QPointF(150-0.5, 130-0.5), QPointF(150-0.5, 150-0.5), QPointF(130-0.5, 150-0.5)])
-        #poly_t = poly_t.subtracted(poly_t_sub)
-        #self.addPolygon(poly_t, pen, brush)
-
-        #painter = QPainter(self)
-        #painter.setRenderHint(QPainter.Antialiasing)  # Pour un rendu plus lisse
-
-        path = QPainterPath()
-        path.addPolygon(poly_t)
-
-        hole = QPainterPath()
-        hole.addPolygon(poly_t_sub)
-
-        path = path.subtracted(hole)
-
-        #painter.fillPath(path, QColor(100, 100, 255))  # Remplit la forme résultante avec une couleur
-
-        path_draw = self.addPath(path, pen, brush)
-
-
-        self.drawn_area = dict()
-
-
-
-
-
-
-
+        self.drawn_move_area = dict()
+        self.drawn_sublayer = dict()
 
     def mouseMoveEvent(self, event):
         pos = event.scenePos()
-        # for poly_item in self.disallow_poly_item:
-        #     if poly_item.polygon().containsPoint(pos, Qt.FillRule.OddEvenFill):
-        #         self.color.setAlpha(32)
-        #         brush = QBrush(self.color)
-        #     else:
-        #         self.color.setAlpha(16)
-        #         brush = QBrush(self.color)
-        #     poly_item.setBrush(brush)
+
         self.parent().label.setText(f"x:{floor(pos.x())}\ty:{floor(pos.y())}\tzoom:{round(self.zoom*100)}%")
+
+        for move_area_key in self.drawn_move_area:
+            if (draw := self.drawn_move_area[move_area_key]).isVisible():
+                color = draw.brush().color()
+                if draw.polygon().contains(pos): #  Qt.FillRule.OddEvenFill)):
+                    color.setAlpha(32)
+                else:
+                    color.setAlpha(16)
+                draw.setBrush(QBrush(color))
+
+        for sublayer_key in self.drawn_sublayer:
+            if (draw := self.drawn_sublayer[sublayer_key]).isVisible():
+                color = draw.brush().color()
+                if draw.path().contains(pos):
+                    color.setAlpha(32)
+                else:
+                    color.setAlpha(16)
+                draw.setBrush(QBrush(color))
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
@@ -123,15 +128,29 @@ class QMapScene(QGraphicsScene):
         self.view.centerOn(new_position)
 
     def add_move_area(self, indexes, move_area):
-        if indexes in self.drawn_area:
-            self.drawn_area[indexes].setVisible(True)
+        if indexes in self.drawn_move_area:
+            self.drawn_move_area[indexes].setVisible(True)
         else:
             color = QColor(255, 0, 0, 128)
             pen = QPen(color)  # outline color
             color.setAlpha(16)
             brush = QBrush(color)  # fill color
-            self.drawn_area[indexes] = self.addPolygon(move_area.QPolygonF(), pen, brush)
+            self.drawn_move_area[indexes] = self.addPolygon(move_area.QPolygonF(), pen, brush)
 
-    def remove_move_area(self, indexes, move_area):
-        if indexes in self.drawn_area:
-            self.drawn_area[indexes].setVisible(False)
+    def remove_move_area(self, indexes):
+        if indexes in self.drawn_move_area:
+            self.drawn_move_area[indexes].setVisible(False)
+
+    def add_sublayer(self, indexes, sublayer):
+        if indexes in self.drawn_sublayer:
+            self.drawn_sublayer[indexes].setVisible(True)
+        else:
+            color = QColor(0, 255, 0, 128)
+            pen = QPen(color)  # outline color
+            color.setAlpha(16)
+            brush = QBrush(color)  # fill color
+            self.drawn_sublayer[indexes] = self.addPath(sublayer.QPainterPath(), pen, brush)
+
+    def remove_sublayer(self, indexes):
+        if indexes in self.drawn_sublayer:
+            self.drawn_sublayer[indexes].setVisible(False)
