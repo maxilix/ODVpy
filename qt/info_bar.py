@@ -1,18 +1,7 @@
-#!/usr/bin/enc python3
 
+from math import floor
 
-from math import floor, ceil
-
-from PyQt6.QtCore import Qt, QSize, QPoint, QLineF, QRectF, QPointF
-from PyQt6.QtGui import QImage, QPixmap, QPolygonF
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsLineItem, QVBoxLayout, QLabel
-from PyQt6.QtGui import QPen, QBrush, QColor, QPainterPath
-
-from debug import *
-
-from common import *
-from dvd import DvdParser
-from dvm import DvmParser
+from PyQt6.QtWidgets import QLabel
 
 
 class QInfoBar(QLabel):
@@ -21,7 +10,7 @@ class QInfoBar(QLabel):
         super().__init__(parent)
         self._x = 0
         self._y = 0
-        self._zoom = 100
+        self._zoom = 1
         self.refresh()
 
     def update(self, **kwargs):
