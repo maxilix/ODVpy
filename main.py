@@ -45,10 +45,22 @@ class QWindow(QMainWindow):
             load_level_action.triggered.connect(lambda state, index=i: self.load_level(index))
             file_submenu.addAction(load_level_action)
 
+        unload_level_action = QAction("Close level", self)
+        unload_level_action.triggered.connect(self.unload_level)
+        file_menu.addAction(unload_level_action)
+
+        quit_action = QAction("Quit", self)
+        quit_action.triggered.connect(exit)
+        file_menu.addAction(quit_action)
+
         self.update()
 
-    def load_level(self, index):
+    def load_level(self, index=None):
         self.current_level = ODVLevel(original_level_filename(index))
+        self.update()
+
+    def unload_level(self):
+        self.current_level = None
         self.update()
 
     def update(self):
