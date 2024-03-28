@@ -29,9 +29,11 @@ class QWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle('Open Death Valley py')
-        self.setMinimumSize(QSize(800, 600))
+        # self.setMinimumSize(QSize(800, 600))
         self.showMaximized()
+        # self.setGeometry(0, 0, 500, 500)
         self.current_level = None
+        # self.current_level = ODVLevel(original_level_filename(0))
 
         menu = self.menuBar()
         file_menu = menu.addMenu("File")
@@ -82,6 +84,6 @@ class QWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication([])
-    viewer = QWindow()
-    viewer.show()
+    window = QWindow()
+    window.show()
     app.exec()

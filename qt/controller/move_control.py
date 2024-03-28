@@ -1,34 +1,55 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QPen, QBrush
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QVBoxLayout, QCheckBox, QWidget, \
-    QListWidget, QListWidgetItem, QGroupBox
+    QListWidget, QListWidgetItem, QGroupBox, QSpacerItem, QSizePolicy, QScrollArea
 
 import dvd.move
 from qt.scene import QScene
 
 
-class QSublayer(QGroupBox):
+class QSublayer(QWidget):
     def __init__(self, sublayer):
-        super().__init__("Sublayer")
+        super().__init__()
         layout = QVBoxLayout()
+
+        self.checkbox = QCheckBox("Show sublayer movable area")
+        layout.addWidget(self.checkbox)
 
         # self.checkbox = QCheckBox("Show main area")
         # layout.addWidget(self.checkbox)
 
         self.area_list = QListWidget()
+        nb_area = len(sublayer)
         for k, area in enumerate(sublayer):
-            # a = QListWidgetItem(f"area {k}")
-            self.area_list.addItem(f"exclude area {k}")
+            if k == 0:
+                area_item = QListWidgetItem(f"main area")
+            else:
+                area_item = QListWidgetItem(f"excluded area {k}")
+            area_item.setFlags(area_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            area_item.setCheckState(Qt.CheckState.Unchecked)
+            self.area_list.addItem(area_item)
         layout.addWidget(self.area_list)
+
+        y = self.area_list.viewportSizeHint().height()
+        self.area_list.setFixedHeight(y+2)
 
         # self.setCheckable(True)
         self.setLayout(layout)
+
+
+
+
+
+
+
 
 
 class QLayer(QWidget):
     def __init__(self, layer):
         super().__init__()
         layout = QVBoxLayout()
+        spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        layout.addItem(spacer)
 
         # layer_title = QLabel(f"Layer {i}")
         # layout.addWidget(layer_title)
@@ -40,7 +61,71 @@ class QLayer(QWidget):
         for w in self.sublayer_widget:
             layout.addWidget(w)
 
-        self.setLayout(layout)
+        content = QWidget()
+        content.setLayout(layout)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)  # Permet au widget interne de redimensionner le scroll area
+        scroll_area.setWidget(content)
+        # scroll_area.setAlignment(Qt.AlignmentFlag.AlignTop)  # Aligner le contenu en haut
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(scroll_area)
+
+        self.setLayout(main_layout)
+
+    # def __init__(self):
+    #     super().__init__()
+    #
+    #     layout = QVBoxLayout()
+    #     spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+    #     layout.addItem(spacer)
+    #
+    #     for i in range(5):  # Ajouter quelques boutons juste pour l'exemple
+    #         button = QPushButton(f"Bouton {i+1}")
+    #         l = QListWidget()
+    #         nb_item = 10-i
+    #         for _ in range(nb_item):
+    #             item = QListWidgetItem(f"Item")
+    #             # item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+    #             item.setCheckState(Qt.CheckState.Checked)
+    #             l.addItem(item)
+    #         l.setFixedHeight(nb_item*19)
+    #         layout.addWidget(l)
+    #         layout.setSpacing(10)  # Espacement entre les boutons
+    #
+    #     spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+    #     layout.addItem(spacer)
+    #
+    #     content = QWidget()
+    #     content.setLayout(layout)
+    #
+    #     scroll_area = QScrollArea()
+    #     scroll_area.setWidgetResizable(True)  # Permet au widget interne de redimensionner le scroll area
+    #     scroll_area.setWidget(content)
+    #     # scroll_area.setAlignment(Qt.AlignmentFlag.AlignTop)  # Aligner le contenu en haut
+    #
+    #     main_layout = QVBoxLayout()
+    #     main_layout.addWidget(scroll_area)
+    #
+    #     self.setLayout(main_layout)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class QMoveController(QTabWidget):
