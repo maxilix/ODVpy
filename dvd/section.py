@@ -9,6 +9,8 @@ section_list = ["MISC", "BGND", "MOVE", "SGHT", "MASK", "WAYS", "ELEM", "FXBK", 
 
 class Section(ReadableFromStream):
 
+    section = None
+
     def __init__(self, data):
         self._data = data
         self._stream = None
