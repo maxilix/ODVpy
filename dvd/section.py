@@ -33,5 +33,6 @@ class Section(ReadableFromStream):
         assert next_byte == b''
         # log.info(f"Section {self.section} builded.")
 
+    @property
     def built(self):
         return self._stream is not None

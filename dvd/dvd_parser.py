@@ -29,10 +29,4 @@ class DvdParser(Parser):
 			self._move.build()
 		return self._move
 
-	# def build(self):
-	# 	self.misc.build()
-	# 	self.bgnd.build()
-	# 	self.move.build()
-	# 	# self.sght.build()
-	# 	self.mask.build()
-	# 	pass
+

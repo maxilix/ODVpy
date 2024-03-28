@@ -9,22 +9,15 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, Q
     QGraphicsLineItem, QVBoxLayout, QLabel
 from PyQt6.QtGui import QPen, QBrush, QColor, QPainterPath
 
-from debug import *
 
-from common import *
-from dvd import DvdParser
-from dvm import DvmParser
+class QViewport(QGraphicsView):
 
-
-class QMapScene(QGraphicsScene):
-    def __init__(self, parent, level):
-        super().__init__(parent)
-
-        self.view = QGraphicsView(self)
-        self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
-        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.view.setMouseTracking(True)
+    def __init__(self, scene):
+        super().__init__(scene)
+        self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setMouseTracking(True)
 
         self.max_zoom = 35
         self.min_zoom = 0.5
@@ -32,12 +25,24 @@ class QMapScene(QGraphicsScene):
         self.zoom_factor = 1.2
 
 
-        dvm = level.dvm
-        dvd = level.dvd
-        dvd.move.build()
+class QScene(QGraphicsScene):
+    def __init__(self, parent, info_bar, dvm):
+        super().__init__(parent)
+        self.info_bar = info_bar
 
-        pixmap = QPixmap.fromImage(dvm.level_map)
+        pixmap = QPixmap(dvm.level_map)
         self.map = self.addPixmap(pixmap)
+
+        self.viewport = QViewport(self)
+        # self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+        # self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # self.view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # self.view.setMouseTracking(True)
+        #
+        # self.max_zoom = 35
+        # self.min_zoom = 0.5
+        # self.zoom = 1
+        # self.zoom_factor = 1.2
 
         # pen = QPen(QColor(0, 255, 0), 2, )
         # pen.setCapStyle(Qt.PenCapStyle.RoundCap)
@@ -75,8 +80,7 @@ class QMapScene(QGraphicsScene):
 
     def mouseMoveEvent(self, event):
         pos = event.scenePos()
-
-        self.parent().label.setText(f"x:{floor(pos.x())}\ty:{floor(pos.y())}\tzoom:{round(self.zoom*100)}%")
+        self.info_bar.update(x=pos.x(), y=pos.y())
 
         for move_area_key in self.drawn_move_area:
             if (draw := self.drawn_move_area[move_area_key]).isVisible():
@@ -96,36 +100,26 @@ class QMapScene(QGraphicsScene):
                     color.setAlpha(16)
                 draw.setBrush(QBrush(color))
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.MiddleButton:
-            pos = event.scenePos()
-            print(pos)
-            #self.line.setPen(QPen(QColor(255, 0, 0), 1))
-            #print(self.line.scale())
-
-            #self.line.setVisible(False)
-            #self.line.setVisible(True)
-
     def wheelEvent(self, event):
         event.accept()
-        # print(event.delta())
 
-        if event.delta() > 0 and self.zoom < self.max_zoom:
-            self.view.scale(self.zoom_factor, self.zoom_factor)
-            self.zoom *= self.zoom_factor
-        elif event.delta() < 0 and self.zoom > self.min_zoom:
-            self.view.scale(1.0 / self.zoom_factor, 1.0 / self.zoom_factor)
-            self.zoom /= self.zoom_factor
+        if event.delta() > 0 and self.viewport.zoom < self.viewport.max_zoom:
+            self.viewport.scale(self.viewport.zoom_factor, self.viewport.zoom_factor)
+            self.viewport.zoom *= self.viewport.zoom_factor
+        elif event.delta() < 0 and self.viewport.zoom > self.viewport.min_zoom:
+            self.viewport.scale(1.0 / self.viewport.zoom_factor, 1.0 / self.viewport.zoom_factor)
+            self.viewport.zoom /= self.viewport.zoom_factor
         else:
             pass
 
         scene_position = event.scenePos()
         global_position = event.screenPos()
-        relative_position = self.view.mapFromGlobal(global_position)
-        size = self.view.size()
-        new_position = QPointF(scene_position.x() + (size.width() /2-relative_position.x())/(1.1 * self.zoom),
-                               scene_position.y() + (size.height()/2-relative_position.y())/(1.1 * self.zoom))
-        self.view.centerOn(new_position)
+        relative_position = self.viewport.mapFromGlobal(global_position)
+        size = self.viewport.size()
+        new_position = QPointF(scene_position.x() + (size.width() /2-relative_position.x()) / (1.1 * self.viewport.zoom),
+                               scene_position.y() + (size.height()/2-relative_position.y()) / (1.1 * self.viewport.zoom))
+        self.viewport.centerOn(new_position)
+        self.info_bar.update(zoom=self.viewport.zoom)
 
     def add_move_area(self, indexes, move_area):
         if indexes in self.drawn_move_area:

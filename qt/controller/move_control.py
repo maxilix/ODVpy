@@ -3,7 +3,7 @@ from PyQt6.QtGui import QColor, QPen, QBrush
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem
 
 import dvd.move
-from qt.map_scene import QMapScene
+from qt.scene import QScene
 
 
 # from dvd.move import Layer, Sublayer, MoveArea
@@ -42,7 +42,7 @@ class QMotionItem(QTreeWidgetItem):
 
 
 class QMoveController(QTreeWidget):
-    def __init__(self, scene: QMapScene, motion):
+    def __init__(self, scene: QScene, motion):
         super().__init__()
         self.scene = scene
         self.motion = motion
@@ -52,7 +52,7 @@ class QMoveController(QTreeWidget):
         self.layer_item = []
         self.sublayer_item = []
         self.move_area_item = []
-        self.setSelectionMode()
+        # self.setSelectionMode()
 
         for i, layer in enumerate(self.motion):
             self.layer_item.append(QMotionItem(self, (i,), layer))

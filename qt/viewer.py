@@ -12,19 +12,21 @@ from common import *
 from dvd import DvdParser
 from dvm import DvmParser
 
-from .map_scene import QMapScene
-from .label_view import QLabelView
+from .scene import QScene
+from .info_bar import QInfoBar
+
 
 
 class QViewer(QWidget):
     def __init__(self, level):
         super().__init__()
 
-        self.scene = QMapScene(self, level)
-        self.label = QLabelView()
+        self.info_bar = QInfoBar()
+        self.scene = QScene(self, self.info_bar, level.dvm)
+        #self.viewport = QViewport(self.scene)
 
         layout = QVBoxLayout()
-        layout.addWidget(self.scene.view)
-        layout.addWidget(self.label)
+        layout.addWidget(self.scene.viewport)
+        layout.addWidget(self.info_bar)
 
         self.setLayout(layout)
