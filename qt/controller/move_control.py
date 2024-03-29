@@ -2,119 +2,83 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QPen, QBrush
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QVBoxLayout, QCheckBox, QWidget, \
     QListWidget, QListWidgetItem, QGroupBox, QSpacerItem, QSizePolicy, QScrollArea
+from qt.common import QCollapsible
 
 import dvd.move
 from qt.scene import QScene
 
 
-class QSublayer(QWidget):
-    def __init__(self, sublayer):
-        super().__init__()
-        layout = QVBoxLayout()
+class QTreeWidgetAreaItem(QTreeWidgetItem):
+    def __init__(self, parent, area_index, area):
+        super().__init__(parent)
+        if area_index == 0:
+            self.setText(0, f"main area")
+        else:
+            self.setText(0, f"exclude area {area_index}")
+        self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        self.setCheckState(0, Qt.CheckState.Unchecked)
 
-        self.checkbox = QCheckBox("Show sublayer movable area")
+
+class QSublayer(QWidget):
+    def __init__(self, parent, sublayer_index, sublayer):
+        super().__init__(parent)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(30, 0, 0, 30)
+
+        self.checkbox = QCheckBox(f"Show sublayer {sublayer_index} movable area")
         layout.addWidget(self.checkbox)
 
-        # self.checkbox = QCheckBox("Show main area")
-        # layout.addWidget(self.checkbox)
+        self.collapsible_option = QCollapsible(self, f"area details")
+        collapse_layout = QVBoxLayout()
 
-        self.area_list = QListWidget()
-        nb_area = len(sublayer)
+        # label = QCheckBox("Show main area")
+        # collapse_layout.addWidget(label)
+
+        self.area_tree = QTreeWidget()
+        self.area_tree.setColumnCount(2)
+        self.area_tree.setHeaderLabels(["Area", "other"])
+        collapse_layout.addWidget(self.area_tree)
+        # self.area_header_item = QTreeWidgetItem(self.area_tree)
+        # self.area_header_item.setText(0, "Check All")
+        # self.area_header_item.setFlags(self.area_header_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        # self.area_header_item.setCheckState(0, Qt.CheckState.Unchecked)
         for k, area in enumerate(sublayer):
-            if k == 0:
-                area_item = QListWidgetItem(f"main area")
-            else:
-                area_item = QListWidgetItem(f"excluded area {k}")
-            area_item.setFlags(area_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            area_item.setCheckState(Qt.CheckState.Unchecked)
-            self.area_list.addItem(area_item)
-        layout.addWidget(self.area_list)
-
-        y = self.area_list.viewportSizeHint().height()
-        self.area_list.setFixedHeight(y+2)
-
-        # self.setCheckable(True)
-        self.setLayout(layout)
+            QTreeWidgetAreaItem(self.area_tree, k, area)
+        self.area_tree.resizeColumnToContents(0)
+        y = self.area_tree.viewportSizeHint().height()
+        self.area_tree.setFixedHeight(y+2)
+        self.collapsible_option.set_content_layout(collapse_layout)
+        layout.addWidget(self.collapsible_option)
 
 
+class QLayer(QScrollArea):
+    def __init__(self, parent, layer_index, layer):
+        super().__init__(parent)
+        content = QWidget()
+        layout = QVBoxLayout(content)
 
-
-
-
-
-
-
-class QLayer(QWidget):
-    def __init__(self, layer):
-        super().__init__()
-        layout = QVBoxLayout()
-        spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        layout.addItem(spacer)
-
-        # layer_title = QLabel(f"Layer {i}")
-        # layout.addWidget(layer_title)
+        self.title = QLabel(f"Layer {layer_index}")
+        layout.addWidget(self.title)
 
         self.checkbox = QCheckBox("Show all movable areas")
+        self.checkbox.setChecked(False)
+        self.checkbox.stateChanged.connect(self.update_draw)
         layout.addWidget(self.checkbox)
 
-        self.sublayer_widget = [QSublayer(sublayer) for sublayer in layer]
-        for w in self.sublayer_widget:
-            layout.addWidget(w)
+        self.sublayer_widget = []
+        for j, sublayer in enumerate(layer):
+            sublayer_widget = QSublayer(self, j, sublayer)
+            self.sublayer_widget.append(sublayer_widget)
+            layout.addWidget(sublayer_widget)
 
-        content = QWidget()
-        content.setLayout(layout)
-
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)  # Permet au widget interne de redimensionner le scroll area
-        scroll_area.setWidget(content)
-        # scroll_area.setAlignment(Qt.AlignmentFlag.AlignTop)  # Aligner le contenu en haut
-
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(scroll_area)
-
-        self.setLayout(main_layout)
-
-    # def __init__(self):
-    #     super().__init__()
-    #
-    #     layout = QVBoxLayout()
-    #     spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-    #     layout.addItem(spacer)
-    #
-    #     for i in range(5):  # Ajouter quelques boutons juste pour l'exemple
-    #         button = QPushButton(f"Bouton {i+1}")
-    #         l = QListWidget()
-    #         nb_item = 10-i
-    #         for _ in range(nb_item):
-    #             item = QListWidgetItem(f"Item")
-    #             # item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-    #             item.setCheckState(Qt.CheckState.Checked)
-    #             l.addItem(item)
-    #         l.setFixedHeight(nb_item*19)
-    #         layout.addWidget(l)
-    #         layout.setSpacing(10)  # Espacement entre les boutons
-    #
-    #     spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-    #     layout.addItem(spacer)
-    #
-    #     content = QWidget()
-    #     content.setLayout(layout)
-    #
-    #     scroll_area = QScrollArea()
-    #     scroll_area.setWidgetResizable(True)  # Permet au widget interne de redimensionner le scroll area
-    #     scroll_area.setWidget(content)
-    #     # scroll_area.setAlignment(Qt.AlignmentFlag.AlignTop)  # Aligner le contenu en haut
-    #
-    #     main_layout = QVBoxLayout()
-    #     main_layout.addWidget(scroll_area)
-    #
-    #     self.setLayout(main_layout)
+        layout.addStretch()
+        self.setWidgetResizable(True)
+        self.setWidget(content)
 
 
 
-
-
-
+    def update_draw(self):
+        print("update draws")
 
 
 
@@ -140,7 +104,7 @@ class QMoveController(QTabWidget):
         ground_index = 0
         ladder_index = len(motion) - 1
         for i, layer in enumerate(motion):
-            layer_widget = QLayer(layer)
+            layer_widget = QLayer(self, i, layer)
             if i == ground_index:
                 self.addTab(layer_widget, f"Ground")
             elif i == ladder_index:
