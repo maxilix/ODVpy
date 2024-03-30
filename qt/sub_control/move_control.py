@@ -26,6 +26,7 @@ class QSublayer(QWidget):
         layout.setContentsMargins(30, 0, 0, 30)
 
         self.checkbox = QCheckBox(f"Show sublayer {sublayer_index} movable area")
+        self.checkbox.clicked.connect(parent.update_draw)
         layout.addWidget(self.checkbox)
 
         self.collapsible_option = QCollapsible(self, f"area details")
@@ -36,14 +37,17 @@ class QSublayer(QWidget):
 
         self.area_tree = QTreeWidget()
         self.area_tree.setColumnCount(2)
-        self.area_tree.setHeaderLabels(["Area", "other"])
+        self.area_tree.setHeaderLabels(["Area", "CPoints", "Links"])
         collapse_layout.addWidget(self.area_tree)
         # self.area_header_item = QTreeWidgetItem(self.area_tree)
         # self.area_header_item.setText(0, "Check All")
         # self.area_header_item.setFlags(self.area_header_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
         # self.area_header_item.setCheckState(0, Qt.CheckState.Unchecked)
+        self.area_item = []
         for k, area in enumerate(sublayer):
-            QTreeWidgetAreaItem(self.area_tree, k, area)
+            area_item = QTreeWidgetAreaItem(None, k, area)
+            self.area_item.append(area_item)
+            self.area_tree.addTopLevelItem(area_item)
         self.area_tree.resizeColumnToContents(0)
         y = self.area_tree.viewportSizeHint().height()
         self.area_tree.setFixedHeight(y+2)
@@ -51,18 +55,23 @@ class QSublayer(QWidget):
         layout.addWidget(self.collapsible_option)
 
 
+
 class QLayer(QScrollArea):
-    def __init__(self, parent, layer_index, layer):
+    def __init__(self, parent, scene, layer_index, layer):
         super().__init__(parent)
+        self.scene = scene
+        self.layer_index = layer_index
+        self.layer = layer
+
         content = QWidget()
         layout = QVBoxLayout(content)
 
-        self.title = QLabel(f"Layer {layer_index}")
+        self.title = QLabel(f"Layer {self.layer_index}")
         layout.addWidget(self.title)
 
         self.checkbox = QCheckBox("Show all movable areas")
         self.checkbox.setChecked(False)
-        self.checkbox.stateChanged.connect(self.update_draw)
+        self.checkbox.clicked.connect(self.clicked)
         layout.addWidget(self.checkbox)
 
         self.sublayer_widget = []
@@ -75,24 +84,33 @@ class QLayer(QScrollArea):
         self.setWidgetResizable(True)
         self.setWidget(content)
 
+    def clicked(self):
+        for sublayer_widget in self.sublayer_widget:
+            sublayer_widget.checkbox.setCheckState(self.checkbox.checkState())
+
+        self.update_draw()
 
 
     def update_draw(self):
-        print("update draws")
+        active = 0
+        for j, sublayer_widget in enumerate(self.sublayer_widget):
+            if sublayer_widget.checkbox.checkState() == Qt.CheckState.Checked:
+                active += 1
+                self.scene.move_scene.show_sublayer(self.layer_index, j)
+            else:
+                self.scene.move_scene.hide_sublayer(self.layer_index, j)
+
+        if active == 0:
+            self.checkbox.setCheckState(Qt.CheckState.Unchecked)
+        elif active == len(self.sublayer_widget):
+            self.checkbox.setCheckState(Qt.CheckState.Checked)
+        else:
+            self.checkbox.setCheckState(Qt.CheckState.PartiallyChecked)
 
 
 
 
-
-
-
-
-
-
-
-
-
-class QMoveController(QTabWidget):
+class QMoveControl(QTabWidget):
     def __init__(self, scene, motion):
         super().__init__()
         # self.setFixedWidth(500)
@@ -104,7 +122,7 @@ class QMoveController(QTabWidget):
         ground_index = 0
         ladder_index = len(motion) - 1
         for i, layer in enumerate(motion):
-            layer_widget = QLayer(self, i, layer)
+            layer_widget = QLayer(self, scene, i, layer)
             if i == ground_index:
                 self.addTab(layer_widget, f"Ground")
             elif i == ladder_index:

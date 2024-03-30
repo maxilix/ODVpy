@@ -10,7 +10,7 @@ class QViewer(QWidget):
         super().__init__()
 
         self.info_bar = QInfoBar()
-        self.scene = QScene(self, self.info_bar, level.dvm)
+        self.scene = QScene(self, self.info_bar, level)
         #self.viewport = QViewport(self.scene)
 
         layout = QVBoxLayout()
