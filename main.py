@@ -74,6 +74,8 @@ class QWindow(QMainWindow):
         else:
             viewer = QViewer(self.current_level)
             control = QControl(viewer.scene, self.current_level)
+            viewer.scene.set_control_pointer(control)
+
             layout.addWidget(viewer)
             layout.addWidget(control)
 

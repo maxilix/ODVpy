@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QPen, QBrush
+from PyQt6.QtGui import QColor, QPen, QBrush, QFont
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QVBoxLayout, QCheckBox, QWidget, \
     QListWidget, QListWidgetItem, QGroupBox, QSpacerItem, QSizePolicy, QScrollArea
 from qt.common import QCollapsible
@@ -12,47 +12,70 @@ class QTreeWidgetAreaItem(QTreeWidgetItem):
     def __init__(self, parent, area_index, area):
         super().__init__(parent)
         if area_index == 0:
-            self.setText(0, f"main area")
+            self.setText(1, f"main area")
         else:
-            self.setText(0, f"exclude area {area_index}")
-        self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            self.setText(1, f"exclude area {area_index}")
+        self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserTristate | Qt.ItemFlag.ItemIsUserCheckable)
         self.setCheckState(0, Qt.CheckState.Unchecked)
+        self.setCheckState(1, Qt.CheckState.Unchecked)
+        self.crossing_point_item = []
+        for crossing_point in area:
+            crossing_point_item = QTreeWidgetItem(self)
+            crossing_point_item.setFlags(crossing_point_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            crossing_point_item.setText(1, str(crossing_point.point))
+            crossing_point_item.setCheckState(1, Qt.CheckState.Unchecked)
+            self.crossing_point_item.append(crossing_point_item)
+
+
+
+
 
 
 class QSublayer(QWidget):
-    def __init__(self, parent, sublayer_index, sublayer):
+    def __init__(self, parent, scene, sublayer_index, sublayer):
         super().__init__(parent)
+        self.scene = scene
         layout = QVBoxLayout(self)
         layout.setContentsMargins(30, 0, 0, 30)
 
         self.checkbox = QCheckBox(f"Show sublayer {sublayer_index} movable area")
+        # myFont = QFont()
+        # myFont.setBold(True)
+        # myFont.setUnderline(True)
+        # self.checkbox.setFont(myFont)
         self.checkbox.clicked.connect(parent.update_draw)
         layout.addWidget(self.checkbox)
 
         self.collapsible_option = QCollapsible(self, f"area details")
         collapse_layout = QVBoxLayout()
 
-        # label = QCheckBox("Show main area")
-        # collapse_layout.addWidget(label)
-
         self.area_tree = QTreeWidget()
         self.area_tree.setColumnCount(2)
         self.area_tree.setHeaderLabels(["Area", "CPoints", "Links"])
         collapse_layout.addWidget(self.area_tree)
-        # self.area_header_item = QTreeWidgetItem(self.area_tree)
-        # self.area_header_item.setText(0, "Check All")
-        # self.area_header_item.setFlags(self.area_header_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-        # self.area_header_item.setCheckState(0, Qt.CheckState.Unchecked)
+
         self.area_item = []
         for k, area in enumerate(sublayer):
             area_item = QTreeWidgetAreaItem(None, k, area)
             self.area_item.append(area_item)
             self.area_tree.addTopLevelItem(area_item)
+
         self.area_tree.resizeColumnToContents(0)
+        self.area_tree.resizeColumnToContents(1)
+        # self.area_tree.itemClicked.connect(self.catch_click)
+        self.area_tree.itemChanged.connect(self.catch_change)
+
         y = self.area_tree.viewportSizeHint().height()
         self.area_tree.setFixedHeight(y+2)
         self.collapsible_option.set_content_layout(collapse_layout)
         layout.addWidget(self.collapsible_option)
+
+    def catch_click(self, item):
+        print("Clicked", item.text(0))
+
+    def catch_change(self, item):
+        print("Changed", item.text(0))
+
 
 
 
@@ -76,7 +99,7 @@ class QLayer(QScrollArea):
 
         self.sublayer_widget = []
         for j, sublayer in enumerate(layer):
-            sublayer_widget = QSublayer(self, j, sublayer)
+            sublayer_widget = QSublayer(self, scene, j, sublayer)
             self.sublayer_widget.append(sublayer_widget)
             layout.addWidget(sublayer_widget)
 

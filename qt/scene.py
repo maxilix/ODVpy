@@ -29,39 +29,19 @@ class QScene(QGraphicsScene):
     def __init__(self, parent, info_bar, level):
         super().__init__(parent)
         self.info_bar = info_bar
+        self.control = None
         self.viewport = QViewport(self)
 
         pixmap = QPixmap(level.dvm.level_map)
         self.map = self.addPixmap(pixmap)
 
         self.move_scene = MoveScene(self, level.dvd.move)
-        # self.drawn_move_area = dict()
-        # self.drawn_sublayer = dict()
-
 
     def mouseMoveEvent(self, event):
         pos = event.scenePos()
         self.info_bar.update(x=pos.x(), y=pos.y())
 
         self.move_scene.refresh(pos)
-
-        # for move_area_key in self.drawn_move_area:
-        #     if (draw := self.drawn_move_area[move_area_key]).isVisible():
-        #         color = draw.brush().color()
-        #         if draw.polygon().containsPoint(pos, Qt.FillRule.OddEvenFill):
-        #             color.setAlpha(32)
-        #         else:
-        #             color.setAlpha(16)
-        #         draw.setBrush(QBrush(color))
-        #
-        # for sublayer_key in self.drawn_sublayer:
-        #     if (draw := self.drawn_sublayer[sublayer_key]).isVisible():
-        #         color = draw.brush().color()
-        #         if draw.path().contains(pos):
-        #             color.setAlpha(32)
-        #         else:
-        #             color.setAlpha(16)
-        #         draw.setBrush(QBrush(color))
 
     def wheelEvent(self, event):
         event.accept()
@@ -84,30 +64,5 @@ class QScene(QGraphicsScene):
         self.viewport.centerOn(new_position)
         self.info_bar.update(zoom=self.viewport.zoom)
 
-    # def add_move_area(self, indexes, move_area):
-    #     if indexes in self.drawn_move_area:
-    #         self.drawn_move_area[indexes].setVisible(True)
-    #     else:
-    #         color = QColor(255, 0, 0, 128)
-    #         pen = QPen(color)  # outline color
-    #         color.setAlpha(16)
-    #         brush = QBrush(color)  # fill color
-    #         self.drawn_move_area[indexes] = self.addPolygon(move_area.QPolygonF(), pen, brush)
-    #
-    # def remove_move_area(self, indexes):
-    #     if indexes in self.drawn_move_area:
-    #         self.drawn_move_area[indexes].setVisible(False)
-    #
-    # def add_sublayer(self, indexes, sublayer):
-    #     if indexes in self.drawn_sublayer:
-    #         self.drawn_sublayer[indexes].setVisible(True)
-    #     else:
-    #         color = QColor(0, 255, 0, 128)
-    #         pen = QPen(color)  # outline color
-    #         color.setAlpha(16)
-    #         brush = QBrush(color)  # fill color
-    #         self.drawn_sublayer[indexes] = self.addPath(sublayer.QPainterPath(), pen, brush)
-    #
-    # def remove_sublayer(self, indexes):
-    #     if indexes in self.drawn_sublayer:
-    #         self.drawn_sublayer[indexes].setVisible(False)
+    def set_control_pointer(self, control):
+        self.control = control

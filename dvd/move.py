@@ -98,6 +98,15 @@ class MoveArea(object):
         else:
             self.crossing_point_list = crossing_point_list
 
+    def __iter__(self):
+        return iter(self.crossing_point_list)
+
+    def __getitem__(self, item):
+        return self.crossing_point_list[item]
+
+    def __len__(self):
+        return len(self.crossing_point_list)
+
     def set_crossing_point_list(self, crossing_point_list):
         self.crossing_point_list = crossing_point_list
 
@@ -174,9 +183,9 @@ class Layer(ReadableFromStream):
 
 class CrossingPoint(ReadableFromStream):
 
-    def __init__(self, b0, coor, b1, link_path_index_list):
+    def __init__(self, b0, point, b1, link_path_index_list):
         self.b0 = b0
-        self.coor = coor
+        self.point = point
         self.b1 = b1
         self.link_path_index_list = link_path_index_list
 
