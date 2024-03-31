@@ -189,6 +189,15 @@ class CrossingPoint(ReadableFromStream):
         self.b1 = b1
         self.link_path_index_list = link_path_index_list
 
+    def __iter__(self):
+        return iter(self.link_path_index_list)
+
+    def __getitem__(self, item):
+        return self.link_path_index_list[item]
+
+    def __len__(self):
+        return len(self.link_path_index_list)
+
     @classmethod
     def from_stream(cls, stream):
         nb_bytes = stream.read(UShort)  # re_W
@@ -208,6 +217,14 @@ class LinkPath(ReadableFromStream):
         self.unk1 = unk1
         self.unk2 = unk2
         self.objectC_index_list = objectC_index_list
+
+    def get_other(self, indexes):
+        if indexes == self.indexes_1:
+            return self.indexes_2
+        elif indexes == self.indexes_2:
+            return self.indexes_1
+        else:
+            raise IndexError(f"Link has no {indexes}")
 
     @classmethod
     def from_stream(cls, stream):
@@ -295,3 +312,6 @@ class Motion(Section):
 
     def get_ObjectA(self, indexes):
         return self.layer_list[indexes[0]].sublayer_list[indexes[1]].crossing_point_list_list[indexes[2]][indexes[3]]
+
+    def get_link(self, index):
+        return self.link_path_list[index]

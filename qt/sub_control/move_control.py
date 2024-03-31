@@ -1,7 +1,8 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QPen, QBrush, QFont
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QVBoxLayout, QCheckBox, QWidget, \
-    QListWidget, QListWidgetItem, QGroupBox, QSpacerItem, QSizePolicy, QScrollArea
+    QListWidget, QListWidgetItem, QGroupBox, QSpacerItem, QSizePolicy, QScrollArea, QAbstractScrollArea, \
+    QTreeWidgetItemIterator
 from qt.common import QCollapsible
 
 import dvd.move
@@ -9,22 +10,39 @@ from qt.scene import QScene
 
 
 class QTreeWidgetAreaItem(QTreeWidgetItem):
-    def __init__(self, parent, area_index, area):
+    def __init__(self, parent, motion, i, j, k):
         super().__init__(parent)
-        if area_index == 0:
+        self.i = i
+        self.j = j
+        self.k = k
+        self.area = motion[i][j][k]
+
+        if self.k == 0:
             self.setText(1, f"main area")
         else:
-            self.setText(1, f"exclude area {area_index}")
+            self.setText(1, f"exclude area {self.k}")
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserTristate | Qt.ItemFlag.ItemIsUserCheckable)
         self.setCheckState(0, Qt.CheckState.Unchecked)
         self.setCheckState(1, Qt.CheckState.Unchecked)
         self.crossing_point_item = []
-        for crossing_point in area:
+        for l, crossing_point in enumerate(self.area):
             crossing_point_item = QTreeWidgetItem(self)
-            crossing_point_item.setFlags(crossing_point_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            crossing_point_item.setFlags(crossing_point_item.flags() | Qt.ItemFlag.ItemIsUserTristate | Qt.ItemFlag.ItemIsUserCheckable)
             crossing_point_item.setText(1, str(crossing_point.point))
             crossing_point_item.setCheckState(1, Qt.CheckState.Unchecked)
-            self.crossing_point_item.append(crossing_point_item)
+            if (nb_links := len(crossing_point)) > 0:
+                crossing_point_item.setText(2, f"{nb_links} link{"s" if nb_links > 1 else ""}")
+                crossing_point_item.setCheckState(2, Qt.CheckState.Unchecked)
+            # self.crossing_point_item.append(crossing_point_item)
+            for link_index in crossing_point:
+                link_path_item = QTreeWidgetItem(crossing_point_item)
+                link_path_item.setFlags(link_path_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                indexes_self = (self.i, self.j, self.k, l,)
+                link = motion.get_link(link_index)
+                i_o, j_o, k_o, l_o = link.get_other(indexes_self)
+                link_path_item.setCheckState(2, Qt.CheckState.Unchecked)
+                link_path_item.setText(2, f"{motion[i_o][j_o][k_o][l_o].point} on {i_o} {j_o} {k_o}")
+
 
 
 
@@ -32,13 +50,17 @@ class QTreeWidgetAreaItem(QTreeWidgetItem):
 
 
 class QSublayer(QWidget):
-    def __init__(self, parent, scene, sublayer_index, sublayer):
+    def __init__(self, parent, scene, motion, i, j):
         super().__init__(parent)
         self.scene = scene
+        self.i = i
+        self.j = j
+        self.sublayer = motion[i][j]
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(30, 0, 0, 30)
 
-        self.checkbox = QCheckBox(f"Show sublayer {sublayer_index} movable area")
+        self.checkbox = QCheckBox(f"Show sublayer {self.j} movable area")
         # myFont = QFont()
         # myFont.setBold(True)
         # myFont.setUnderline(True)
@@ -55,20 +77,61 @@ class QSublayer(QWidget):
         collapse_layout.addWidget(self.area_tree)
 
         self.area_item = []
-        for k, area in enumerate(sublayer):
-            area_item = QTreeWidgetAreaItem(None, k, area)
+        for k, area in enumerate(self.sublayer):
+            area_item = QTreeWidgetAreaItem(None, motion, i, j, k)
             self.area_item.append(area_item)
             self.area_tree.addTopLevelItem(area_item)
 
         self.area_tree.resizeColumnToContents(0)
         self.area_tree.resizeColumnToContents(1)
+        self.area_tree.resizeColumnToContents(2)
         # self.area_tree.itemClicked.connect(self.catch_click)
         self.area_tree.itemChanged.connect(self.catch_change)
+        self.area_tree.itemExpanded.connect(self.update_height)
+        self.area_tree.itemCollapsed.connect(self.update_height)
+        # self.area_tree.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
+        # self.area_tree.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        y = self.area_tree.viewportSizeHint().height()
-        self.area_tree.setFixedHeight(y+2)
+        self.update_height()
+
         self.collapsible_option.set_content_layout(collapse_layout)
         layout.addWidget(self.collapsible_option)
+
+    def update_height(self):
+
+        w = self.area_tree.size().width()
+        # h = self.area_tree.viewportSizeHint().height()
+        print(self.count_items())
+        h = 19*self.count_items()+2
+
+        self.area_tree.resize(w, h)
+        # self.area_tree.setMinimumHeight(new_h)
+        # self.area_tree.viewport().setMinimumHeight(new_h)
+
+    def count_items(self):
+        count = 0
+        iterator = QTreeWidgetItemIterator(self.area_tree)  # pass your treewidget as arg
+        while iterator.value():
+            item = iterator.value()
+
+            if item.parent():
+                if item.parent().isExpanded():
+                    count += 1
+            else:
+                # root item
+                count += 1
+            iterator += 1
+
+        return count
+
+        # self.area_tree.setBaseSize(w, h+2)
+        # self.area_tree.adjustSize()
+        # y = self.area_tree.size().height()
+        # print(y)
+        # self.area_tree.viewport().size   .setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
+        # print(len(self.area_tree.children()))
+        # self.area_tree.setSizeAdjustPolicy() (QAbstractScrollArea. .AdjustToContents)
+        # self.area_tree.viewport().setMinimumHeight(y+2)
 
     def catch_click(self, item):
         print("Clicked", item.text(0))
@@ -80,16 +143,16 @@ class QSublayer(QWidget):
 
 
 class QLayer(QScrollArea):
-    def __init__(self, parent, scene, layer_index, layer):
+    def __init__(self, parent, scene, motion, i):
         super().__init__(parent)
         self.scene = scene
-        self.layer_index = layer_index
-        self.layer = layer
+        self.i = i
+        self.layer = motion[i]
 
         content = QWidget()
         layout = QVBoxLayout(content)
 
-        self.title = QLabel(f"Layer {self.layer_index}")
+        self.title = QLabel(f"Layer {self.i}")
         layout.addWidget(self.title)
 
         self.checkbox = QCheckBox("Show all movable areas")
@@ -98,8 +161,8 @@ class QLayer(QScrollArea):
         layout.addWidget(self.checkbox)
 
         self.sublayer_widget = []
-        for j, sublayer in enumerate(layer):
-            sublayer_widget = QSublayer(self, scene, j, sublayer)
+        for j, sublayer in enumerate(self.layer):
+            sublayer_widget = QSublayer(self, scene, motion, i, j)
             self.sublayer_widget.append(sublayer_widget)
             layout.addWidget(sublayer_widget)
 
@@ -119,9 +182,9 @@ class QLayer(QScrollArea):
         for j, sublayer_widget in enumerate(self.sublayer_widget):
             if sublayer_widget.checkbox.checkState() == Qt.CheckState.Checked:
                 active += 1
-                self.scene.move_scene.show_sublayer(self.layer_index, j)
+                self.scene.move_scene.show_sublayer(self.i, j)
             else:
-                self.scene.move_scene.hide_sublayer(self.layer_index, j)
+                self.scene.move_scene.hide_sublayer(self.i, j)
 
         if active == 0:
             self.checkbox.setCheckState(Qt.CheckState.Unchecked)
@@ -145,7 +208,7 @@ class QMoveControl(QTabWidget):
         ground_index = 0
         ladder_index = len(motion) - 1
         for i, layer in enumerate(motion):
-            layer_widget = QLayer(self, scene, i, layer)
+            layer_widget = QLayer(self, scene, motion, i)
             if i == ground_index:
                 self.addTab(layer_widget, f"Ground")
             elif i == ladder_index:
