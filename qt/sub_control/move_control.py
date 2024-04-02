@@ -1,12 +1,6 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QPen, QBrush, QFont
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QVBoxLayout, QCheckBox, QWidget, \
-    QListWidget, QListWidgetItem, QGroupBox, QSpacerItem, QSizePolicy, QScrollArea, QAbstractScrollArea, \
-    QTreeWidgetItemIterator
-from qt.common import QCollapsible
-
-import dvd.move
-from qt.scene import QScene
+    QScrollArea, QTreeWidgetItemIterator
 
 
 class QTreeWidgetAreaItem(QTreeWidgetItem):
@@ -44,11 +38,6 @@ class QTreeWidgetAreaItem(QTreeWidgetItem):
                 link_path_item.setText(2, f"{motion[i_o][j_o][k_o][l_o].point} on {i_o} {j_o} {k_o}")
 
 
-
-
-
-
-
 class QSublayer(QWidget):
     def __init__(self, parent, scene, motion, i, j):
         super().__init__(parent)
@@ -68,13 +57,13 @@ class QSublayer(QWidget):
         self.checkbox.clicked.connect(parent.update_draw)
         layout.addWidget(self.checkbox)
 
-        self.collapsible_option = QCollapsible(self, f"area details")
-        collapse_layout = QVBoxLayout()
+        # self.collapsible_option = QCollapsible(self, f"area details")
+        # collapse_layout = QVBoxLayout()
 
         self.area_tree = QTreeWidget()
-        self.area_tree.setColumnCount(2)
+        self.area_tree.setColumnCount(3)
         self.area_tree.setHeaderLabels(["Area", "CPoints", "Links"])
-        collapse_layout.addWidget(self.area_tree)
+        layout.addWidget(self.area_tree)
 
         self.area_item = []
         for k, area in enumerate(self.sublayer):
@@ -85,61 +74,36 @@ class QSublayer(QWidget):
         self.area_tree.resizeColumnToContents(0)
         self.area_tree.resizeColumnToContents(1)
         self.area_tree.resizeColumnToContents(2)
+
         # self.area_tree.itemClicked.connect(self.catch_click)
         self.area_tree.itemChanged.connect(self.catch_change)
         self.area_tree.itemExpanded.connect(self.update_height)
         self.area_tree.itemCollapsed.connect(self.update_height)
-        # self.area_tree.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
-        # self.area_tree.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
         self.update_height()
 
-        self.collapsible_option.set_content_layout(collapse_layout)
-        layout.addWidget(self.collapsible_option)
-
     def update_height(self):
-
-        w = self.area_tree.size().width()
-        # h = self.area_tree.viewportSizeHint().height()
-        print(self.count_items())
-        h = 19*self.count_items()+2
-
-        self.area_tree.resize(w, h)
-        # self.area_tree.setMinimumHeight(new_h)
-        # self.area_tree.viewport().setMinimumHeight(new_h)
+        h = 18 * self.count_items() + 2 + 22
+        self.area_tree.setMinimumHeight(h)
+        self.area_tree.setMaximumHeight(h)
 
     def count_items(self):
         count = 0
         iterator = QTreeWidgetItemIterator(self.area_tree)  # pass your treewidget as arg
         while iterator.value():
             item = iterator.value()
-
             if item.parent():
                 if item.parent().isExpanded():
                     count += 1
             else:
-                # root item
                 count += 1
             iterator += 1
-
         return count
-
-        # self.area_tree.setBaseSize(w, h+2)
-        # self.area_tree.adjustSize()
-        # y = self.area_tree.size().height()
-        # print(y)
-        # self.area_tree.viewport().size   .setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
-        # print(len(self.area_tree.children()))
-        # self.area_tree.setSizeAdjustPolicy() (QAbstractScrollArea. .AdjustToContents)
-        # self.area_tree.viewport().setMinimumHeight(y+2)
 
     def catch_click(self, item):
         print("Clicked", item.text(0))
 
     def catch_change(self, item):
         print("Changed", item.text(0))
-
-
 
 
 class QLayer(QScrollArea):
@@ -166,7 +130,7 @@ class QLayer(QScrollArea):
             self.sublayer_widget.append(sublayer_widget)
             layout.addWidget(sublayer_widget)
 
-        layout.addStretch()
+        layout.addStretch(255)
         self.setWidgetResizable(True)
         self.setWidget(content)
 

@@ -18,12 +18,13 @@ class QCollapsible(QWidget):
 
         self.toggle_animation = QParallelAnimationGroup(self)
 
-        self.content_area = QScrollArea()
+        # self.content_area = QScrollArea()
+        self.content_area = QWidget()
         self.content_area.setMinimumHeight(0)
         self.content_area.setMaximumHeight(0)
 
-        self.content_area.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.content_area.setFrameShape(QFrame.Shape.NoFrame)
+        # self.content_area.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        # self.content_area.setFrameShape(QFrame.Shape.NoFrame)
         # self.content_area.setFrameShape(Qt.FramelessWindowHint) QFrame.NoFrame)
 
         lay = QVBoxLayout(self)
@@ -31,6 +32,7 @@ class QCollapsible(QWidget):
         lay.setContentsMargins(0, 0, 0, 0)
         lay.addWidget(self.toggle_button)
         lay.addWidget(self.content_area)
+        # lay.addStretch()
 
         self.toggle_animation.addAnimation(QPropertyAnimation(self, b"minimumHeight"))
         self.toggle_animation.addAnimation(QPropertyAnimation(self, b"maximumHeight"))
@@ -46,12 +48,15 @@ class QCollapsible(QWidget):
             self.toggle_animation.setDirection(QAbstractAnimation.Direction.Forward)
         self.toggle_animation.start()
 
-    def set_content_layout(self, layout:QVBoxLayout):
+    def set_content_layout(self, layout: QVBoxLayout):
         lay = self.content_area.layout()
         del lay
         self.content_area.setLayout(layout)
         collapsed_height = (self.sizeHint().height() - self.content_area.maximumHeight())
         content_height = layout.sizeHint().height()
+        print(f"{collapsed_height=}")
+        print(f"{content_height=}")
+        print()
         for i in range(self.toggle_animation.animationCount()):
             animation = self.toggle_animation.animationAt(i)
             animation.setDuration(150)
