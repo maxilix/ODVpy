@@ -4,7 +4,8 @@ from math import floor, ceil
 
 from PyQt6.QtCore import Qt, QSize, QPoint, QLineF, QRectF, QPointF
 from PyQt6.QtGui import QImage, QPixmap, QPolygonF, QAction, QIcon
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsLineItem, QVBoxLayout, QHBoxLayout, QLabel, QToolBar
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, \
+    QGraphicsLineItem, QVBoxLayout, QHBoxLayout, QLabel, QToolBar, QSplitter
 from PyQt6.QtGui import QPen, QBrush, QColor
 
 from qt.viewer import QViewer
@@ -66,22 +67,23 @@ class QWindow(QMainWindow):
         self.update()
 
     def update(self):
-        layout = QHBoxLayout()
+        # layout = QHBoxLayout()
         if self.current_level is None:
-            q_label = QLabel("Select level")
-            q_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            layout.addWidget(q_label)
+            main_widget = QLabel("Select level")
+            main_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            # layout.addWidget(q_label)
         else:
+            main_widget = QSplitter(self)
             viewer = QViewer(self.current_level)
             control = QControl(viewer.scene, self.current_level)
             viewer.scene.set_control_pointer(control)
 
-            layout.addWidget(viewer)
-            layout.addWidget(control)
+            main_widget.addWidget(viewer)
+            main_widget.addWidget(control)
 
-        w = QWidget()
-        w.setLayout(layout)
-        self.setCentralWidget(w)
+        # w = QWidget()
+        # w.setLayout(layout)
+        self.setCentralWidget(main_widget)
 
 
 if __name__ == '__main__':
