@@ -80,6 +80,7 @@ class QWindow(QMainWindow):
 
             main_widget.addWidget(viewer)
             main_widget.addWidget(control)
+            main_widget.setChildrenCollapsible(False)
 
         # w = QWidget()
         # w.setLayout(layout)
