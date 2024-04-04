@@ -1,11 +1,4 @@
-
-from math import floor, ceil
-
-from PyQt6.QtCore import Qt, QSize, QPoint, QLineF, QRectF, QPointF
-from PyQt6.QtGui import QImage, QPixmap, QPolygonF
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, \
-    QGraphicsLineItem, QVBoxLayout, QLabel
-from PyQt6.QtGui import QPen, QBrush, QColor, QPainterPath
+from PyQt6.QtGui import QPen, QBrush, QColor
 
 
 class MoveScene(object):
@@ -25,6 +18,7 @@ class MoveScene(object):
                 sublayer_draw = self.scene.addPath(sublayer.QPainterPath(),
                                                    self.sublayer_pen,
                                                    self.sublayer_brush)
+                # sublayer_draw.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
                 sublayer_draw.setVisible(False)
                 self.sublayer_draw[-1].append(sublayer_draw)
 
@@ -32,7 +26,6 @@ class MoveScene(object):
         self.area_blush = QColor(255, 0, 0, 16)
 
     def refresh(self, mousse_position):
-        # pos = event.scenePos()
         if self.sublayer_highlight:
             for draw_list in self.sublayer_draw:
                 for draw in draw_list:
@@ -50,30 +43,3 @@ class MoveScene(object):
     def hide_sublayer(self, i, j):
         self.sublayer_draw[i][j].setVisible(False)
 
-    # def add_move_area(self, indexes, move_area):
-    #     if indexes in self.drawn_move_area:
-    #         self.drawn_move_area[indexes].setVisible(True)
-    #     else:
-    #         color = QColor(255, 0, 0, 128)
-    #         pen = QPen(color)  # outline color
-    #         color.setAlpha(16)
-    #         brush = QBrush(color)  # fill color
-    #         self.drawn_move_area[indexes] = self.addPolygon(move_area.QPolygonF(), pen, brush)
-    #
-    # def remove_move_area(self, indexes):
-    #     if indexes in self.drawn_move_area:
-    #         self.drawn_move_area[indexes].setVisible(False)
-    #
-    # def add_sublayer(self, indexes, sublayer):
-    #     if indexes in self.drawn_sublayer:
-    #         self.drawn_sublayer[indexes].setVisible(True)
-    #     else:
-    #         color = QColor(0, 255, 0, 128)
-    #         pen = QPen(color)  # outline color
-    #         color.setAlpha(16)
-    #         brush = QBrush(color)  # fill color
-    #         self.drawn_sublayer[indexes] = self.addPath(sublayer.QPainterPath(), pen, brush)
-    #
-    # def remove_sublayer(self, indexes):
-    #     if indexes in self.drawn_sublayer:
-    #         self.drawn_sublayer[indexes].setVisible(False)

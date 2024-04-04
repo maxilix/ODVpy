@@ -1,11 +1,6 @@
-
-from math import floor, ceil
-
-from PyQt6.QtCore import Qt, QSize, QPoint, QLineF, QRectF, QPointF
-from PyQt6.QtGui import QImage, QPixmap, QPolygonF
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, \
-    QGraphicsLineItem, QVBoxLayout, QLabel
-from PyQt6.QtGui import QPen, QBrush, QColor, QPainterPath
+from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene
 
 from .sub_scene import MoveScene
 

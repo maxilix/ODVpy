@@ -187,16 +187,16 @@ class CrossingPoint(ReadableFromStream):
         self.b0 = b0
         self.point = point
         self.b1 = b1
-        self.link_path_index_list = link_path_index_list
+        self.path_link_index_list = link_path_index_list
 
     def __iter__(self):
-        return iter(self.link_path_index_list)
+        return iter(self.path_link_index_list)
 
     def __getitem__(self, item):
-        return self.link_path_index_list[item]
+        return self.path_link_index_list[item]
 
     def __len__(self):
-        return len(self.link_path_index_list)
+        return len(self.path_link_index_list)
 
     @classmethod
     def from_stream(cls, stream):
@@ -209,7 +209,7 @@ class CrossingPoint(ReadableFromStream):
         return cls(b0, coor, b1, link_path_index_list)
 
 
-class LinkPath(ReadableFromStream):
+class PathLink(ReadableFromStream):
 
     def __init__(self, indexes_1, indexes_2, unk1, unk2, objectC_index_list):
         self.indexes_1 = indexes_1
@@ -286,8 +286,8 @@ class Motion(Section):
                             # last_index_read = self.layer_list[layer_index].sublayer_list[sublayer_index].a_list[-1].objectB_index_list[-1]
 
                 # print(f"\n     ", end='')
-                nb_link_path = self._stream.read(UShort)
-                self.link_path_list = [self._stream.read(LinkPath) for _ in range(nb_link_path)]
+                nb_path_link = self._stream.read(UShort)
+                self.path_link_list = [self._stream.read(PathLink) for _ in range(nb_path_link)]
 
                 nb_objectD = self._stream.read(UShort)
                 self._stream.read_raw()  # must read list of objectD TODO
@@ -313,5 +313,5 @@ class Motion(Section):
     def get_ObjectA(self, indexes):
         return self.layer_list[indexes[0]].sublayer_list[indexes[1]].crossing_point_list_list[indexes[2]][indexes[3]]
 
-    def get_link(self, index):
-        return self.link_path_list[index]
+    def get_path_link(self, index):
+        return self.path_link_list[index]
