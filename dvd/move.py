@@ -81,7 +81,7 @@
 # 		[disallowed_area_list]		Area *nb_area
 
 
-from PyQt6.QtCore import QPointF
+from PyQt6.QtCore import QPointF, QPoint, QLineF
 from PyQt6.QtGui import QPolygonF, QPainterPath
 
 from common import *
@@ -208,6 +208,9 @@ class CrossingPoint(ReadableFromStream):
         link_path_index_list = [stream.read(UShort) for _ in range(nb_link_path)]
         return cls(b0, coor, b1, link_path_index_list)
 
+    def QPointF(self):
+        return QPointF(self.point.x + 0.5, self.point.y + 0.5)
+
 
 class PathLink(ReadableFromStream):
 
@@ -235,6 +238,15 @@ class PathLink(ReadableFromStream):
         objectC_index_list_length = stream.read(UShort)  # re_W
         objectC_index_list = [stream.read(UShort) for _ in range(objectC_index_list_length)]
         return cls(indexes_1, indexes_2, unk1, unk2, objectC_index_list)
+
+    def QLineF(self, motion):
+        i1, j1, k1, l1 = self.indexes_1
+        i2, j2, k2, l2 = self.indexes_2
+        p1 = motion[i1][j1][k1][l1].QPointF()
+        p2 = motion[i2][j2][k2][l2].QPointF()
+        return QLineF(p1, p2)
+
+
 
 
 class Motion(Section):

@@ -10,8 +10,7 @@ from .sub_control import QMoveControl
 class QControl(QTabWidget):
     def __init__(self, scene, level):
         super().__init__()
-        self.setMinimumWidth(350)
-        #self.setMinimumSize(200,1000)
+        self.setMinimumWidth(550)
 
         self.setTabPosition(QTabWidget.TabPosition.East)
         self.setMovable(False)

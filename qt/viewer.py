@@ -8,7 +8,7 @@ from .scene import QScene
 class QViewer(QWidget):
     def __init__(self, level):
         super().__init__()
-        self.setMinimumWidth(350)
+        self.setMinimumWidth(550)
 
         self.info_bar = QInfoBar()
         self.scene = QScene(self, self.info_bar, level)

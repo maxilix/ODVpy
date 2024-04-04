@@ -42,17 +42,20 @@ class AreaItem(QTreeWidgetItem):
         self.area = motion[i][j][k]
 
         if self.k == 0:
-            self.setText(1, f"main area")
+            self.setText(0, f"main area")
         else:
-            self.setText(1, f"exclude area {self.k}")
+            self.setText(0, f"exclude area {self.k}")
         self.setCheckState(0, Qt.CheckState.Unchecked)
-        self.setCheckState(1, Qt.CheckState.Unchecked)
+        if (nb_crossing_point := len(self.area)) > 0:
+            self.setText(1, f"{nb_crossing_point} CPoint{"s" if nb_crossing_point > 1 else ""}")
+            self.setCheckState(1, Qt.CheckState.Unchecked)
         self.crossing_point_item = [CrossingPointItem(self, motion, i, j, k, l) for l, _ in enumerate(self.area)]
 
 
 class CustomTreeWidget(QTreeWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, scene):
         super().__init__(parent)
+        self.scene = scene
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -61,15 +64,17 @@ class CustomTreeWidget(QTreeWidget):
         self.itemClicked.connect(self.item_clicked)
         self.itemExpanded.connect(self.update_height)
         self.itemCollapsed.connect(self.update_height)
-        self.resizeColumnToContents(0)
 
     def item_clicked(self, item, column):
         if column == 0:  # no tristate behavior
             pass
-        elif column == 1 and isinstance(item, AreaItem) or column == 2 and isinstance(item, CrossingPointItem):  # parent
+
+        elif (column == 1 and isinstance(item, AreaItem) or
+              column == 2 and isinstance(item, CrossingPointItem)):  # parent
             for child_index in range(item.childCount()):
                 child_item = item.child(child_index)
                 child_item.setCheckState(column, item.checkState(column))
+
         else:  # child
             parent_item = item.parent()
             active_child = 0
@@ -85,16 +90,45 @@ class CustomTreeWidget(QTreeWidget):
             else:
                 parent_item.setCheckState(column, Qt.CheckState.PartiallyChecked)
 
+        self.update_draw()
+
+    def update_draw(self):
+        iterator = QTreeWidgetItemIterator(self)
+        while iterator.value():
+            item = iterator.value()
+            if isinstance(item, AreaItem):
+                if item.checkState(0) == Qt.CheckState.Checked:
+                    self.scene.move_scene.show_area(item.i, item.j, item.k)
+                else:
+                    self.scene.move_scene.hide_area(item.i, item.j, item.k)
+            elif isinstance(item, CrossingPointItem):
+                if item.checkState(1) == Qt.CheckState.Checked:
+                    self.scene.move_scene.show_crossing_point(item.i, item.j, item.k, item.l)
+                else:
+                    self.scene.move_scene.hide_crossing_point(item.i, item.j, item.k, item.l)
+            elif isinstance(item, PathLinkItem):
+                if item.checkState(2) == Qt.CheckState.Checked:
+                    self.scene.move_scene.show_path_link(item.m)
+                else:
+                    self.scene.move_scene.hide_path_link(item.m)
+            else:
+                raise Exception("oups")  # TODO
+            iterator += 1
+
+
+
+
 
     def update_height(self):
         h = 18 * self.nb_expanded_item() + 2 + 22
         self.setMinimumHeight(h)
         self.setMaximumHeight(h)
-        # self.area_tree.resizeColumnToContents(0)
+        self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)
         self.resizeColumnToContents(2)
 
     def nb_expanded_item(self):
+        # doesnt work with colapsed item which contain expanded item
         count = 0
         iterator = QTreeWidgetItemIterator(self)
         while iterator.value():
@@ -130,24 +164,10 @@ class QSublayer(QWidget):
         # self.collapsible_option = QCollapsible(self, f"area details")
         # collapse_layout = QVBoxLayout()
 
-        self.tree = CustomTreeWidget(None)
+        self.tree = CustomTreeWidget(self, scene)
         self.area_item = [AreaItem(self.tree, motion, i, j, k) for k, _ in enumerate(self.sublayer)]
-        # for item in self.area_item:
-        #     self.tree.addTopLevelItem(item)
         self.tree.update_height()
         layout.addWidget(self.tree)
-
-        # for k, area in enumerate(self.sublayer):
-        #     area_item = AreaItem(None, motion, i, j, k)
-        #     self.area_item.append(area_item)
-        #     self.area_tree.addTopLevelItem(area_item)
-        #
-        # self.area_tree.itemClicked.connect(self.area_tree.item_clicked)
-        # self.area_tree.itemChanged.connect(self.catch_change)
-        # self.area_tree.itemExpanded.connect(self.update_height)
-        # self.area_tree.itemCollapsed.connect(self.update_height)
-        # self.area_tree.resizeColumnToContents(0)
-        # self.update_height()
 
     def catch_click(self, item):
         print("Clicked", item.text(0))
