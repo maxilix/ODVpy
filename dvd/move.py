@@ -87,7 +87,7 @@ from PyQt6.QtGui import QPolygonF, QPainterPath
 from common import *
 
 from .section import Section, section_list
-from debug import hs_to_i, i_to_hsi
+# from debug import hs_to_i, i_to_hsi
 
 
 class MoveArea(object):
@@ -280,17 +280,17 @@ class Motion(Section):
             else:
                 self.active_flag = flag
                 # print("layer ", end='')
-                assert nb_layer == len(self.layer_list)
+                # assert nb_layer == len(self.layer_list)
                 for layer in self:
                     # print(f"\n     ----- {layer_index=} -----\n          ", end='')
                     nb_sublayer = self._stream.read(UShort)
                     # print("sublayer ", end='')
-                    assert nb_sublayer == len(layer)
+                    # assert nb_sublayer == len(layer)
                     for sublayer in layer:
                         # print(f"\n          ----- {sublayer_index=} -----\n               ", end='')
                         nb_area = self._stream.read(UShort)
                         # print("area ", end='')
-                        assert nb_area == len(sublayer)
+                        # assert nb_area == len(sublayer)
                         for area in sublayer:
                             # print(f"\n               ----- {area_index=} -----\n                    ", end='')
                             nb_crossing_point = self._stream.read(UShort)
@@ -305,22 +305,76 @@ class Motion(Section):
                 self._stream.read_raw()  # must read list of objectD TODO
                 break
 
-    # def disallow_QPolygonF(self, layer_index, sublayer_index):
-    #     return [QPolygonF(
-    #         [QPointF(p.x + 0.5, p.y + 0.5) for p in area.coor_list])
-    #         for area in self.layer_list[layer_index].sublayer_list[sublayer_index].sub_area_list]
+    def print_structured_data(self):
+        print("MOVE structured data")
+        print(f"section length: {len(self._data)} bytes")
+        print()
 
-    def print(self):
-        for i, layer in enumerate(self.layer_list):
-            print(f"Layer {i_to_hsi(i)}")
-            print(f"  total_area={i_to_hsi(layer.total_area)}")
-            for j, sublayer in enumerate(layer.sublayer_list):
-                print(f"  Sublayer {i_to_hsi(j)}")
-                print(f"    nb_point_in_allow_area = {i_to_hsi(len(sublayer.main_area.coor_list))}")
-                print(f"    nb_segment={i_to_hsi(len(sublayer.segment_list))}")
-                print(f"    nb_disallowed_area={i_to_hsi(len(sublayer.sub_area_list))}")
-                for disallowed_area in sublayer.sub_area_list:
-                    print(f"      nb_point_in_disallow_area = {i_to_hsi(len(disallowed_area.coor_list))}")
+        stream = ByteStream(self._data)
+
+        p_indent(0)
+        p_print("version: ")
+        version = hs_to_i(stream.p_print(UInt))
+        assert version == 1
+
+        p_indent(0)
+        p_print("nb_layers: ")
+        nb_layer = hs_to_i(stream.p_print(UShort))
+        for i in range(nb_layer):
+            p_indent(1)
+            p_title(f"layer {i}")
+            p_indent(1)
+            p_print("total_area: ")
+            total_area = stream.p_print(UShort)
+            p_indent(1)
+            p_print("nb_sublayer: ")
+            nb_sublayer = hs_to_i(stream.p_print(UShort))
+            for j in range(nb_sublayer):
+                p_indent(2)
+                p_title(f"sublayer {j}")
+                p_indent(2)
+                p_print("main_area: ")
+                nb_point = hs_to_i(stream.p_print(UShort))
+                p_print("  ")
+                for _ in range(nb_point):
+                    stream.p_print(UShort)
+                    stream.p_print(UShort)
+                    p_print("  ")
+                p_indent(2)
+                p_print("nb_segment: ")
+                nb_segment = hs_to_i(stream.p_print(UShort))
+                for k in range(nb_segment):
+                    p_indent(3)
+                    stream.p_print(UShort)
+                    stream.p_print(UShort)
+                    p_print("  ")
+                    stream.p_print(UShort)
+                    stream.p_print(UShort)
+                p_indent(2)
+                p_print("nb_exclude_area: ")
+                nb_exclude_area = hs_to_i(stream.p_print(UShort))
+                for k in range(nb_exclude_area):
+                    p_indent(3)
+                    nb_point = hs_to_i(stream.p_print(UShort))
+                    p_print("  ")
+                    for _ in range(nb_point):
+                        stream.p_print(UShort)
+                        stream.p_print(UShort)
+                        p_print("  ")
+
+
+
+    # def print(self):
+    #     for i, layer in enumerate(self.layer_list):
+    #         print(f"Layer {i_to_hsi(i)}")
+    #         print(f"  total_area={i_to_hsi(layer.total_area)}")
+    #         for j, sublayer in enumerate(layer.sublayer_list):
+    #             print(f"  Sublayer {i_to_hsi(j)}")
+    #             print(f"    nb_point_in_allow_area = {i_to_hsi(len(sublayer.main_area.coor_list))}")
+    #             print(f"    nb_segment={i_to_hsi(len(sublayer.segment_list))}")
+    #             print(f"    nb_disallowed_area={i_to_hsi(len(sublayer.sub_area_list))}")
+    #             for disallowed_area in sublayer.sub_area_list:
+    #                 print(f"      nb_point_in_disallow_area = {i_to_hsi(len(disallowed_area.coor_list))}")
 
     def get_ObjectA(self, indexes):
         return self.layer_list[indexes[0]].sublayer_list[indexes[1]].crossing_point_list_list[indexes[2]][indexes[3]]

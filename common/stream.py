@@ -8,6 +8,7 @@ from struct import pack, unpack
 from . import PaddingError
 
 
+
 class ReadableFromStream(ABC):
 
 	@classmethod
@@ -35,25 +36,24 @@ class Bool(ReadableFromStream):
 			raise
 
 
-class UChar(ReadableFromStream):
+class ULittleEndianNumber(ReadableFromStream):
+	length = None  # must be defined by inheriting objects
 	@classmethod
 	def from_stream(cls, stream):
-		raw_bytes = stream.read_raw(1)
+		raw_bytes = stream.read_raw(cls.length)
 		return int.from_bytes(raw_bytes, byteorder="little", signed=False)
 
 
-class UShort(ReadableFromStream):
-	@classmethod
-	def from_stream(cls, stream):
-		raw_bytes = stream.read_raw(2)
-		return int.from_bytes(raw_bytes, byteorder="little", signed=False)
+class UChar(ULittleEndianNumber):
+	length = 1
 
 
-class UInt(ReadableFromStream):
-	@classmethod
-	def from_stream(cls, stream):
-		raw_bytes = stream.read_raw(4)
-		return int.from_bytes(raw_bytes, byteorder="little", signed=False)
+class UShort(ULittleEndianNumber):
+	length = 2
+
+
+class UInt(ULittleEndianNumber):
+	length = 4
 
 
 class UFloat(ReadableFromStream):
@@ -99,7 +99,9 @@ class ByteStream(object):
 	def read_raw(self, length=None):
 		return self._io.read(length)
 
-	def print(self, length, group_length=None):
+	def p_print(self, length, group_length=None):
+		if type(length) is not int:
+			length = length.length
 		hex_string = self.read_raw(length).hex()
 		if group_length is None:
 			print(hex_string, end='')
