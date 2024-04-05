@@ -1,11 +1,12 @@
 
 import sys
+import re
 from math import floor, ceil
 
 from PyQt6.QtCore import Qt, QSize, QPoint, QLineF, QRectF, QPointF
 from PyQt6.QtGui import QImage, QPixmap, QPolygonF, QAction, QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, \
-    QGraphicsLineItem, QVBoxLayout, QHBoxLayout, QLabel, QToolBar, QSplitter
+    QGraphicsLineItem, QVBoxLayout, QHBoxLayout, QLabel, QToolBar, QSplitter, QFileDialog, QMessageBox
 from PyQt6.QtGui import QPen, QBrush, QColor
 
 from qt.viewer import QViewer
@@ -21,8 +22,45 @@ from dvm import DvmParser
 
 class ODVLevel(object):
     def __init__(self, filename):
-        self.dvd = DvdParser(filename + ".dvd")
-        self.dvm = DvmParser(filename + ".dvm")
+        self.dvd = None
+        self.dvm = None
+        # self._fully_loaded = False
+
+        self.load_dvd(filename)
+        self.load_dvm(filename)
+
+
+
+    def load_dvd(self, filename):
+        filename += ".dvd"
+        try:
+            self.dvd = DvdParser(filename)
+        except FileNotFoundError:
+            message_box = QMessageBox()
+            message_box.setText(f"Unable to open {filename}")
+            message_box.exec()
+            self.dvd = None
+
+    def load_dvm(self, filename):
+        filename += ".dvm"
+        try:
+            self.dvm = DvmParser(filename)
+        except FileNotFoundError:
+            m = re.findall(r"level_(\d\d)", filename)
+            guess_level_index = int(m[-1])
+            message_box = QMessageBox()
+            message_box.setText(f"Unable to open {filename}")
+            message_box.setInformativeText(f"Do you want to load the original level {guess_level_index} dvm file instead?")
+            message_box.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
+            message_box.setDefaultButton(QMessageBox.StandardButton.Ok)
+            response = message_box.exec()
+            if response == QMessageBox.StandardButton.Ok:
+                self.load_dvm(original_level_filename(guess_level_index))
+            else:
+                self.dvm = None
+
+    def __bool__(self):
+        return self.dvd is not None and self.dvm is not None
 
 
 class QWindow(QMainWindow):
@@ -38,19 +76,23 @@ class QWindow(QMainWindow):
 
         menu = self.menuBar()
         file_menu = menu.addMenu("File")
-        file_submenu = file_menu.addMenu("Open Original Level")
+        open_original_submenu = file_menu.addMenu("Open Original Level")
 
         for i in range (26):
             if i == 0:
-                load_level_action = QAction(f"Demo level", self)
+                open_original_level_action = QAction(f"Demo level", self)
             else:
-                load_level_action = QAction(f"Level {i}", self)
-            load_level_action.triggered.connect(lambda state, index=i: self.load_level(index))
-            file_submenu.addAction(load_level_action)
+                open_original_level_action = QAction(f"Level {i}", self)
+            open_original_level_action.triggered.connect(lambda state, index=i: self.load_level(original_level_filename(index)))
+            open_original_submenu.addAction(open_original_level_action)
 
-        unload_level_action = QAction("Close level", self)
-        unload_level_action.triggered.connect(self.unload_level)
-        file_menu.addAction(unload_level_action)
+        open_custom_level_action = QAction(f"Open Custom level", self)
+        open_custom_level_action.triggered.connect(self.open_file_dialog)
+        file_menu.addAction(open_custom_level_action)
+
+        close_level_action = QAction("Close level", self)
+        close_level_action.triggered.connect(self.unload_level)
+        file_menu.addAction(close_level_action)
 
         quit_action = QAction("Quit", self)
         quit_action.triggered.connect(exit)
@@ -58,9 +100,32 @@ class QWindow(QMainWindow):
 
         self.update()
 
-    def load_level(self, index=None):
-        self.current_level = ODVLevel(original_level_filename(index))
-        self.update()
+    def open_file_dialog(self):
+        dialog = QFileDialog(self)
+        # dialog.setDirectory(r'C:\images')
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
+        filters = ["Any Level file (*.dvd *.dvm *.scb *.stf)",
+                   "DVD file (*.dvd)",
+                   "DVM file (*.dvm)",
+                   "SCB file (*.scb)",
+                   "STF file (*.stf)",
+                   "Any file (*)"]
+        dialog.setNameFilters(filters)
+        # dialog.setViewMode(QFileDialog.ViewMode.List)
+        if dialog.exec():
+            filenames = dialog.selectedFiles()
+            if len(filenames) == 1:
+                filename = filenames[0].rsplit(".",1)[0]
+                self.load_level(filename)
+
+
+
+    def load_level(self, filename):
+        self.current_level = ODVLevel(filename)
+        if self.current_level:
+            self.update()
+        else:
+            self.current_level = None
 
     def unload_level(self):
         self.current_level = None
