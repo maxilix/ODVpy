@@ -58,15 +58,3 @@ class Area(ReadableFromStream):
 		nb_coor = stream.read(UShort)
 		coor_list = [stream.read(Coordinate) for _ in range(nb_coor)]
 		return cls(coor_list)
-
-
-class Cross(object):
-	pass
-
-
-class Ellipse(object):
-	pass
-
-
-class Circle(object):
-	pass

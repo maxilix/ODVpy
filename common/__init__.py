@@ -1,16 +1,15 @@
-import sys
 
-from .exception import PaddingError
-from .stream import ReadableFromStream, Bytes, Bool, UChar, UShort, UInt, String, Padding, ByteStream
+# from .exception import PaddingError
+from .stream import ReadableFromStream, Bytes, Bool, UChar, UShort, UInt, String, Padding, ReadStream
 from .parser import Parser
 from .geometry import Coordinate, Segment, Area
 from .image import Pixmap, Pixel, Mask
 from .printer import Printer, Indent
 
-WHITE = "#ffffff"
-RED = "#ff0000"
-GREEN = "#00ff00"
-BLUE = "#0000ff"
+# WHITE = "#ffffff"
+# RED = "#ff0000"
+# GREEN = "#00ff00"
+# BLUE = "#0000ff"
 
 
 def p_print(*args):
@@ -22,6 +21,7 @@ def p_indent(i):
     p_print(" │  " * max(i - 1, 0))
     if i > 0:
         p_print(" ├─ ")
+
 
 def p_title(title):
     p_print(f" ───── {title} ─────")

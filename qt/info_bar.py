@@ -13,7 +13,7 @@ class QInfoBar(QLabel):
         self._zoom = 1
         self.refresh()
 
-    def update(self, **kwargs):
+    def set_widget(self, **kwargs):
         if "x" in kwargs:
             self._x = kwargs["x"]
         if "y" in kwargs:

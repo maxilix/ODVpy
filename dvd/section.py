@@ -29,7 +29,7 @@ class Section(ReadableFromStream):
         pass
 
     def build(self):
-        self._stream = ByteStream(self._data)
+        self._stream = ReadStream(self._data)
         self._build()
         next_byte = self._stream.read(Bytes, 1)
         assert next_byte == b''

@@ -2,7 +2,7 @@
 import sys
 import io
 
-from . import ByteStream
+from . import ReadStream
 
 # ─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼
 
@@ -36,7 +36,7 @@ class Indent(object):
 class Printer(object):
 
     def __init__(self, data):
-        self._stream = ByteStream(data)
+        self._stream = ReadStream(data)
         self._output_stream = io.StringIO()
         self._indent = 0
 

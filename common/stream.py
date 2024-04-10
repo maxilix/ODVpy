@@ -1,25 +1,25 @@
 
 import io
-import sys
 
 from abc import ABC, abstractmethod
 from struct import pack, unpack
 
-from . import PaddingError
-
+from .exception import PaddingError, ReadingTypeError
 
 
 class ReadableFromStream(ABC):
 
 	@classmethod
 	@abstractmethod
-	def from_stream(cls, stream, *arg, **kwarg):
+	def from_stream(cls, stream):
 		pass
 
 
 class Bytes(ReadableFromStream):
 	@classmethod
-	def from_stream(cls, stream, length):
+	def from_stream(cls, stream, length=None):
+		if length is None:
+			raise ReadingTypeError("length must be specified when reading Bytes")
 		raw_bytes = stream.read_raw(length)
 		return raw_bytes
 
@@ -38,6 +38,7 @@ class Bool(ReadableFromStream):
 
 class ULittleEndianNumber(ReadableFromStream):
 	length = None  # must be defined by inheriting objects
+
 	@classmethod
 	def from_stream(cls, stream):
 		raw_bytes = stream.read_raw(cls.length)
@@ -64,7 +65,9 @@ class UFloat(ReadableFromStream):
 
 class String(ReadableFromStream):
 	@classmethod
-	def from_stream(cls, stream, length):
+	def from_stream(cls, stream, length=None):
+		if length is None:
+			raise ReadingTypeError("length must be specified when reading String")
 		raw_bytes = stream.read_raw(length)
 		while raw_bytes != b'' and raw_bytes[-1] == 0:
 			raw_bytes = raw_bytes[:-1]
@@ -73,31 +76,34 @@ class String(ReadableFromStream):
 
 class Padding(ReadableFromStream):
 	@classmethod
-	def from_stream(cls, stream, length, *, pattern=None):
+	def from_stream(cls, stream, length=None, *, pattern=None):
+		if length is None:
+			raise ReadingTypeError("length must be specified when reading Padding")
 		padding = stream.read_raw(length)
 		if pattern is None and padding != b'\x00'*length:
-			raise PaddingError(f"zero padding expected insteed of : {padding}", padding=padding)
+			raise PaddingError(f"zero padding expected instead of : {padding}", padding=padding)
 		elif pattern is not None and padding != pattern:
-			raise PaddingError(f"{pattern} padding expected insteed of : {padding}", padding=padding)
+			raise PaddingError(f"{pattern} padding expected instead of : {padding}", padding=padding)
 
 
-class ByteStream(object):
+class ReadStream(object):
 
 	def __init__(self, data):
-		self._io = io.BytesIO(data)
+		self._bytes_stream_in = io.BytesIO(data)
+		self._str_stream_out = io.StringIO("")
 
 	@classmethod
 	def from_file(cls, filename):       
 		fd = open(filename, "rb")
-		rop = cls(fd.read())
+		data = fd.read()
 		fd.close()
-		return rop
+		return cls(data)
 
 	def tell(self):
-		return self._io.tell()
+		return self._bytes_stream_in.tell()
 
 	def read_raw(self, length=None):
-		return self._io.read(length)
+		return self._bytes_stream_in.read(length)
 
 	def p_print(self, length, group_length=None):
 		if type(length) is not int:

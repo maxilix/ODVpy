@@ -94,33 +94,3 @@ class Mask(Pixmap):
 	def disallow(self, area):
 		self.draw_area(area, False)
 
-
-"""
-class Ellipse(Bitmap):
-
-	def __init__(self, x_radius, y_radius, outline_color=None, width=1, fill_color=None):
-		total_width = x_radius*2 + width + 1
-		total_height = y_radius*2 + width + 1
-		data = {"outline_color":outline_color, "fill_color":fill_color, "width":width}
-		super().__init__(total_width, total_height, data)
-
-	def build(self):
-		radius = self.data["radius"]
-		width = self.data["width"]
-		center = self.width//2
-		self.bmp = Image.new('RGBA', (self.width, self.height), color=(0,0,0,0))
-		draw = ImageDraw.Draw(self.bmp, "RGBA")
-		draw.ellipse([(0, 0), (total_width, total_height)], fill=None, outline=None, width=1)
-		
-		for y in range(self.height):
-			nb_transparent_pixel = stream.read(UShort)
-			nb_total_pixel = stream.read(UShort)
-			for x in range(self.width):
-				if nb_total_pixel == 65535 or x > nb_total_pixel:
-					break
-				elif x < nb_transparent_pixel:
-					continue
-				else:
-					pixel = stream.read(Pixel)
-					self.bmp.putpixel((x+x_offset,y+y_offset), pixel.to_rgb())
-"""

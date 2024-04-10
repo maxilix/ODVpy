@@ -1,5 +1,5 @@
 
-from . import ByteStream
+from . import ReadStream
 
 
 extension_list = ["dvf", "dvm", "dvd"]
@@ -14,7 +14,7 @@ class Parser(object):
 		else:
 			temp_name = filename[:-4]
 		self.name = temp_name.replace(" ", "_")
-		self.stream = ByteStream.from_file(filename)
+		self.stream = ReadStream.from_file(filename)
 		# log.info(f"Parse {filename}")
 
 	def __repr__(self):

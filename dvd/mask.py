@@ -218,7 +218,7 @@ class Masks(Section):
                 return
 
     def p_build(self):
-        stream = ByteStream(self._data)
+        stream = ReadStream(self._data)
 
         version = stream.p_print(4)
         print()
@@ -251,11 +251,11 @@ class Masks(Section):
                 u7_w = stream.p_print(2)
                 u8_h = stream.p_print(2)
                 mask_length = stream.read(UShort)
-                mask_stream = ByteStream(stream.read(Bytes, mask_length))
+                mask_stream = ReadStream(stream.read(Bytes, mask_length))
                 for line_index in range(hs_to_i(u8_h)):
                     #print(f"\n          ", end='')
                     line_length = mask_stream.read(UChar)
-                    line_stream = ByteStream(mask_stream.read(Bytes, line_length))
+                    line_stream = ReadStream(mask_stream.read(Bytes, line_length))
                     line_string = ""
                     while descriptor := line_stream.read(UChar):
                         if descriptor & 128:
