@@ -2,6 +2,19 @@ from common import *
 from dvd import DvdParser
 from settings import *
 
-dvd = DvdParser(original_level_filename(0) + ".dvd")
+for level_index in range(26):
+    dvd = DvdParser(original_level_filename(level_index) + ".dvd")
 
-dvd._move.print_structured_data()
+    print(f"  L{level_index:02} ", end="")
+    motion = dvd.move
+    assert motion.built
+    print(len(motion.before_ff))
+    print(bin(len(motion.before_ff))[2:].zfill(8))
+    print(motion.empty_flag, motion.active_flag)
+    # print(len(motion.tail))
+    # print(10*sum([sum(cp.b0) for layer in motion for sublayer in layer for area in sublayer for cp in area]))
+
+
+    # print("  Done\n")
+
+print("Done")

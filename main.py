@@ -27,9 +27,8 @@ class ODVLevel(object):
         # self._fully_loaded = False
 
         self.load_dvd(filename)
-        self.load_dvm(filename)
-
-
+        if self.dvd is not None:
+            self.load_dvm(filename)
 
     def load_dvd(self, filename):
         filename += ".dvd"
@@ -98,7 +97,7 @@ class QWindow(QMainWindow):
         quit_action.triggered.connect(exit)
         file_menu.addAction(quit_action)
 
-        self.update()
+        self.set_widget()
 
     def open_file_dialog(self):
         dialog = QFileDialog(self)
@@ -118,20 +117,18 @@ class QWindow(QMainWindow):
                 filename = filenames[0].rsplit(".",1)[0]
                 self.load_level(filename)
 
-
-
     def load_level(self, filename):
         self.current_level = ODVLevel(filename)
         if self.current_level:
-            self.update()
+            self.set_widget()
         else:
             self.current_level = None
 
     def unload_level(self):
         self.current_level = None
-        self.update()
+        self.set_widget()
 
-    def update(self):
+    def set_widget(self):
         # layout = QHBoxLayout()
         if self.current_level is None:
             main_widget = QLabel("Select level")

@@ -34,7 +34,7 @@ class QScene(QGraphicsScene):
 
     def mouseMoveEvent(self, event):
         pos = event.scenePos()
-        self.info_bar.update(x=pos.x(), y=pos.y())
+        self.info_bar.set_widget(x=pos.x(), y=pos.y())
 
         self.move_scene.refresh(pos)
 
@@ -57,7 +57,7 @@ class QScene(QGraphicsScene):
         new_position = QPointF(scene_position.x() + (size.width() /2-relative_position.x()) / (1.1 * self.viewport.zoom),
                                scene_position.y() + (size.height()/2-relative_position.y()) / (1.1 * self.viewport.zoom))
         self.viewport.centerOn(new_position)
-        self.info_bar.update(zoom=self.viewport.zoom)
+        self.info_bar.set_widget(zoom=self.viewport.zoom)
 
     def set_control_pointer(self, control):
         self.control = control
