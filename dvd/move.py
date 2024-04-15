@@ -8,7 +8,7 @@ from common import *
 from .section import Section, section_list
 
 
-class PathLink(ReadableFromStream):
+class PathLink(RWStreamable):
 
     def __init__(self, indexes_1, indexes_2, unk, objectC_index_list):
         self.indexes_1 = indexes_1
@@ -43,7 +43,7 @@ class PathLink(ReadableFromStream):
         return QLineF(p1, p2)
 
 
-class CrossingPoint(ReadableFromStream):
+class CrossingPoint(RWStreamable):
 
     def __init__(self, b0, point, b1, link_path_index_list):
         self.b0 = b0
@@ -106,7 +106,7 @@ class MoveArea(object):
         return QPolygonF([QPointF(p.x + 0.5, p.y + 0.5) for p in self.area.coor_list])
 
 
-class Sublayer(ReadableFromStream):
+class Sublayer(RWStreamable):
 
     def __init__(self, area_list, segment_list):
         self.area_list = [MoveArea(area) for area in area_list]
@@ -142,7 +142,7 @@ class Sublayer(ReadableFromStream):
         return positive  # positive.subtracted(negative)
 
 
-class Layer(ReadableFromStream):
+class Layer(RWStreamable):
     def __init__(self, total_area, sublayer_list):
         self.total_area = total_area
         self.sublayer_list = sublayer_list

@@ -1,8 +1,8 @@
 
-from . import ReadableFromStream, UShort
+from . import RWStreamable, UShort
 
 
-class Coordinate(ReadableFromStream):
+class Coordinate(RWStreamable):
 
 	def __init__(self, x, y):
 		if not (isinstance(x, int) and isinstance(y, int)):
@@ -26,7 +26,7 @@ class Coordinate(ReadableFromStream):
 		return f"({self.x}, {self.y})"
 
 
-class Segment(ReadableFromStream):
+class Segment(RWStreamable):
 
 	def __init__(self, coor1, coor2):
 		if not (isinstance(coor1, Coordinate) and isinstance(coor1, Coordinate)):
@@ -47,7 +47,7 @@ class Segment(ReadableFromStream):
 		return f"{self.coor1} -> {self.coor2}"
 
 
-class Area(ReadableFromStream):
+class Area(RWStreamable):
 	def __init__(self, coor_list):
 		if not (isinstance(coor_list, list) and all(isinstance(c, Coordinate) for c in coor_list)):
 			raise TypeError("Area must be a list of Coordinate")

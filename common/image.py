@@ -5,10 +5,10 @@ import bz2
 from abc import ABC, abstractmethod
 from PIL import Image, ImageDraw
 
-from . import ReadableFromStream, UShort, UInt, Padding, Bytes
+from . import RWStreamable, UShort, UInt, Padding, Bytes
 
 
-class Pixel(ReadableFromStream):
+class Pixel(RWStreamable):
 
 	def __init__(self, r,g,b,a=255):
 		self._r = r

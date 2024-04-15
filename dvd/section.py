@@ -7,7 +7,7 @@ section_list = ["MISC", "BGND", "MOVE", "SGHT", "MASK", "WAYS", "ELEM", "FXBK", 
                 "LIFT", "AI__", "BUIL", "SCRP", "JUMP", "CART", "DLGS"]
 
 
-class Section(ReadableFromStream):
+class Section(RWStreamable):
 
     section = None
 

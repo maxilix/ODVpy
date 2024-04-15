@@ -120,7 +120,7 @@ class Profile():
 
 
 
-class Sprite(Pixmap, ReadableFromStream):
+class Sprite(Pixmap, RWStreamable):
 
 
 	@classmethod

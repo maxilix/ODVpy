@@ -5,7 +5,7 @@ from PIL import Image
 from PyQt6.QtGui import QImage
 
 
-from common import Pixmap, ReadableFromStream, UShort, UInt, Bytes, ReadStream, String
+from common import Pixmap, RWStreamable, UShort, UInt, Bytes, ReadStream, String
 
 from .section import Section, section_list
 
