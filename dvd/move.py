@@ -125,10 +125,8 @@ class Sublayer(RWStreamable):
     def from_stream(cls, stream):
         main_area = stream.read(Area)
         stream.new_line()
-        # stream.comment("GeoSegments")
         nb_segment = stream.read(UShort)
         stream.comment("nb segment")
-
         stream.new_space()
         segment_list = [stream.read(Segment) for _ in range(nb_segment)]
         stream.new_line()
@@ -137,10 +135,8 @@ class Sublayer(RWStreamable):
         stream.new_line()
         stream.indent()
         sub_area_list = [stream.read(Area) for _ in range(nb_sub_area)]
-
         stream.new_line()
         stream.desindent()
-        stream.new_line()
 
         return cls([main_area] + sub_area_list, segment_list)
 
