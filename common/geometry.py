@@ -1,4 +1,4 @@
-from . import RWStreamable, UShort, ReadStream
+from . import RWStreamable, UShort, ReadStream, Array
 
 
 class Coordinate(RWStreamable):
@@ -13,7 +13,7 @@ class Coordinate(RWStreamable):
     def from_stream(cls, stream: ReadStream):
         x = stream.read(UShort)
         y = stream.read(UShort)
-        stream.new_space()
+        stream.debug_new_space()
         return cls(x, y)
 
     def __eq__(self, other):
@@ -38,6 +38,7 @@ class Segment(RWStreamable):
     def from_stream(cls, stream: ReadStream):
         coor1 = stream.read(Coordinate)
         coor2 = stream.read(Coordinate)
+        stream.debug_new_line()
         return cls(coor1, coor2)
 
     def __repr__(self):
@@ -55,9 +56,11 @@ class Area(RWStreamable):
 
     @classmethod
     def from_stream(cls, stream: ReadStream):
+        coor_list = stream.read(Array, Coordinate, comment="area", in_line=True)
         # stream.comment("Area")
-        nb_coor = stream.read(UShort)
-        stream.new_space()
-        coor_list = [stream.read(Coordinate) for _ in range(nb_coor)]
-        # stream.new_line()
+        # nb_coor = stream.read(UShort)
+        # stream.new_space()
+        # coor_list = [stream.read(Coordinate) for _ in range(nb_coor)]
+
+        stream.debug_new_line()
         return cls(coor_list)

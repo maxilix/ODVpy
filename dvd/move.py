@@ -124,19 +124,23 @@ class Sublayer(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         main_area = stream.read(Area)
-        stream.new_line()
-        nb_segment = stream.read(UShort)
-        stream.comment("nb segment")
-        stream.new_space()
-        segment_list = [stream.read(Segment) for _ in range(nb_segment)]
-        stream.new_line()
-        nb_sub_area = stream.read(UShort)
-        stream.comment("nb sub area")
-        stream.new_line()
-        stream.indent()
-        sub_area_list = [stream.read(Area) for _ in range(nb_sub_area)]
-        stream.new_line()
-        stream.desindent()
+        stream.debug_new_line()
+
+        # nb_segment = stream.read(UShort)
+        # stream.comment("nb segment")
+        # stream.new_space()
+        # segment_list = [stream.read(Segment) for _ in range(nb_segment)]
+        # stream.new_line()
+        segment_list = stream.read(Array, Segment, comment="nb segment")
+
+        # nb_sub_area = stream.read(UShort)
+        # stream.comment("nb sub area")
+        # stream.new_line()
+        # stream.indent()
+        # sub_area_list = [stream.read(Area) for _ in range(nb_sub_area)]
+        # stream.new_line()
+        # stream.desindent()
+        sub_area_list = stream.read(Array, Area, comment="nb excluded area")
 
         return cls([main_area] + sub_area_list, segment_list)
 
@@ -169,14 +173,16 @@ class Layer(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         total_area = stream.read(UShort)
-        stream.comment("nb total area")
-        stream.new_line()
-        nb_sublayer = stream.read(UShort)
-        stream.comment("nb sublayer")
-        stream.new_line()
-        stream.indent()
-        sublayer_list = [stream.read(Sublayer) for _ in range(nb_sublayer)]
-        stream.desindent()
+        stream.debug_comment("nb total area")
+        stream.debug_new_line()
+
+        # nb_sublayer = stream.read(UShort)
+        # stream.comment("nb sublayer")
+        # stream.new_line()
+        # stream.indent()
+        # sublayer_list = [stream.read(Sublayer) for _ in range(nb_sublayer)]
+        # stream.desindent()
+        sublayer_list = stream.read(Array, Sublayer, comment="nb sublayer")
         # stream.new_line()
         return cls(total_area, sublayer_list)
 
@@ -202,17 +208,16 @@ class Motion(Section):
         return len(self.layer_list)
 
     def _build(self):
-        version = self._stream.read(UInt)
+        version = self._stream.read(Version)
         assert version == 1
-        self._stream.comment("version")
-        self._stream.new_line()
 
-        nb_layer = self._stream.read(UShort)
-        self._stream.comment("nb layer")
-        self._stream.new_line()
-        self._stream.indent()
-        self.layer_list = [self._stream.read(Layer) for _ in range(nb_layer)]
-        self._stream.desindent()
+        # nb_layer = self._stream.read(UShort)
+        # self._stream.comment("nb layer")
+        # self._stream.new_line()
+        # self._stream.indent()
+        # self.layer_list = [self._stream.read(Layer) for _ in range(nb_layer)]
+        # self._stream.desindent()
+        self.layer_list = self._stream.read(Array, Layer, comment="nb layer")
 
         self.w = self._stream.read(UShort)  # this number appears several times in the section
 
