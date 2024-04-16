@@ -124,10 +124,24 @@ class Sublayer(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         main_area = stream.read(Area)
+        stream.new_line()
+        # stream.comment("GeoSegments")
         nb_segment = stream.read(UShort)
+        stream.comment("nb segment")
+
+        stream.new_space()
         segment_list = [stream.read(Segment) for _ in range(nb_segment)]
+        stream.new_line()
         nb_sub_area = stream.read(UShort)
+        stream.comment("nb sub area")
+        stream.new_line()
+        stream.indent()
         sub_area_list = [stream.read(Area) for _ in range(nb_sub_area)]
+
+        stream.new_line()
+        stream.desindent()
+        stream.new_line()
+
         return cls([main_area] + sub_area_list, segment_list)
 
     def QPainterPath(self):
@@ -159,8 +173,15 @@ class Layer(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         total_area = stream.read(UShort)
+        stream.comment("nb total area")
+        stream.new_line()
         nb_sublayer = stream.read(UShort)
+        stream.comment("nb sublayer")
+        stream.new_line()
+        stream.indent()
         sublayer_list = [stream.read(Sublayer) for _ in range(nb_sublayer)]
+        stream.desindent()
+        # stream.new_line()
         return cls(total_area, sublayer_list)
 
     # def build(self, width, height):
@@ -187,16 +208,22 @@ class Motion(Section):
     def _build(self):
         version = self._stream.read(UInt)
         assert version == 1
+        self._stream.comment("version")
+        self._stream.new_line()
 
         nb_layer = self._stream.read(UShort)
+        self._stream.comment("nb layer")
+        self._stream.new_line()
+        self._stream.indent()
         self.layer_list = [self._stream.read(Layer) for _ in range(nb_layer)]
+        self._stream.desindent()
 
         self.w = self._stream.read(UShort)  # this number appears several times in the section
 
         self._stream.read(Padding, 2)
         self.empty_flag = []
         while True:
-            flag = self._stream.read_raw(2).hex()
+            flag = self._stream.read(Bytes, 2)
             nb_layer = self._stream.read(UShort)
             if nb_layer == 0:
                 self.empty_flag.append(flag)

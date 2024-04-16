@@ -9,11 +9,15 @@ INDENT_SIZE = 5
 
 
 class RWStreamable(ABC):
-
     @classmethod
     @abstractmethod
     def from_stream(cls, stream):
         pass
+
+    # @classmethod
+    # @abstractmethod
+    # def to_stream(cls, stream):
+    #     pass
 
 
 class Bytes(RWStreamable):
@@ -22,19 +26,17 @@ class Bytes(RWStreamable):
         if length is None:
             raise ReadingTypeError("length must be specified when reading Bytes")
         raw_bytes = stream.read_raw(length)
-        return raw_bytes, raw_bytes.hex()
+        stream.write(raw_bytes.hex())
+        return raw_bytes
 
 
 class Bool(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         raw_bytes = stream.read_raw(1)
-        if raw_bytes == b'\x00':
-            return False, "00"
-        elif raw_bytes == b'\x01':
-            return True, "01"
-        else:
-            raise
+        assert raw_bytes == b'\x00' or raw_bytes == b'\x01'
+        stream.write(raw_bytes.hex())
+        return raw_bytes == b'\x01'  # return a boolean
 
 
 class ULittleEndianNumber(RWStreamable):
@@ -43,7 +45,8 @@ class ULittleEndianNumber(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         raw_bytes = stream.read_raw(cls.length)
-        return int.from_bytes(raw_bytes, byteorder="little", signed=False), raw_bytes.hex()
+        stream.write(raw_bytes.hex())
+        return int.from_bytes(raw_bytes, byteorder="little", signed=False)
 
 
 class UChar(ULittleEndianNumber):
@@ -62,7 +65,8 @@ class UFloat(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         raw_bytes = stream.read_raw(4)
-        return unpack('f', raw_bytes)[0], raw_bytes.hex()
+        stream.write(raw_bytes.hex())
+        return unpack('f', raw_bytes)[0]
 
 
 class String(RWStreamable):
@@ -73,7 +77,8 @@ class String(RWStreamable):
         raw_bytes = stream.read_raw(length)
         while raw_bytes != b'' and raw_bytes[-1] == 0:
             raw_bytes = raw_bytes[:-1]
-        return raw_bytes.decode("latin1").replace(" ", "_"), raw_bytes.hex()
+        stream.write(raw_bytes.hex())
+        return raw_bytes.decode("latin1").replace(" ", "_")
 
 
 class Padding(RWStreamable):
@@ -86,7 +91,8 @@ class Padding(RWStreamable):
             raise PaddingError(f"zero padding expected instead of : {padding}", padding=padding)
         elif pattern is not None and padding != pattern:
             raise PaddingError(f"{pattern} padding expected instead of : {padding}", padding=padding)
-        return padding, padding.hex()
+        stream.comment(f"Padding {padding.hex()}")
+
 
 
 class ReadStream(object):
@@ -129,9 +135,10 @@ class ReadStream(object):
         return object_type.from_stream(self, *arg, **kwarg)
 
     def write(self, hex_string: str):
-        int(hex_string, 16)  # assert hex_string is really hexadecimal
-        self._str_stream_out.write(f"{hex_string.lower()} ")
-        self._new_line_indented = False
+        if hex_string != "":
+            int(hex_string, 16)  # assert hex_string is really hexadecimal
+            self._str_stream_out.write(f"{hex_string.lower()} ")
+            self._new_line_indented = False
 
     def comment(self, string: str):
         self._str_stream_out.write(f"[{string}] ")
@@ -145,11 +152,13 @@ class ReadStream(object):
     def desindent(self):
         assert self._new_line_indented is True
         assert self._indent > 0
+        self._indent -= 1
         self._str_stream_out.seek(self._str_stream_out.tell() - INDENT_SIZE)
 
     def new_line(self):
         self._str_stream_out.write("\n")
         self._str_stream_out.write(" " * INDENT_SIZE * self._indent)
+        self._new_line_indented = True
 
     def new_space(self):
         self._str_stream_out.write("  ")
