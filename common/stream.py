@@ -6,7 +6,7 @@ from struct import pack, unpack
 
 from .exception import PaddingError, ReadingTypeError
 
-INDENT_SIZE = 5
+
 
 
 class RWStreamable(ABC):
@@ -128,6 +128,9 @@ class Array(RWStreamable):
         return rop
 
 
+INDENT_SIZE = 5
+
+
 class ReadStream(object):
 
     @staticmethod
@@ -152,25 +155,11 @@ class ReadStream(object):
         fd.close()
         return cls(data)
 
-    def tell(self):
-        return self._input.tell()
+    # def tell(self):
+    #     return self._input.tell()
 
     def read_raw(self, length=None):
         return self._input.read(length)
-
-    # def p_print(self, length, group_length=None):
-    # 	if type(length) is not int:
-    # 		length = length.length
-    # 	hex_string = self.read_raw(length).hex()
-    # 	if group_length is None:
-    # 		print(hex_string, end='')
-    # 	else:
-    # 		for i, c in enumerate(hex_string):
-    # 			if i != 0 and i % (group_length*2) == 0:
-    # 				print(" ", end='')
-    # 			print(c, end='')
-    # 	print(" ", end='')
-    # 	return hex_string
 
     def read(self, object_type, *arg, **kwarg):
         assert issubclass(object_type, RWStreamable)

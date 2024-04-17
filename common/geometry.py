@@ -1,5 +1,8 @@
 from . import RWStreamable, UShort, ReadStream, Array
 
+X_MAX_OFFICIAL = 2944
+Y_MAX_OFFICIAL = 2368
+
 
 class Coordinate(RWStreamable):
 
@@ -7,7 +10,11 @@ class Coordinate(RWStreamable):
         if not (isinstance(x, int) and isinstance(y, int)):
             raise TypeError("Coordinate must be (int, int)")
         self.x = x
+        if self.x < 0 or self.x >= X_MAX_OFFICIAL:
+            print(f"Warning: Coordinate x={self.x}")
         self.y = y
+        if self.y < 0 or self.y >= Y_MAX_OFFICIAL:
+            print(f"Warning: Coordinate y={self.y}")
 
     @classmethod
     def from_stream(cls, stream: ReadStream):
@@ -20,7 +27,7 @@ class Coordinate(RWStreamable):
         return self.x == other.x and self.y == other.y
 
     def __repr__(self):
-        return f"<Coordinate {self}>"
+        return f"<Coordinate {str(self)}>"
 
     def __str__(self):
         return f"({self.x}, {self.y})"

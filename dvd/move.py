@@ -220,6 +220,8 @@ class Motion(Section):
         self.layer_list = self._stream.read(Array, Layer, comment="nb layer")
 
         self.w = self._stream.read(UShort)  # this number appears several times in the section
+        self._stream.debug_comment("w")
+        self._stream.debug_new_line()
 
         self._stream.read(Padding, 2)
         self.empty_flag = []
@@ -228,6 +230,7 @@ class Motion(Section):
             nb_layer = self._stream.read(UShort)
             if nb_layer == 0:
                 self.empty_flag.append(flag)
+
                 continue
             else:
                 self.active_flag = flag
