@@ -147,7 +147,7 @@ class MoveScene(object):
                         self.scene.addItem(crossing_point_item)
 
         self.path_link_item = []
-        for path_link in motion.path_link_list:
+        for path_link in motion.global_path_link_list:
             path_link_item = QGraphicPathLinkItem(path_link.QLineF(motion))
             self.path_link_item.append(path_link_item)
             self.scene.addItem(path_link_item)

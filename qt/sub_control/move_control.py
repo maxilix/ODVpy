@@ -116,9 +116,6 @@ class CustomTreeWidget(QTreeWidget):
             iterator += 1
 
 
-
-
-
     def update_height(self):
         h = 18 * self.nb_expanded_item() + 2 + 22
         self.setMinimumHeight(h)
@@ -128,7 +125,7 @@ class CustomTreeWidget(QTreeWidget):
         self.resizeColumnToContents(2)
 
     def nb_expanded_item(self):
-        # doesnt work with colapsed item which contain expanded item
+        # doesn't work with collapsed item which contain expanded item
         count = 0
         iterator = QTreeWidgetItemIterator(self)
         while iterator.value():

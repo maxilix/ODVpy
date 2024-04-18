@@ -13,7 +13,7 @@ class Section(RWStreamable):
 
     def __init__(self, data):
         self._data = data
-        self._stream = None
+        self._built = False
         # log.info(f"Section {self.section} initialized.")
 
     @classmethod
@@ -25,16 +25,17 @@ class Section(RWStreamable):
         return cls(data)
 
     @abstractmethod
-    def _build(self):
+    def _build(self, stream):
         pass
 
     def build(self):
-        self._stream = ReadStream(self._data)
-        self._build()
-        next_byte = self._stream.read(Bytes, 1)
+        stream = ReadStream(self._data)
+        self._build(stream)
+        next_byte = stream.read(Bytes, 1)
         assert next_byte == b''
-        # log.info(f"Section {self.section} builded.")
+        self._built = True
+        # log.info(f"Section {self.section} built")
 
     @property
     def built(self):
-        return self._stream is not None
+        return self._built

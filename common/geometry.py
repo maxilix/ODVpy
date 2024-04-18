@@ -1,4 +1,4 @@
-from . import RWStreamable, UShort, ReadStream, Array
+from . import RWStreamable, UShort, ReadStream
 
 X_MAX_OFFICIAL = 2944
 Y_MAX_OFFICIAL = 2368
@@ -10,17 +10,17 @@ class Coordinate(RWStreamable):
         if not (isinstance(x, int) and isinstance(y, int)):
             raise TypeError("Coordinate must be (int, int)")
         self.x = x
-        if self.x < 0 or self.x >= X_MAX_OFFICIAL:
+        if self.x < 0 or self.x > X_MAX_OFFICIAL:
             print(f"Warning: Coordinate x={self.x}")
         self.y = y
-        if self.y < 0 or self.y >= Y_MAX_OFFICIAL:
+        if self.y < 0 or self.y > Y_MAX_OFFICIAL:
             print(f"Warning: Coordinate y={self.y}")
 
     @classmethod
     def from_stream(cls, stream: ReadStream):
         x = stream.read(UShort)
         y = stream.read(UShort)
-        stream.debug_new_space()
+        # stream.debug_new_space()
         return cls(x, y)
 
     def __eq__(self, other):
@@ -45,7 +45,7 @@ class Segment(RWStreamable):
     def from_stream(cls, stream: ReadStream):
         coor1 = stream.read(Coordinate)
         coor2 = stream.read(Coordinate)
-        stream.debug_new_line()
+        # stream.debug_new_line()
         return cls(coor1, coor2)
 
     def __repr__(self):
@@ -63,11 +63,8 @@ class Area(RWStreamable):
 
     @classmethod
     def from_stream(cls, stream: ReadStream):
-        coor_list = stream.read(Array, Coordinate, comment="area", in_line=True)
-        # stream.comment("Area")
-        # nb_coor = stream.read(UShort)
-        # stream.new_space()
-        # coor_list = [stream.read(Coordinate) for _ in range(nb_coor)]
-
-        stream.debug_new_line()
+        nb_coor = stream.read(UShort)
+        coor_list = [stream.read(Coordinate) for _ in range(nb_coor)]
+        # coor_list = stream.read(Array, Coordinate, comment="area", in_line=True)
+        # stream.debug_new_line()
         return cls(coor_list)

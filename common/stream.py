@@ -27,7 +27,7 @@ class Bytes(RWStreamable):
         if length is None:
             raise ReadingTypeError("length must be specified when reading Bytes")
         raw_bytes = stream.read_raw(length)
-        stream.debug_print(raw_bytes.hex())
+        # stream.debug_print(raw_bytes.hex())
         return raw_bytes
 
 
@@ -36,7 +36,7 @@ class Bool(RWStreamable):
     def from_stream(cls, stream):
         raw_bytes = stream.read_raw(1)
         assert raw_bytes == b'\x00' or raw_bytes == b'\x01'
-        stream.debug_print(raw_bytes.hex())
+        # stream.debug_print(raw_bytes.hex())
         return raw_bytes == b'\x01'  # return a boolean
 
 
@@ -46,9 +46,8 @@ class ULittleEndianNumber(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         raw_bytes = stream.read_raw(cls.length)
-        stream.debug_print(raw_bytes.hex())
+        # stream.debug_print(raw_bytes.hex())
         return int.from_bytes(raw_bytes, byteorder="little", signed=False)
-
 
 
 class UChar(ULittleEndianNumber):
@@ -67,7 +66,7 @@ class UFloat(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         raw_bytes = stream.read_raw(4)
-        stream.debug_print(raw_bytes.hex())
+        # stream.debug_print(raw_bytes.hex())
         return unpack('f', raw_bytes)[0]
 
 
@@ -75,8 +74,8 @@ class Version(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         rop = stream.read(UInt)
-        stream.debug_comment("version")
-        stream.debug_new_line()
+        # stream.debug_comment("version")
+        # stream.debug_new_line()
         return rop
 
 
@@ -88,7 +87,7 @@ class String(RWStreamable):
         raw_bytes = stream.read_raw(length)
         while raw_bytes != b'' and raw_bytes[-1] == 0:
             raw_bytes = raw_bytes[:-1]
-        stream.debug_print(raw_bytes.hex())
+        # stream.debug_print(raw_bytes.hex())
         return raw_bytes.decode("latin1").replace(" ", "_")
 
 
@@ -102,51 +101,47 @@ class Padding(RWStreamable):
             raise PaddingError(f"zero padding expected instead of : {padding}", padding=padding)
         elif pattern is not None and padding != pattern:
             raise PaddingError(f"{pattern} padding expected instead of : {padding}", padding=padding)
-        stream.debug_comment(f"Padding {padding.hex()}")
+        # stream.debug_comment(f"Padding {padding.hex()}")
 
 
-class Array(RWStreamable):
-    # def __init__(self, object_type):
-    #     assert issubclass(object_type, RWStreamable)
-    #     self.object_type = object_type
-
-    @classmethod
-    def from_stream(cls, stream, object_type=None, *, comment=None, in_line=False):
-        assert issubclass(object_type, RWStreamable)
-        size = stream.read(UShort)
-        if comment is not None:
-            stream.debug_comment(comment)
-        if in_line is True:
-            stream.debug_new_space()
-        else:
-            stream.debug_indent(+1)
-        rop = [stream.read(object_type) for _ in range(size)]
-        if in_line is True:
-            stream.debug_new_space()
-        else:
-            stream.debug_indent(-1)
-        return rop
+# class Array(RWStreamable):
+#     @classmethod
+#     def from_stream(cls, stream, object_type=None, *, comment=None, in_line=False):
+#         assert issubclass(object_type, RWStreamable)
+#         size = stream.read(UShort)
+#         if comment is not None:
+#             stream.debug_comment(comment)
+#         if in_line is True:
+#             stream.debug_new_space()
+#         else:
+#             stream.debug_indent(+1)
+#         rop = [stream.read(object_type) for _ in range(size)]
+#         if in_line is True:
+#             stream.debug_new_space()
+#         else:
+#             stream.debug_indent(-1)
+#         return rop
 
 
-INDENT_SIZE = 5
+# INDENT_SIZE = 5
 
 
 class ReadStream(object):
 
-    @staticmethod
-    def debug(func):
-        def wrapper(self, *arg, **kwargs):
-            if self.debug is True:
-                func(self, *arg, **kwargs)
-        return wrapper
+    # @staticmethod
+    # def debug(func):
+    #     def wrapper(self, *arg, **kwargs):
+    #         if self.debug is True:
+    #             func(self, *arg, **kwargs)
+    #     return wrapper
 
     def __init__(self, data, *, debug=True):
         self._input = io.BytesIO(data)
-        self.debug = debug
-        if self.debug is True:
-            self._debug_output = io.StringIO("")
-            self._debug_indent = 0
-            self._debug_line_is_empty = True
+        # self.debug = debug
+        # if self.debug is True:
+        #     self._debug_output = io.StringIO("")
+        #     self._debug_indent = 0
+        #     self._debug_line_is_empty = True
 
     @classmethod
     def from_file(cls, filename):
@@ -154,9 +149,6 @@ class ReadStream(object):
         data = fd.read()
         fd.close()
         return cls(data)
-
-    # def tell(self):
-    #     return self._input.tell()
 
     def read_raw(self, length=None):
         return self._input.read(length)
@@ -167,65 +159,41 @@ class ReadStream(object):
 
         return rop
 
-    @debug
-    def debug_print(self, hex_string: str):
-        if hex_string != "":
-            int(hex_string, 16)  # assert hex_string is really hexadecimal
-            self._debug_output.write(f"{hex_string.lower()} ")
-            self._debug_line_is_empty = False
-
-    @debug
-    def debug_comment(self, string: str):
-        self._debug_output.write(f"[{string}] ")
-        self._debug_line_is_empty = False
-
-    @debug
-    def debug_indent(self, incr: int):
-        assert incr > 0 or incr < 0 and self._debug_indent >= -incr
-        self.debug_new_line()
-        self._debug_indent += incr
-        if incr > 0:
-            self._debug_output.write(" " * INDENT_SIZE * incr)
-        elif incr < 0 and self._debug_indent >= -incr:
-            self._debug_output.seek(self._debug_output.tell() + INDENT_SIZE * incr)
-
-    @debug
-    def debug_new_line(self):
-        if self._debug_line_is_empty is False:
-            self._debug_line_is_empty = True
-            self._debug_output.write("\n")
-            self._debug_output.write(" " * INDENT_SIZE * self._debug_indent)
-
-    @debug
-    def debug_new_space(self):
-        self._debug_output.write("  ")
-
-    @debug
-    def debug_save(self, filename):
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        with open(filename, "w") as file:
-            file.write(self._debug_output.getvalue())
-
-
-# def read_array(self, object_type, *arg, **kwarg):
-# 	# assert issubclass(object_type, RWStreamable)
-# 	length, hex_string = self.read(UShort)
-# 	self.write_line(hex_string)
-# 	rop = []
-# 	self._indent += 1
-# 	for _ in range(length):
-# 		obj, hex_string = self.read(object_type, *arg, **kwarg)
-#
-#
-# 	return [object_type.from_stream(self, *arg, **kwarg) for _ in range(length)]
-#
-# def write_raw(self, raw_string):
-# 	self._str_stream_out.write(raw_string)
-#
-# def write_line(self, line):
-# 	for _ in range(self._indent):
-# 		self.write_raw("     ")
-# 	self.write_raw(line)
-
-# def skip(self, object_type, *arg, **kwarg):
-# 	self.read(object_type, *arg, **kwarg)
+    # @debug
+    # def debug_print(self, hex_string: str):
+    #     if hex_string != "":
+    #         int(hex_string, 16)  # assert hex_string is really hexadecimal
+    #         self._debug_output.write(f"{hex_string.lower()} ")
+    #         self._debug_line_is_empty = False
+    #
+    # @debug
+    # def debug_comment(self, string: str):
+    #     self._debug_output.write(f"[{string}] ")
+    #     self._debug_line_is_empty = False
+    #
+    # @debug
+    # def debug_indent(self, incr: int):
+    #     assert incr > 0 or incr < 0 and self._debug_indent >= -incr
+    #     self.debug_new_line()
+    #     self._debug_indent += incr
+    #     if incr > 0:
+    #         self._debug_output.write(" " * INDENT_SIZE * incr)
+    #     elif incr < 0 and self._debug_indent >= -incr:
+    #         self._debug_output.seek(self._debug_output.tell() + INDENT_SIZE * incr)
+    #
+    # @debug
+    # def debug_new_line(self):
+    #     if self._debug_line_is_empty is False:
+    #         self._debug_line_is_empty = True
+    #         self._debug_output.write("\n")
+    #         self._debug_output.write(" " * INDENT_SIZE * self._debug_indent)
+    #
+    # @debug
+    # def debug_new_space(self):
+    #     self._debug_output.write("  ")
+    #
+    # @debug
+    # def debug_save(self, filename):
+    #     os.makedirs(os.path.dirname(filename), exist_ok=True)
+    #     with open(filename, "w") as file:
+    #         file.write(self._debug_output.getvalue())
