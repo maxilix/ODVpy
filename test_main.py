@@ -1,14 +1,27 @@
+import hashlib
+
 from common import *
 from dvd import DvdParser
 from settings import *
 
+CONFIG.load()
+print(CONFIG.installation_path)
+
+
+# print("SCB_HASH = [")
 for level_index in range(26):
-    dvd = DvdParser(original_level_filename(level_index) + ".dvd")
+    pass
+    # filename = original_level_filename(level_index) + ".scb"
+    # with open(filename, 'rb') as file:
+    #     print(f"\"{hashlib.file_digest(file, 'sha256').hexdigest()}\",")
+
+
+    # dvd = DvdParser()
 
     # print("---------------------------------------------------")
     # print(f"  L{level_index:02} ")
-    motion = dvd.move
-    assert motion.built
+    # motion = dvd.move
+    # assert motion.built
     # print(motion.empty_flag, motion.active_flag)
 
     # print(len(motion.before_ff))

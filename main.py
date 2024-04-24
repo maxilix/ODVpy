@@ -9,10 +9,11 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, Q
     QGraphicsLineItem, QVBoxLayout, QHBoxLayout, QLabel, QToolBar, QSplitter, QFileDialog, QMessageBox
 from PyQt6.QtGui import QPen, QBrush, QColor
 
+from qt.preferences import QPreferencesDialog
 from qt.viewer import QViewer
 from qt.control import QControl
 
-from settings import original_level_filename
+from settings import original_level_filename, CONFIG
 from debug import *
 
 from common import *
@@ -67,13 +68,15 @@ class QWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle('Open Death Valley py')
-        # self.setMinimumSize(QSize(800, 600))
         self.showMaximized()
+        # self.setMinimumSize(800, 600)
         # self.setGeometry(0, 0, 500, 500)
         self.current_level = None
         # self.current_level = ODVLevel(original_level_filename(0))
 
         menu = self.menuBar()
+
+        # File menu
         file_menu = menu.addMenu("File")
         open_original_submenu = file_menu.addMenu("Open Original Level")
 
@@ -97,7 +100,19 @@ class QWindow(QMainWindow):
         quit_action.triggered.connect(exit)
         file_menu.addAction(quit_action)
 
+        # Edit menu
+        edit_menu = menu.addMenu("Edit")
+        open_preferences_dialog_action = QAction("Preferences", self)
+        open_preferences_dialog_action.triggered.connect(self.open_preferences_dialog)
+        edit_menu.addAction(open_preferences_dialog_action)
+
         self.set_widget()
+
+    def open_preferences_dialog(self):
+        dialog = QPreferencesDialog(self)
+        dialog.exec()
+
+
 
     def open_file_dialog(self):
         dialog = QFileDialog(self)
@@ -150,6 +165,7 @@ class QWindow(QMainWindow):
 
 
 if __name__ == '__main__':
+    CONFIG.load()
     app = QApplication([])
     window = QWindow()
     window.show()
