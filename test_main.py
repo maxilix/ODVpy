@@ -3,12 +3,22 @@ import hashlib
 from common import *
 from dvd import DvdParser
 from settings import *
+import backup
+
+from dev.utils import print_original_hash_dict
+
+
+
+
 
 CONFIG.load()
-print(CONFIG.installation_path)
+# print_original_hash_dict(CONFIG.installation_path)
+print(ORIGINAL_HASH)
 
 
-# print("SCB_HASH = [")
+
+
+
 for level_index in range(26):
     pass
     # filename = original_level_filename(level_index) + ".scb"
@@ -44,4 +54,4 @@ for level_index in range(26):
     # print("  Done\n")
     # print()
 
-print("Done")
+# print("Done")

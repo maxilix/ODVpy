@@ -1,6 +1,7 @@
 ### OpenDeathValley
 # extrated BitMap
 extracted/
+backup/
 
 # DVD section hex dump
 dvd/*/
