@@ -10,15 +10,42 @@ from debug import hxs
 from .section import Section, section_list
 
 
+class UnkLastObject(RWStreamable):
+
+    def __init__(self, unk_tab1, unk_tab2):
+        self.unk_tab1 = unk_tab1
+        self.unk_tab2 = unk_tab2
+
+    @classmethod
+    def from_stream(cls, stream):
+        u1 = stream.read(UChar)
+        if u1 == 255:  # 0xff is read
+            return cls([], [])
+        else:
+            u2 = stream.read(UChar)
+
+            n1 = stream.read(UShort)
+            l1 = [stream.read(UChar) for _ in range(n1)]
+            assert all([u in [1, 2, 4, 8] for u in l1])
+            assert u1 == reduce(lambda x, y: x | y, l1)
+
+            n2 = stream.read(UShort)
+            assert n1 == n2
+            l2 = [stream.read(UChar) for _ in range(n2)]
+            assert all([u in [1, 2, 4, 8] for u in l2])
+            assert u2 == reduce(lambda x, y: x | y, l2)
+            return cls(l1, l2)
+
+
 class PathLink(RWStreamable):
 
-    def __init__(self, indexes1, point1, indexes2, point2, unk, unk_obj_index_list, unk_obj_list):
+    def __init__(self, indexes1, point1, indexes2, point2, unk_int, unk_obj_index_list, unk_obj_list):
         self.indexes1 = indexes1
         self.point1 = point1
         self.indexes2 = indexes2
         self.point2 = point2
-        self.unk = unk
-        self.unk_obj_index_list = unk_obj_index_list
+        self.unk_int = unk_int
+        self.unk_obj_global_index_list = unk_obj_index_list
         self.unk_obj_list = unk_obj_list
 
     def get_other(self, indexes):
@@ -33,12 +60,12 @@ class PathLink(RWStreamable):
     def from_stream(cls, stream, *, w=None):
         indexes1 = tuple(stream.read(UShort) for _ in range(4))
         indexes2 = tuple(stream.read(UShort) for _ in range(4))
-        unk = stream.read(Bytes, 4)
-        assert unk[3] in [0, 63, 64, 65, 66, 67, 68, 69]
+        unk_int = stream.read(UInt)
+        # last bytes of unk_int is in [0, 63, 64, 65, 66, 67, 68, 69]
         unk_obj_index_list_length = stream.read(UShort)  # w again
         assert w is None or w == unk_obj_index_list_length
         unk_obj_index_list = [stream.read(UShort) for _ in range(unk_obj_index_list_length)]
-        return cls(indexes1, None, indexes2, None, unk, unk_obj_index_list, [])
+        return cls(indexes1, None, indexes2, None, unk_int, unk_obj_index_list, [])
 
     def QLineF(self, motion):
         i1, j1, k1, l1 = self.indexes1
@@ -50,10 +77,10 @@ class PathLink(RWStreamable):
 
 class CrossingPoint(RWStreamable):
 
-    def __init__(self, b0, point, b1, link_path_index_list, path_link_list):
-        self.b0 = b0
+    def __init__(self, unk_char, point, unk_short, link_path_index_list, path_link_list):
+        self.unk_char = unk_char
         self.point = point
-        self.b1 = b1
+        self.unk_short = unk_short  # 4 length tab
         self.path_link_global_index_list = link_path_index_list
         self.path_link_list = path_link_list
 
@@ -71,16 +98,15 @@ class CrossingPoint(RWStreamable):
     def from_stream(cls, stream, *, w=None):
         nb_bytes = stream.read(UShort)  # w again
         assert w is None or w == nb_bytes
-        b0 = [stream.read(UChar) for _ in range(nb_bytes)]
-        for byte in b0:
+        unk_char = [stream.read(UChar) for _ in range(nb_bytes)]
+        for byte in unk_char:
             assert byte in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]  # never 15
 
-        coor = stream.read(Coordinate)
-        b1 = [stream.read(UChar) for _ in range(8)]
-        # unknown b1
+        point = stream.read(Coordinate)
+        # read as 8 UChar
+        # b1 = [stream.read(UChar) for _ in range(8)]
         # 00000 or 11111 on 5 first bits
         # flags ? on the 3 last bits
-
         # 0    00000000
         # 1    00000001
         # 2    00000010
@@ -98,13 +124,17 @@ class CrossingPoint(RWStreamable):
         # 253  11111101
         # 254  11111110
         # 255  11111111
-        assert b1[1] in [0, 1, 2, 3, 4,    6, 7,       248,      250, 251, 252, 253, 254, 255]
-        assert b1[3] in [0, 1, 2, 3,       6,               249, 250, 251, 252, 253, 254, 255]
-        assert b1[5] in [0, 1, 2, 3, 4,    6, 7,       248,      250, 251, 252, 253, 254, 255]
-        assert b1[7] in [0, 1, 2, 3,       6,               249, 250, 251, 252, 253, 254, 255]
+        # assert b1[1] in [0, 1, 2, 3, 4,    6, 7,       248,      250, 251, 252, 253, 254, 255]
+        # assert b1[3] in [0, 1, 2, 3,       6,               249, 250, 251, 252, 253, 254, 255]
+        # assert b1[5] in [0, 1, 2, 3, 4,    6, 7,       248,      250, 251, 252, 253, 254, 255]
+        # assert b1[7] in [0, 1, 2, 3,       6,               249, 250, 251, 252, 253, 254, 255]
+
+        # read as 4 UShort
+        unk_short = [stream.read(UShort) for _ in range(4)]
+
         nb_link_path = stream.read(UShort)
         link_path_index_list = [stream.read(UShort) for _ in range(nb_link_path)]
-        return cls(b0, coor, b1, link_path_index_list, [])
+        return cls(unk_char, point, unk_short, link_path_index_list, [])
 
     def QPointF(self):
         return QPointF(self.point.x + 0.5, self.point.y + 0.5)
@@ -264,75 +294,18 @@ class Motion(Section):
                     for cp in area:
                         cp.path_link_list = [self.global_path_link_list[index] for index in cp.path_link_global_index_list]
 
-        max_index = max([max(path_link.unk_obj_index_list)
+
+        max_index = max([max(path_link.unk_obj_global_index_list)
                          for path_link in self.global_path_link_list
                          ])
         self.nb_unk_obj = stream.read(UShort)
         assert self.nb_unk_obj == max_index + 1
-
-        for _ in range(self.nb_unk_obj):
-            u1 = stream.read(UChar)
-            # print(f"{hxs(u1)}   ", end="")
-            if u1 == 255:
-                # print()
-                continue
-            else:
-                u2 = stream.read(UChar)
-                # print(f"{hxs(u2)}   ", end="")
-                n1 = stream.read(UShort)
-                # print(f"{hxs(n1).zfill(4)} ", end="")
-                l1 = [stream.read(UChar) for _ in range(n1)]
-                assert all([u in [1, 2, 4, 8] for u in l1])
-                assert u1 == reduce(lambda x, y: x | y, l1)
-
-                n2 = stream.read(UShort)
-                assert n1 == n2
-                # print(f"  {hxs(n2).zfill(4)} ", end="")
-                l2 = [stream.read(UChar) for _ in range(n2)]
-                assert all([u in [1, 2, 4, 8] for u in l2])
-                assert u2 == reduce(lambda x, y: x | y, l2)
-                # print()
+        self.global_unk_obj_list = [stream.read(UnkLastObject) for _ in range(self.nb_unk_obj)]
+        for path_link in self.global_path_link_list:
+            path_link.unk_obj_list = [self.global_unk_obj_list[index] for index in path_link.unk_obj_global_index_list]
 
         tail = stream.read_raw()
         assert len(tail) == 0
-        # print(f"{len(self.tail)=}")
-
-
-        # print(f"{set_uu=}")
-        # # print(f"{nb_unk_obj=}")
-        # self.before_ff = []
-        # self.ff_index = 0
-        # while True:
-        #     temp = stream.read(Bytes, 1)
-        #     if not temp:
-        #         raise Exception("unable to find FF in the last part")
-        #     if temp != b'\xff':
-        #         self.before_ff.append(temp)
-        #         self.ff_index += 1
-        #     else:
-        #         break
-        #
-        # assert len(self.before_ff) % 8 == 0
-        #
-        # # print(f"{len(self.before_ff)=}")
-        # self.tail = stream.read_raw()  # must read list of unk_obj TODO
-        # assert len(self.tail) % 4 == 0
-        # for byte in self.tail:
-        #     assert byte in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]  # never 15
-
-        # print(f"len tail = {len(self.tail)}")
-
-        # === stat on tail ===
-        # proportion = [round(self.tail.count(i)/len(self.tail), 4) for i in range(16)]
-        # print(proportion)
-
-        # === stat on cp b0 ===
-        # l = [o for layer in self for sublayer in layer for area in sublayer for cp in area for o in cp.b0]
-        # proportion = [round(l.count(i)/len(l), 4) for i in range(16)]
-        # print(proportion)
-
-
-
 
         # print("motion built")
 
@@ -347,9 +320,6 @@ class Motion(Section):
                 print(f"    nb_excluded_area={len(sublayer.area_list[1:])}", file=file)
                 for excluded_area in sublayer[1:]:
                     print(f"      nb_point_in_excluded_area = {len(excluded_area)}", file=file)
-
-    def get_ObjectA(self, indexes):
-        return self.layer_list[indexes[0]].sublayer_list[indexes[1]].crossing_point_list_list[indexes[2]][indexes[3]]
 
     def get_path_link(self, index):
         return self.global_path_link_list[index]

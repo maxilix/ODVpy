@@ -2,6 +2,7 @@
 # extrated BitMap
 extracted/
 backup/
+decompile/
 
 # DVD section hex dump
 dvd/*/

@@ -25,10 +25,10 @@ class Pixel(RWStreamable):
 	@classmethod
 	def from_stream(cls, stream):
 		r5g6b5 = stream.read(UShort)
-		r = (r5g6b5 >> 11) * 8
-		g = ((r5g6b5 >> 5) & 0x3F) * 4
-		b = (r5g6b5 & 0x1F) * 8
-		return cls(r, g, b)
+		r8 = (r5g6b5 >> 11) * 8
+		g8 = ((r5g6b5 >> 5) & 0x3F) * 4
+		b8 = (r5g6b5 & 0x1F) * 8
+		return cls(r8, g8, b8)
 
 
 class Pixmap(ABC):
@@ -73,24 +73,24 @@ class Pixmap(ABC):
 		self.bmp.save(filename)
 
 
-class Mask(Pixmap):
-
-	def build(self):
-		self.bmp = Image.new("1", (self.width, self.height), self.data)
-		self.draw = ImageDraw.Draw(self.bmp)
-
-	@Pixmap.needs
-	def draw_area(self, area, state):
-		bounding_box = [(coor.x, coor.y) for coor in area.coor_list]
-		try:
-			self.draw.polygon(bounding_box, fill=state, outline=state)
-			
-		except Exception as e:
-			print(f"{bounding_box=}")
-
-	def allow(self, area):
-		self.draw_area(area, True)
-
-	def disallow(self, area):
-		self.draw_area(area, False)
+# class Mask(Pixmap):
+#
+# 	def build(self):
+# 		self.bmp = Image.new("1", (self.width, self.height), self.data)
+# 		self.draw = ImageDraw.Draw(self.bmp)
+#
+# 	@Pixmap.needs
+# 	def draw_area(self, area, state):
+# 		bounding_box = [(coor.x, coor.y) for coor in area.coor_list]
+# 		try:
+# 			self.draw.polygon(bounding_box, fill=state, outline=state)
+#
+# 		except Exception as e:
+# 			print(f"{bounding_box=}")
+#
+# 	def allow(self, area):
+# 		self.draw_area(area, True)
+#
+# 	def disallow(self, area):
+# 		self.draw_area(area, False)
 
