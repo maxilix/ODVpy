@@ -9,58 +9,15 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, Q
     QGraphicsLineItem, QVBoxLayout, QHBoxLayout, QLabel, QToolBar, QSplitter, QFileDialog, QMessageBox
 from PyQt6.QtGui import QPen, QBrush, QColor
 
+from odv.level import Level
 from qt.preferences import QPreferencesDialog
 from qt.viewer import QViewer
 from qt.control import QControl
+from dev.utils import remove_extension
 
-from settings import original_level_filename, CONFIG
+from settings import original_level_filename_we
+from config import CONFIG
 from debug import *
-
-from common import *
-from dvd import DvdParser
-from dvm import DvmParser
-
-
-class ODVLevel(object):
-    def __init__(self, filename):
-        self.dvd = None
-        self.dvm = None
-        # self._fully_loaded = False
-
-        self.load_dvd(filename)
-        if self.dvd is not None:
-            self.load_dvm(filename)
-
-    def load_dvd(self, filename):
-        filename += ".dvd"
-        try:
-            self.dvd = DvdParser(filename)
-        except FileNotFoundError:
-            message_box = QMessageBox()
-            message_box.setText(f"Unable to open {filename}")
-            message_box.exec()
-            self.dvd = None
-
-    def load_dvm(self, filename):
-        filename += ".dvm"
-        try:
-            self.dvm = DvmParser(filename)
-        except FileNotFoundError:
-            m = re.findall(r"level_(\d\d)", filename)
-            guess_level_index = int(m[-1])
-            message_box = QMessageBox()
-            message_box.setText(f"Unable to open {filename}")
-            message_box.setInformativeText(f"Do you want to load the original level {guess_level_index} dvm file instead?")
-            message_box.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
-            message_box.setDefaultButton(QMessageBox.StandardButton.Ok)
-            response = message_box.exec()
-            if response == QMessageBox.StandardButton.Ok:
-                self.load_dvm(original_level_filename(guess_level_index))
-            else:
-                self.dvm = None
-
-    def __bool__(self):
-        return self.dvd is not None and self.dvm is not None
 
 
 class QWindow(QMainWindow):
@@ -76,16 +33,16 @@ class QWindow(QMainWindow):
 
         menu = self.menuBar()
 
-        # File menu
+        # ============================== File menu ==============================
         file_menu = menu.addMenu("File")
         open_original_submenu = file_menu.addMenu("Open Original Level")
 
-        for i in range (26):
+        for i in range(26):
             if i == 0:
                 open_original_level_action = QAction(f"Demo level", self)
             else:
                 open_original_level_action = QAction(f"Level {i}", self)
-            open_original_level_action.triggered.connect(lambda state, index=i: self.load_level(original_level_filename(index)))
+            open_original_level_action.triggered.connect(lambda state, index=i: self.load_level(original_level_filename_we(index)))
             open_original_submenu.addAction(open_original_level_action)
 
         open_custom_level_action = QAction(f"Open Custom level", self)
@@ -99,12 +56,15 @@ class QWindow(QMainWindow):
         quit_action = QAction("Quit", self)
         quit_action.triggered.connect(exit)
         file_menu.addAction(quit_action)
+        # ============================== File menu ==============================
 
-        # Edit menu
+        # ============================== Edit menu ==============================
         edit_menu = menu.addMenu("Edit")
         open_preferences_dialog_action = QAction("Preferences", self)
         open_preferences_dialog_action.triggered.connect(self.open_preferences_dialog)
         edit_menu.addAction(open_preferences_dialog_action)
+        # ============================== Edit menu ==============================
+
 
         self.set_widget()
 
@@ -129,12 +89,12 @@ class QWindow(QMainWindow):
         if dialog.exec():
             filenames = dialog.selectedFiles()
             if len(filenames) == 1:
-                filename = filenames[0].rsplit(".",1)[0]
-                self.load_level(filename)
+                filename_we = remove_extension(filenames[0])
+                self.load_level(filename_we)
 
-    def load_level(self, filename):
-        self.current_level = ODVLevel(filename)
-        if self.current_level:
+    def load_level(self, filename_we):
+        self.current_level = Level(filename_we)
+        if self.current_level.loaded is True:  # test if Level is correctly loaded
             self.set_widget()
         else:
             self.current_level = None

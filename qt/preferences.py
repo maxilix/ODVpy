@@ -1,9 +1,12 @@
 import shutil
 
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QLabel, QFileDialog, \
     QMessageBox
 
+from qt.common.simple_messagebox import QErrorBox, QInfoBox
 from settings import *
+from config import CONFIG
 from backup import check_installation, InvalidHashError
 
 
@@ -12,6 +15,9 @@ class QPreferencesDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle('Preferences')
         self.setMinimumSize(1000, 400)
+        # self.setGeometry(50, 30, 1000, 400)
+
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint)
         self.setStyleSheet("QDialog {border: 1px solid gray;}")
 
         main_layout = QVBoxLayout(self)
@@ -21,16 +27,16 @@ class QPreferencesDialog(QDialog):
         installation_path_layout = QHBoxLayout(installation_path_widget)
         label = QLabel(f'Installation path : ')
         installation_path_layout.addWidget(label)
-        line_edit = QLineEdit()
-        line_edit.setText(CONFIG.installation_path)
-        line_edit.setReadOnly(True)
-        installation_path_layout.addWidget(line_edit)
+        self.installation_path_label = QLineEdit()
+        self.installation_path_label.setText(CONFIG.installation_path)
+        self.installation_path_label.setReadOnly(True)
+        installation_path_layout.addWidget(self.installation_path_label)
         change_button = QPushButton('Change')
         installation_path_layout.addWidget(change_button)
-        change_button.clicked.connect(lambda x: self.change_installation_path(line_edit))
+        change_button.clicked.connect(self.change_installation_path)
         check_button = QPushButton('Check')
         installation_path_layout.addWidget(check_button)
-        check_button.clicked.connect(lambda x: self.check_installation_path(line_edit))
+        check_button.clicked.connect(self.check_installation_path)
 
         # backup original files
         backup_widget = QWidget()
@@ -50,10 +56,10 @@ class QPreferencesDialog(QDialog):
         close_buttons_layout = QHBoxLayout(close_buttons_widget)
         close_buttons_layout.addStretch()
         cancel_button = QPushButton('Cancel')
-        cancel_button.clicked.connect(lambda x: self.save_and_close(save=False))
+        cancel_button.clicked.connect(lambda x: self.close(save=False))
         close_buttons_layout.addWidget(cancel_button)
         save_button = QPushButton('Save')
-        save_button.clicked.connect(lambda x: self.save_and_close(save=True))
+        save_button.clicked.connect(lambda x: self.close(save=True))
         close_buttons_layout.addWidget(save_button)
 
         main_layout.addWidget(installation_path_widget)
@@ -61,7 +67,7 @@ class QPreferencesDialog(QDialog):
         main_layout.addStretch()
         main_layout.addWidget(close_buttons_widget)
 
-    def change_installation_path(self, line_edit):
+    def change_installation_path(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.Directory)
 
@@ -69,62 +75,56 @@ class QPreferencesDialog(QDialog):
             dirname = dialog.selectedFiles()
             if len(dirname) == 1:
                 CONFIG.installation_path = dirname[0]
-                line_edit.setText(CONFIG.installation_path)
+                self.installation_path_label.setText(CONFIG.installation_path)
 
-    def check_installation_path(self, line_edit):
+    def check_installation_path(self):
         try:
             check_installation(CONFIG.installation_path)
         except (InvalidHashError, FileNotFoundError) as e:
-            message_box = QMessageBox()
-            message_box.setText(f"{e}")
             CONFIG.installation_path = ""
-            line_edit.setText(CONFIG.installation_path)
-            message_box.exec()
+            self.installation_path_label.setText(CONFIG.installation_path)
+            QErrorBox(e).exec()
             return False
-        message_box = QMessageBox()
-        message_box.setText(f"Check Completed")
-        message_box.exec()
+        QInfoBox("Check Completed").exec()
         return True
 
     def backup_original_files(self):
         try:
             check_installation(CONFIG.installation_path)
         except (InvalidHashError, FileNotFoundError) as e:
-            message_box = QMessageBox()
-            message_box.setText(f"{e}")
-            message_box.exec()
+            QErrorBox(e).exec()
+            return
 
         for filename in ORIGINAL_HASH:
             source_filename = os.path.join(CONFIG.installation_path, filename)
             destination_filename = os.path.join("backup", filename)
             os.makedirs(os.path.dirname(destination_filename), exist_ok=True)
             shutil.copy2(source_filename, destination_filename)
-        message_box = QMessageBox()
-        message_box.setText(f"Backup Completed")
-        message_box.exec()
+        QInfoBox("Backup Completed").exec()
 
     def restore_original_files(self):
         try:
             check_installation("backup")
         except (InvalidHashError, FileNotFoundError) as e:
-            message_box = QMessageBox()
-            message_box.setText(f"{e}")
-            message_box.exec()
+            QErrorBox(e).exec()
+            return
 
         for filename in ORIGINAL_HASH:
             source_filename = os.path.join("backup", filename)
             destination_filename = os.path.join(CONFIG.installation_path, filename)
             shutil.copy2(source_filename, destination_filename)
-        message_box = QMessageBox()
-        message_box.setText(f"Restore Completed")
-        message_box.exec()
+        QInfoBox("Restore Completed").exec()
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            event.accept()
+            self.close()
 
-
-
-    def save_and_close(self, save):
+    def close(self, save=False):
+        print("close")
         if save is True:
             CONFIG.save()
         else:
             CONFIG.load()
-        self.close()
+        super().close()
+

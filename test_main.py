@@ -12,8 +12,8 @@ from dev.utils import print_original_hash_dict
 
 
 CONFIG.load()
-# print_original_hash_dict(CONFIG.installation_path)
-print(ORIGINAL_HASH)
+print_original_hash_dict(CONFIG.installation_path)
+# print(ORIGINAL_HASH)
 
 
 

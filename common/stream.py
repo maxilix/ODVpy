@@ -135,7 +135,7 @@ class ReadStream(object):
     #             func(self, *arg, **kwargs)
     #     return wrapper
 
-    def __init__(self, data, *, debug=True):
+    def __init__(self, data):
         self._input = io.BytesIO(data)
         # self.debug = debug
         # if self.debug is True:

@@ -1,1 +1,4 @@
-{"installation_path": "/home/maxe/.local/share/Steam/steamapps/common/Desperados Wanted Dead or Alive"}
+{
+  "installation_path": "/home/maxe/Documents/Desperados_WDoA/steam_installation",
+  "automatically_load_original_dvm": 1
+}

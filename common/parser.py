@@ -1,3 +1,4 @@
+import os
 
 from . import ReadStream
 
@@ -7,10 +8,12 @@ extension_list = ["dvf", "dvm", "dvd"]
 
 class Parser(object):
 
+	extension = None   # must be defined by inheriting objects
+
 	def __init__(self, filename):
 		assert filename[-4:] == f".{self.extension}"
-		if "/" in filename:
-			temp_name = filename.rsplit("/",1)[1][:-4]
+		if os.sep in filename:
+			temp_name = filename.rsplit(os.sep, 1)[1][:-4]
 		else:
 			temp_name = filename[:-4]
 		self.name = temp_name.replace(" ", "_")

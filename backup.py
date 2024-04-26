@@ -9,10 +9,6 @@ class InvalidHashError(BaseException):
     pass
 
 
-def backup_original():
-    pass
-
-
 def check_installation(root_path):
     for filename in ORIGINAL_HASH:
         complete_filename = os.path.join(root_path, filename)
