@@ -184,7 +184,6 @@ L25 04000000 0200 1a00 0f
 from common import *
 
 from .section import Section, section_list
-from debug import hs_to_i, i_to_hsi, X_MAX, Y_MAX
 
 
 class Masks(Section):

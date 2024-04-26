@@ -12,7 +12,10 @@ Y_MAX = 2368
 # Custom objects know their class.
 # Function objects seem to know way too much, including modules.
 # Exclude modules as well.
+
 BLACKLIST = type, ModuleType, FunctionType
+
+
 
 
 def size_of(obj):
@@ -61,16 +64,13 @@ def hs_to_i(hex_string):
 		return int(hex_string[:2], 16) + hs_to_i(hex_string[2:])*256
 
 
-def i_to_hsi(integer):
+def hxs(integer):  # integer to hex string
 	if integer == 0:
 		return "00"
 	rop = hex(integer).lstrip("0x")
-	if len(rop)%2==1:
-		rop = "0"+rop
-	#print(rop)
-	rop = "".join(reversed([rop[i]+rop[i+1] for i in range(0,len(rop), 2)]))
-	if integer > 9:
-		rop += f" ({integer})"
+	if len(rop) % 2 == 1:
+		rop = "0" + rop
+	rop = "".join(reversed([rop[i]+rop[i+1] for i in range(0, len(rop), 2)]))
 	return rop
 
 

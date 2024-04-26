@@ -101,8 +101,8 @@ class DvmParser(Parser):
 	def size(self):
 		return (self._width, self._height)
 
-	def print_size(self):
-		print(f"{i_to_hsi(self.size[0])} {i_to_hsi(self.size[1])}")
+	# def print_size(self):
+	# 	print(f"{i_to_hsi(self.size[0])} {i_to_hsi(self.size[1])}")
 		
 
 

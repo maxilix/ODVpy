@@ -1,9 +1,11 @@
 import sys
+from functools import reduce
 
 from PyQt6.QtCore import QPointF, QPoint, QLineF
 from PyQt6.QtGui import QPolygonF, QPainterPath
 
 from common import *
+from debug import hxs
 
 from .section import Section, section_list
 
@@ -267,26 +269,56 @@ class Motion(Section):
                          ])
         self.nb_unk_obj = stream.read(UShort)
         assert self.nb_unk_obj == max_index + 1
-        # print(f"{nb_unk_obj=}")
-        self.before_ff = []
-        self.ff_index = 0
-        while True:
-            temp = stream.read(Bytes, 1)
-            if not temp:
-                raise Exception("unable to find FF in the last part")
-            if temp != b'\xff':
-                self.before_ff.append(temp)
-                self.ff_index += 1
+
+        for _ in range(self.nb_unk_obj):
+            u1 = stream.read(UChar)
+            # print(f"{hxs(u1)}   ", end="")
+            if u1 == 255:
+                # print()
+                continue
             else:
-                break
+                u2 = stream.read(UChar)
+                # print(f"{hxs(u2)}   ", end="")
+                n1 = stream.read(UShort)
+                # print(f"{hxs(n1).zfill(4)} ", end="")
+                l1 = [stream.read(UChar) for _ in range(n1)]
+                assert all([u in [1, 2, 4, 8] for u in l1])
+                assert u1 == reduce(lambda x, y: x | y, l1)
 
-        assert len(self.before_ff) % 8 == 0
+                n2 = stream.read(UShort)
+                assert n1 == n2
+                # print(f"  {hxs(n2).zfill(4)} ", end="")
+                l2 = [stream.read(UChar) for _ in range(n2)]
+                assert all([u in [1, 2, 4, 8] for u in l2])
+                assert u2 == reduce(lambda x, y: x | y, l2)
+                # print()
 
-        # print(f"{len(self.before_ff)=}")
-        self.tail = stream.read_raw()  # must read list of unk_obj TODO
-        assert len(self.tail) % 4 == 0
-        for byte in self.tail:
-            assert byte in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]  # never 15
+        tail = stream.read_raw()
+        assert len(tail) == 0
+        # print(f"{len(self.tail)=}")
+
+
+        # print(f"{set_uu=}")
+        # # print(f"{nb_unk_obj=}")
+        # self.before_ff = []
+        # self.ff_index = 0
+        # while True:
+        #     temp = stream.read(Bytes, 1)
+        #     if not temp:
+        #         raise Exception("unable to find FF in the last part")
+        #     if temp != b'\xff':
+        #         self.before_ff.append(temp)
+        #         self.ff_index += 1
+        #     else:
+        #         break
+        #
+        # assert len(self.before_ff) % 8 == 0
+        #
+        # # print(f"{len(self.before_ff)=}")
+        # self.tail = stream.read_raw()  # must read list of unk_obj TODO
+        # assert len(self.tail) % 4 == 0
+        # for byte in self.tail:
+        #     assert byte in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]  # never 15
 
         # print(f"len tail = {len(self.tail)}")
 
@@ -295,9 +327,9 @@ class Motion(Section):
         # print(proportion)
 
         # === stat on cp b0 ===
-        l = [o for layer in self for sublayer in layer for area in sublayer for cp in area for o in cp.b0]
-        proportion = [round(l.count(i)/len(l), 4) for i in range(16)]
-        print(proportion)
+        # l = [o for layer in self for sublayer in layer for area in sublayer for cp in area for o in cp.b0]
+        # proportion = [round(l.count(i)/len(l), 4) for i in range(16)]
+        # print(proportion)
 
 
 

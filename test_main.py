@@ -1,6 +1,7 @@
 import hashlib
 
 from common import *
+from config import CONFIG
 from dvd import DvdParser
 from settings import *
 import backup
@@ -8,29 +9,23 @@ import backup
 from dev.utils import print_original_hash_dict
 
 
-
-
-
 CONFIG.load()
-print_original_hash_dict(CONFIG.installation_path)
-# print(ORIGINAL_HASH)
-
-
-
 
 
 for level_index in range(26):
+
+    filename_we = original_level_filename_we(level_index)
+    dvd = DvdParser(filename_we + ".dvd")
+    motion = dvd.move
+
     pass
-    # filename = original_level_filename(level_index) + ".scb"
     # with open(filename, 'rb') as file:
     #     print(f"\"{hashlib.file_digest(file, 'sha256').hexdigest()}\",")
 
 
-    # dvd = DvdParser()
 
     # print("---------------------------------------------------")
     # print(f"  L{level_index:02} ")
-    # motion = dvd.move
     # assert motion.built
     # print(motion.empty_flag, motion.active_flag)
 
