@@ -13,7 +13,7 @@ class Bytes(bytes, RWStreamable):
             raise ReadingError(f"length must be specified when reading {cls.__name__}")
         raw_bytes = stream.read_raw(length)
         # stream.debug_print(raw_bytes.hex())
-        return raw_bytes
+        return cls(raw_bytes)
 
     def to_stream(self, stream):
         stream.write_raw(self)

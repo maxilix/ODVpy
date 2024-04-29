@@ -65,14 +65,11 @@ class QWindow(QMainWindow):
         edit_menu.addAction(open_preferences_dialog_action)
         # ============================== Edit menu ==============================
 
-
         self.set_widget()
 
     def open_preferences_dialog(self):
         dialog = QPreferencesDialog(self)
         dialog.exec()
-
-
 
     def open_file_dialog(self):
         dialog = QFileDialog(self)
@@ -94,7 +91,7 @@ class QWindow(QMainWindow):
 
     def load_level(self, filename_we):
         self.current_level = Level(filename_we)
-        if self.current_level.loaded is True:  # test if Level is correctly loaded
+        if self.current_level.loaded is True:  # test if current_level is correctly loaded
             self.set_widget()
         else:
             self.current_level = None
@@ -104,11 +101,9 @@ class QWindow(QMainWindow):
         self.set_widget()
 
     def set_widget(self):
-        # layout = QHBoxLayout()
         if self.current_level is None:
             main_widget = QLabel("Select level")
             main_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            # layout.addWidget(q_label)
         else:
             main_widget = QSplitter(self)
             viewer = QViewer(self.current_level)
@@ -119,8 +114,6 @@ class QWindow(QMainWindow):
             main_widget.addWidget(control)
             main_widget.setChildrenCollapsible(False)
 
-        # w = QWidget()
-        # w.setLayout(layout)
         self.setCentralWidget(main_widget)
 
 

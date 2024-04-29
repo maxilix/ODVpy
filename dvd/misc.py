@@ -79,10 +79,10 @@ class Miscellaneous(Section):
         self.unk1 = substream.read(Bytes, 6)
         substream.read(Padding, 1, pattern=b'\x3f')
         self.night = substream.read(UChar)  # length of the vision cone, sound sensitivity, sprite darkening
-        # WARNING stream.read_raw() should not be used, because it read all and Section.build() checks whether the
-        # entire self.data stream has been consumed.
+        # WARNING stream.read_raw() should not be used, because it read all and Section.load() checks whether the
+        # entire substream has been consumed.
         # if you know what you're reading, you should know the length of the reading
-        self.unk2 = substream.read_raw()  # 10 bytes for level 22, 6 bytes for others, WHY?
+        self.unk2 = Bytes(substream.read_raw())  # 10 bytes for level 22, 6 bytes for others, WHY?
 
     def _save(self, substream):
         substream.write(Version(6))

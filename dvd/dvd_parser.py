@@ -22,11 +22,24 @@ class DvdParser(Parser):
 		self._mask = self.stream.read(Masks)
 
 		# self.build()
+	@property
+	def misc(self):
+		if self._misc.loaded is False:
+			self._misc.load()
+		return self._misc
+
+	@property
+	def bgnd(self):
+		if self._bgnd.loaded is False:
+			self._bgnd.load()
+		return self._bgnd
 
 	@property
 	def move(self):
 		if self._move.loaded is False:
 			self._move.load()
 		return self._move
+
+
 
 
