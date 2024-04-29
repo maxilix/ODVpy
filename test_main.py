@@ -16,7 +16,15 @@ for level_index in range(26):
 
     filename_we = original_level_filename_we(level_index)
     dvd = DvdParser(filename_we + ".dvd")
+    sd1 = dvd._move._data
+    # print(len(sd1))
     motion = dvd.move
+    motion.save()
+    motion.force_reload()
+    sd2 = dvd._move._data
+    # print(len(sd2))
+    assert sd1 == sd2
+
 
     pass
     # with open(filename, 'rb') as file:

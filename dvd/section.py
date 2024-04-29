@@ -3,39 +3,65 @@ from abc import ABC, abstractmethod
 from common import *
 
 # 20 dvd sections in order
-section_list = ["MISC", "BGND", "MOVE", "SGHT", "MASK", "WAYS", "ELEM", "FXBK", "MSIC", "SND_", "PAT_", "BOND", "MAT_",
-                "LIFT", "AI__", "BUIL", "SCRP", "JUMP", "CART", "DLGS"]
+section_list = ["MISC", "BGND", "MOVE", "SGHT", "MASK", "WAYS", "ELEM", "FXBK", "MSIC", "SND ", "PAT ", "BOND", "MAT ",
+                "LIFT", "AI  ", "BUIL", "SCRP", "JUMP", "CART", "DLGS"]
 
 
 class Section(RWStreamable):
 
-    section = None
+    section_index = None  # must be defined by inheriting objects
 
-    def __init__(self, data):
+    def __init__(self, name, data):
+        self._name = name
         self._data = data
-        self._built = False
+        self._loaded = False
         # log.info(f"Section {self.section} initialized.")
 
     @classmethod
     def from_stream(cls, stream):
-        read_section = stream.read(String, 4)
-        assert read_section == cls.section
+        name = stream.read(String, 4)
+        assert name == section_list[cls.section_index]
         size = stream.read(UInt)
         data = stream.read(Bytes, size)
-        return cls(data)
+        return cls(name, data)
 
-    @abstractmethod
-    def _build(self, stream):
-        pass
+    def to_stream(self, stream):
+        self.save()  # update self._data
+        stream.write(self._name)
+        stream.write(UInt(len(self._data)))
+        stream.write(self._data)
 
-    def build(self):
-        stream = ReadStream(self._data)
-        self._build(stream)
-        next_byte = stream.read(Bytes, 1)
+    def load(self):
+        substream = ReadStream(self._data)
+        self._load(substream)
+        next_byte = substream.read(Bytes, 1)
         assert next_byte == b''
-        self._built = True
+        self._loaded = True
         # log.info(f"Section {self.section} built")
 
+    def force_reload(self):
+        self.load()
+
+    @abstractmethod
+    def _load(self, substream):
+        # must read (and create) self state from substream
+        pass
+
+    def save(self):
+        substream = WriteStream()
+        self._save(substream)
+        new_data = substream.get_value()
+        if new_data == b'':
+            # assume _save() do nothing, self._data dont change
+            pass
+        else:
+            self._data = new_data
+
+    @abstractmethod
+    def _save(self, substream):
+        # must write self state in substream
+        pass
+
     @property
-    def built(self):
-        return self._built
+    def loaded(self):
+        return self._loaded

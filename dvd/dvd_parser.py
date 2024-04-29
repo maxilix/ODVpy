@@ -25,8 +25,8 @@ class DvdParser(Parser):
 
 	@property
 	def move(self):
-		if self._move.built is False:
-			self._move.build()
+		if self._move.loaded is False:
+			self._move.load()
 		return self._move
 
 

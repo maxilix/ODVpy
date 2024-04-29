@@ -7,9 +7,12 @@ from .section import Section, section_list
 
 class Sight(Section):
 
-    section = section_list[3]  # SGHT
+    section_index = 3  # SGHT
 
-    def _build(self):
-        self._stream.read_raw()
+    def _load(self, substream):
+        substream.read_raw()
+
+    def _save(self, substream):
+        pass
 
 

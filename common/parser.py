@@ -1,6 +1,6 @@
 import os
 
-from . import ReadStream
+from .rw_stream import ReadStream
 
 
 extension_list = ["dvf", "dvm", "dvd"]

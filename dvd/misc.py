@@ -65,21 +65,31 @@ L25 00 04 (1024) x c0 03 (960)
 
 from common import *
 
-from .section import Section, section_list
+from .section import Section
 
 
 class Miscellaneous(Section):
-    section = section_list[0]  # MISC
+    section_index = 0  # MISC
 
-    def _build(self):
-        version = self._stream.read(UInt)
+    def _load(self, substream):
+        version = substream.read(Version)
         assert version == 6
-        self.unk0 = self._stream.read(Bytes, 5)
-        self._stream.read(Padding, 12, pattern=b'\x96\xfa\x64\x00\xff\xc8\x00\x00\xff\x50\x00\x00')
-        self.unk1 = self._stream.read(Bytes, 6)
-        self._stream.read(Padding, 1, pattern=b'\x3f')
-        self.night = self._stream.read(Bool)  # length of the vision cone, sound sensitivity, sprite darkening
+        self.unk0 = substream.read(Bytes, 5)
+        substream.read(Padding, 12, pattern=b'\x96\xfa\x64\x00\xff\xc8\x00\x00\xff\x50\x00\x00')
+        self.unk1 = substream.read(Bytes, 6)
+        substream.read(Padding, 1, pattern=b'\x3f')
+        self.night = substream.read(UChar)  # length of the vision cone, sound sensitivity, sprite darkening
         # WARNING stream.read_raw() should not be used, because it read all and Section.build() checks whether the
         # entire self.data stream has been consumed.
         # if you know what you're reading, you should know the length of the reading
-        self.unk2 = self._stream.read_raw()  # 10 bytes for level 22, 6 bytes for others, WHY?
+        self.unk2 = substream.read_raw()  # 10 bytes for level 22, 6 bytes for others, WHY?
+
+    def _save(self, substream):
+        substream.write(Version(6))
+        substream.write(self.unk0)
+        substream.write(Padding(b'\x96\xfa\x64\x00\xff\xc8\x00\x00\xff\x50\x00\x00'))
+        substream.write(self.unk1)
+        substream.write(Padding(b'\x3f'))
+        substream.write(self.night)
+        substream.write(self.unk2)
+

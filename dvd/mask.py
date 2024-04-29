@@ -187,9 +187,9 @@ from .section import Section, section_list
 
 
 class Masks(Section):
-    section = section_list[4]  # MASK
+    section_index = 4  # MASK
 
-    def _build(self):
+    def _load(self):
         version = self._stream.read(UInt)
         assert version == 4
         nb_layer = self._stream.read(UShort)
@@ -215,6 +215,9 @@ class Masks(Section):
 
                 self._stream.read_raw()
                 return
+
+    def _save(self, substream):
+        pass
 
     def p_build(self):
         stream = ReadStream(self._data)

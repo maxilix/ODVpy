@@ -5,9 +5,17 @@ class PaddingError(Exception):
 		self.padding = padding
 
 
-class ReadingTypeError(TypeError):
+class ReadingError(Exception):
 	pass
 
 
-class WritingTypeError(TypeError):
+class WritingError(Exception):
+	pass
+
+
+class NegativeUnsignedError(ValueError):
+	pass
+
+
+class TooBigError(ValueError):
 	pass

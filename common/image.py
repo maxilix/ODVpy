@@ -3,9 +3,9 @@ import gzip
 import bz2
 
 from abc import ABC, abstractmethod
-from PIL import Image, ImageDraw
 
-from . import RWStreamable, UShort, UInt, Padding, Bytes
+from .rw_stream import RWStreamable
+from .rw_base import UShort
 
 
 class Pixel(RWStreamable):
@@ -25,6 +25,8 @@ class Pixel(RWStreamable):
 	@classmethod
 	def from_stream(cls, stream):
 		r5g6b5 = stream.read(UShort)
+		#  red     green     blue
+		# 00000   000 000   00000
 		r8 = (r5g6b5 >> 11) * 8
 		g8 = ((r5g6b5 >> 5) & 0x3F) * 4
 		b8 = (r5g6b5 & 0x1F) * 8
@@ -37,7 +39,7 @@ class Pixmap(ABC):
 	def needs(func):
 		def wrapper(self, *arg, **kwargs):
 			if self.bmp is None:
-				self.build()
+				self.load()
 			func(self, *arg, **kwargs)
 		return wrapper
 
