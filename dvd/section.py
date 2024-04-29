@@ -39,9 +39,6 @@ class Section(RWStreamable):
         self._loaded = True
         # log.info(f"Section {self.section} built")
 
-    def force_reload(self):
-        self.load()
-
     @abstractmethod
     def _load(self, substream):
         # must read (and create) self state from substream

@@ -20,7 +20,7 @@ for level_index in range(26):
     # print(len(sd1))
     motion = dvd.move
     motion.save()
-    motion.force_reload()
+    motion.load()
     sd2 = dvd._move._data
     # print(len(sd2))
     assert sd1 == sd2
