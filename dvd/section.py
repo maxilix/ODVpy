@@ -26,7 +26,8 @@ class Section(RWStreamable):
         return cls(name, data)
 
     def to_stream(self, stream):
-        self.save()  # update self._data
+        if self._loaded:
+            self.save()  # update self._data
         stream.write(self._name)
         stream.write(UInt(len(self._data)))
         stream.write(self._data)
@@ -52,7 +53,7 @@ class Section(RWStreamable):
             # assume _save() do nothing, self._data dont change
             pass
         else:
-            self._data = new_data
+            self._data = Bytes(new_data)
 
     @abstractmethod
     def _save(self, substream):

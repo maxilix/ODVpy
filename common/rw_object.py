@@ -52,10 +52,10 @@ class Coordinate(RWStreamable):
     def __init__(self, x: int, y: int):
         if not (isinstance(x, int) and isinstance(y, int)):
             raise TypeError("Coordinate must be (int, int)")
-        self.x = x
+        self.x = UShort(x)
         if self.x < 0 or self.x > X_MAX_OFFICIAL:
             print(f"Warning: Coordinate x={self.x}")
-        self.y = y
+        self.y = UShort(y)
         if self.y < 0 or self.y > Y_MAX_OFFICIAL:
             print(f"Warning: Coordinate y={self.y}")
 

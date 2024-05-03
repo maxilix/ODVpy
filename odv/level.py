@@ -27,6 +27,7 @@ class Level(object):
         if self.dvd is not None:
             self.load_dvm()
 
+
     def load_dvm(self):
         try:
             self.dvm = DvmParser(self.filename_we + ".dvm")
@@ -47,6 +48,7 @@ class Level(object):
                     else:
                         self.dvm = None
             else:
+                QErrorBox(Exception("Unable to find correspondent map")).exec()
                 self.dvm = None
 
     def load_original_dvm(self):
@@ -58,9 +60,8 @@ class Level(object):
             QErrorBox(e).exec()
 
     def load_dvd(self):
-        filename = original_level_filename_we(self.index) + ".dvd"
         try:
-            self.dvd = DvdParser(filename)
+            self.dvd = DvdParser(self.filename_we + ".dvd")
         except FileNotFoundError as e:
             self.dvd = None
             QErrorBox(e).exec()

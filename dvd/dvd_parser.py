@@ -1,5 +1,5 @@
 
-from common import Parser
+from common import Parser, WriteStream, Bytes
 from .misc import Miscellaneous
 from .bgnd import MiniMap
 from .move import Motion
@@ -20,8 +20,19 @@ class DvdParser(Parser):
 		self._move = self.stream.read(Motion)
 		self._sght = self.stream.read(Sight)
 		self._mask = self.stream.read(Masks)
+		self._tail = self.stream.read_raw()  # read all
 
-		# self.build()
+	def save_to_file(self, filename):
+		stream = WriteStream()
+		stream.write(self._misc)
+		stream.write(self._bgnd)
+		stream.write(self._move)
+		stream.write(self._sght)
+		stream.write(self._mask)
+		stream.write(Bytes(self._tail))
+		with open(filename, 'wb') as file:
+			file.write(stream.get_value())
+
 	@property
 	def misc(self):
 		if self._misc.loaded is False:

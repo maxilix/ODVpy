@@ -22,3 +22,6 @@ class Parser(object):
 
 	def __repr__(self):
 		return f"<Parser {self.extension} : {self.name}>"
+
+	def save_to_file(self, filename):
+		pass
