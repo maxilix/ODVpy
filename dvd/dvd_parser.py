@@ -9,7 +9,7 @@ from .mask import Masks
 
 class DvdParser(Parser):
 
-	extension = "dvd"
+	ext = "dvd"
 
 	def __init__(self, filename):
 		super().__init__(filename)

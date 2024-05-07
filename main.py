@@ -9,13 +9,13 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, Q
     QGraphicsLineItem, QVBoxLayout, QHBoxLayout, QLabel, QToolBar, QSplitter, QFileDialog, QMessageBox
 from PyQt6.QtGui import QPen, QBrush, QColor
 
-from odv.level import Level
+from odv.level import Level, original_name, OriginalLevel
 from qt.preferences import QPreferencesDialog
 from qt.viewer import QViewer
 from qt.control import QControl
-from dev.utils import remove_extension
+from common import remove_extension
 
-from settings import original_level_filename_we
+# from settings import original_level_filename_we
 from config import CONFIG
 from debug import *
 
@@ -32,21 +32,21 @@ class QWindow(QMainWindow):
         # self.current_level = ODVLevel(original_level_filename(0))
 
         menu = self.menuBar()
-
         # ============================== File menu ==============================
         file_menu = menu.addMenu("File")
         open_original_submenu = file_menu.addMenu("Open Original Level")
+
 
         for i in range(26):
             if i == 0:
                 open_original_level_action = QAction(f"Demo level", self)
             else:
                 open_original_level_action = QAction(f"Level {i}", self)
-            open_original_level_action.triggered.connect(lambda state, index=i: self.load_level(original_level_filename_we(index)))
+            open_original_level_action.triggered.connect(lambda state, index=i: self.load_original_level(index))
             open_original_submenu.addAction(open_original_level_action)
 
         open_custom_level_action = QAction(f"Open Custom level", self)
-        open_custom_level_action.triggered.connect(self.open_file_dialog)
+        open_custom_level_action.triggered.connect(self.load_custom_level)
         file_menu.addAction(open_custom_level_action)
 
         close_level_action = QAction("Close level", self)
@@ -71,7 +71,7 @@ class QWindow(QMainWindow):
         dialog = QPreferencesDialog(self)
         dialog.exec()
 
-    def open_file_dialog(self):
+    def load_custom_level(self):
         dialog = QFileDialog(self)
         # dialog.setDirectory(r'C:\images')
         dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
@@ -87,14 +87,12 @@ class QWindow(QMainWindow):
             filenames = dialog.selectedFiles()
             if len(filenames) == 1:
                 filename_we = remove_extension(filenames[0])
-                self.load_level(filename_we)
+                self.current_level = Level(filename_we)
+                self.set_widget()
 
-    def load_level(self, filename_we):
-        self.current_level = Level(filename_we)
-        if self.current_level.loaded is True:  # test if current_level is correctly loaded
-            self.set_widget()
-        else:
-            self.current_level = None
+    def load_original_level(self, index):
+        self.current_level = OriginalLevel(index)
+        self.set_widget()
 
     def unload_level(self):
         self.current_level = None
@@ -109,6 +107,7 @@ class QWindow(QMainWindow):
             viewer = QViewer(self.current_level)
             control = QControl(viewer.scene, self.current_level)
             viewer.scene.set_control_pointer(control)
+            viewer.info_bar.set_widget(level_index=self.current_level.index)
 
             main_widget.addWidget(viewer)
             main_widget.addWidget(control)

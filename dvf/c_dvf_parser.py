@@ -191,11 +191,11 @@ z
 
 	def print_list_profiles(self):
 		for index, profile in enumerate(self.profiles):
-			print(f"{index:2} {profile.name}")
+			print(f"{index:2} {profile.abs_name}")
 
 
 	def save(self):
-		path = self.name
+		path = self.abs_name
 		if not os.path.isdir(path):
 			os.mkdir(path)
 		for profile in self.profiles:

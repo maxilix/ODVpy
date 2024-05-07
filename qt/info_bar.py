@@ -11,6 +11,7 @@ class QInfoBar(QLabel):
         self._x = 0
         self._y = 0
         self._zoom = 1
+        self._level_index = -1
         self.refresh()
 
     def set_widget(self, **kwargs):
@@ -20,8 +21,13 @@ class QInfoBar(QLabel):
             self._y = kwargs["y"]
         if "zoom" in kwargs:
             self._zoom = kwargs["zoom"]
+        if "level_index" in kwargs:
+            self._level_index = kwargs["level_index"]
         self.refresh()
 
     def refresh(self):
-        self.setText(f"x:{floor(self._x)}\ty:{floor(self._y)}\tzoom:{round(self._zoom*100)}%")
+        self.setText(f"x:{floor(self._x)}\t"
+                     f"y:{floor(self._y)}\t"
+                     f"zoom:{round(self._zoom*100)}%\t"
+                     f"level:{self._level_index:02}")
 

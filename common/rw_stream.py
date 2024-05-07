@@ -49,6 +49,9 @@ class ReadStream(object):
         fd.close()
         return cls(data)
 
+    def get_value(self):
+        return self._input.getvalue()
+
     def read_raw(self, length=None):
         return self._input.read(length)
 

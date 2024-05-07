@@ -4,10 +4,12 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QLabel, QFileDialog, \
     QMessageBox
 
+from odv.level import Level, original_name
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
+from common import *
 from settings import *
 from config import CONFIG
-from backup import check_installation, InvalidHashError
+# from backup import check_installation, InvalidHashError
 
 
 class QPreferencesDialog(QDialog):
@@ -78,17 +80,23 @@ class QPreferencesDialog(QDialog):
                 self.installation_path_label.setText(CONFIG.installation_path)
 
     def check_installation_path(self):
-        try:
-            check_installation(CONFIG.installation_path)
-        except (InvalidHashError, FileNotFoundError) as e:
-            CONFIG.installation_path = ""
-            self.installation_path_label.setText(CONFIG.installation_path)
-            QErrorBox(e).exec()
-            return False
+        for index in range(26):
+            try:
+                level = Level(os.path.join(CONFIG.installation_path, original_name(index)), index)
+                print(f"level {index} is {level.is_original()}")
+                if level.is_original() is False:
+                    raise InvalidHashError(f"invalid hash for {index} level")
+            except (InvalidHashError, FileNotFoundError) as e:
+                exit()
+                CONFIG.installation_path = ""
+                self.installation_path_label.setText(CONFIG.installation_path)
+                QErrorBox(e).exec()
+                return False
         QInfoBox("Check Completed").exec()
         return True
 
     def backup_original_files(self):
+        pass
         try:
             check_installation(CONFIG.installation_path)
         except (InvalidHashError, FileNotFoundError) as e:
@@ -103,6 +111,7 @@ class QPreferencesDialog(QDialog):
         QInfoBox("Backup Completed").exec()
 
     def restore_original_files(self):
+        pass
         try:
             check_installation("backup")
         except (InvalidHashError, FileNotFoundError) as e:
@@ -121,7 +130,6 @@ class QPreferencesDialog(QDialog):
             self.close()
 
     def close(self, save=False):
-        print("close")
         if save is True:
             CONFIG.save()
         else:

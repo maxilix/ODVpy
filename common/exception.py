@@ -1,21 +1,25 @@
 
 class PaddingError(Exception):
-	def __init__(self, message, padding):            
-		super().__init__(message)
-		self.padding = padding
+    def __init__(self, message, padding):
+        super().__init__(message)
+        self.padding = padding
 
 
 class ReadingError(Exception):
-	pass
+    pass
 
 
 class WritingError(Exception):
-	pass
+    pass
 
 
 class NegativeUnsignedError(ValueError):
-	pass
+    pass
 
 
 class TooBigError(ValueError):
-	pass
+    pass
+
+
+class InvalidHashError(Exception):
+    pass

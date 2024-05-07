@@ -77,7 +77,7 @@ class LevelMap(Pixmap, ReadableFromStream):
 
 class DvmParser(Parser):
 
-	extension = "dvm"
+	ext = "dvm"
 
 	def __init__(self, filename):
 		super().__init__(filename)
