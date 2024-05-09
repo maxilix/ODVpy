@@ -3,7 +3,7 @@ from settings import *
 
 class CONFIG(object):
     installation_path: str
-    base_path: str
+    backup_path: str
     automatically_load_original_dvm: bool
 
     @classmethod

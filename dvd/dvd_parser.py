@@ -46,9 +46,9 @@ class DvdParser(Parser):
 		return self._bgnd
 
 	@property
-	def move(self):
+	def move(self, force=False):
 		if self._move.loaded is False:
-			self._move.load()
+			self._move.load(force)
 		return self._move
 
 

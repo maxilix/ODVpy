@@ -1,3 +1,4 @@
+import hashlib
 import re
 
 from PyQt6.QtWidgets import QMessageBox
@@ -12,12 +13,17 @@ from dvm import DvmParser
 from common import copy
 
 
-def original_name(index):
-    name = ""
+def original_name(index, root=None):
+    if root is None:
+        name = []
+    else:
+        name = [root]
     if index == 0:
-        name += f"demo{os.sep}"
-    name += f"data{os.sep}levels{os.sep}level_{index:02}"
-    return name
+        name.append("demo")
+    name.append("data")
+    name.append("levels")
+    name.append(f"level_{index:02}")
+    return os.path.join(*name)
 
 
 class Level(object):
@@ -36,41 +42,6 @@ class Level(object):
         # self._scb = None
         self._dvm = None
 
-    # def load(self):
-    #     self.load_dvd()
-    #     if self.dvd is not None:
-    #         self.load_dvm()
-    #
-    # def load_dvm(self):
-    #     try:
-    #         self.dvm = DvmParser(self.name + ".dvm")
-    #     except FileNotFoundError as e:
-    #         if self.index != -1:
-    #             if CONFIG.automatically_load_original_dvm is True:
-    #                 self.load_original_dvm()
-    #             else:
-    #                 message_box = QMessageBox()
-    #                 message_box.setIcon(QMessageBox.Icon.Question)
-    #                 message_box.setText(f"{e}")
-    #                 message_box.setInformativeText(f"Do you want to load the original level {self.index} dvm file instead?")
-    #                 message_box.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
-    #                 message_box.setDefaultButton(QMessageBox.StandardButton.Ok)
-    #                 response = message_box.exec()
-    #                 if response == QMessageBox.StandardButton.Ok:
-    #                     self.load_original_dvm()
-    #                 else:
-    #                     self.dvm = None
-    #         else:
-    #             QErrorBox(Exception("Unable to find correspondent map")).exec()
-    #             self.dvm = None
-    #
-    # def load_original_dvm(self):
-    #     filename = original_level_filename_we(self.index) + ".dvm"
-    #     try:
-    #         self.dvm = DvmParser(filename)
-    #     except FileNotFoundError as e:
-    #         self.dvm = None
-    #         QErrorBox(e).exec()
 
     @property
     def dvd(self):
@@ -90,17 +61,33 @@ class Level(object):
                     raise e
         return self._dvm
 
+    def file_hashes(self):
+        hashes = []
+        # dvd, dvm and scb files
+        for ext in LEVEL_EXTENSIONS[:3]:
+            with open(self.abs_name + "." + ext, "rb") as f:
+                hashes.append(hashlib.file_digest(f, 'sha256').hexdigest().lower())
+        # stf file
+        temp = [self.abs_name[:-8], "briefing", f"d00bs{self.index:02}"]
+        with open(os.path.join(*temp), "rb") as f:
+            hashes.append(hashlib.file_digest(f, 'sha256').hexdigest().lower())
+        # return tuple of 4 hashes
+        return tuple(hashes)
+
     def is_original(self):
-        hashes = ORIGINAL_LEVEL_HASH[self.index]
-        if self.dvd.hash() == hashes[0]:
-            return False
-        if self.dvm.hash() == hashes[1]:
-            return False
-        # if self.scb.hash() == hashes[2]:
+        return self.file_hashes() == ORIGINAL_LEVEL_HASH[self.index]
+        # hashes = ORIGINAL_LEVEL_HASH[self.index]
+        # if (h := self.dvd.hash()) != hashes[0]:
+        #     print(f"dvd hash {h} should be {hashes[0]}")
         #     return False
-        # if self.stf.hash() == hashes[3]:
+        # if (h := self.dvm.hash()) != hashes[1]:
+        #     print(f"dvm hash {h} should be {hashes[0]}")
         #     return False
-        return True
+        # # if self.scb.hash() == hashes[2]:
+        # #     return False
+        # # if self.stf.hash() == hashes[3]:
+        # #     return False
+        # return True
 
     def backup(self):
         assert CONFIG.installation_path in self.abs_name
@@ -133,6 +120,3 @@ class OriginalLevel(Level):
     def __init__(self, index):
         assert 0 <= index <= 25
         super().__init__(os.path.join(CONFIG.backup_path, original_name(index)), index)
-
-
-

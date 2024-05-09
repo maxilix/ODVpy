@@ -83,11 +83,11 @@ class QPreferencesDialog(QDialog):
         for index in range(26):
             try:
                 level = Level(os.path.join(CONFIG.installation_path, original_name(index)), index)
-                print(f"level {index} is {level.is_original()}")
+
+                # print(f"level {level.abs_name} is {level.is_original()}")
                 if level.is_original() is False:
                     raise InvalidHashError(f"invalid hash for {index} level")
             except (InvalidHashError, FileNotFoundError) as e:
-                exit()
                 CONFIG.installation_path = ""
                 self.installation_path_label.setText(CONFIG.installation_path)
                 QErrorBox(e).exec()
