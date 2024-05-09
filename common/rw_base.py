@@ -2,7 +2,7 @@ from abc import ABC
 from struct import unpack, pack
 
 from .rw_stream import RWStreamable
-from .exception import ReadingError, NegativeUnsignedError, TooBigError
+from .exception import ReadingError, NegativeUnsignedError, TooBigError, TooSmallError
 
 
 class Bytes(bytes, RWStreamable):
@@ -33,6 +33,40 @@ class Bytes(bytes, RWStreamable):
 #             stream.write_raw(b'\x01')
 #         else:
 #             stream.write_raw(b'\x00')
+
+
+class LittleEndianNumber(int, RWStreamable):
+    length = 0  # must be defined by inheriting objects
+
+    def __new__(cls, value):
+        if value < - 2 ** (8 * cls.length - 1):
+            raise TooSmallError(f"{cls.__name__} cannot be smaller than {- 2 ** (8 * cls.length - 1)}")
+        elif value >= 2 ** (8 * cls.length - 1):
+            raise TooBigError(f"{cls.__name__} cannot be greater than {2 ** (8 * cls.length - 1) - 1}")
+        else:
+            return super().__new__(cls, value)
+
+    @classmethod
+    def from_stream(cls, stream):
+        raw_bytes = stream.read_raw(cls.length)
+        # stream.debug_print(raw_bytes.hex())
+        return cls.from_bytes(raw_bytes, byteorder="little", signed=True)
+
+    def to_stream(self, stream):
+        raw_bytes = self.to_bytes(self.length, byteorder="little", signed=True)
+        stream.write_raw(raw_bytes)
+
+
+class Char(LittleEndianNumber):
+    length = 1
+
+
+class Short(LittleEndianNumber):
+    length = 2
+
+
+class Int(LittleEndianNumber):
+    length = 4
 
 
 class ULittleEndianNumber(int, RWStreamable):

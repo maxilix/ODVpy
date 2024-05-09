@@ -17,6 +17,10 @@ class NegativeUnsignedError(ValueError):
     pass
 
 
+class TooSmallError(ValueError):
+    pass
+
+
 class TooBigError(ValueError):
     pass
 
