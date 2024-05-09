@@ -158,7 +158,7 @@ class CrossingPoint(RWStreamable):
         # assert b1[7] in [0, 1, 2, 3,       6,               249, 250, 251, 252, 253, 254, 255]
 
         # read as 4 UShort (same as decompiler)
-        unk_short = [stream.read(UShort) for _ in range(4)]
+        unk_short = [stream.read(Short) for _ in range(4)]
 
         nb_link_path = stream.read(UShort)
         global_link_path_index_list = [stream.read(UShort) for _ in range(nb_link_path)]
