@@ -4,12 +4,15 @@ from PyQt6.QtWidgets import QStackedLayout
 from PyQt6.QtGui import QPalette, QColor
 
 from dvd import section_list
-from .sub_control import QMoveControl
+from .abstract_controller import Control
+from .move import QControlMotion
 
 
-class QControl(QTabWidget):
-    def __init__(self, scene, level):
+class QMainControl(Control, QTabWidget):
+    def __init__(self, level):
         super().__init__()
+        self.level = level
+
         self.setMinimumWidth(550)
 
         self.setTabPosition(QTabWidget.TabPosition.East)
@@ -24,7 +27,8 @@ class QControl(QTabWidget):
         # self.addTab(QLabel(section_list[1]), section_list[1])
 
         # Motion
-        self.addTab(QMoveControl(scene, level.dvd.move), section_list[2])
+        self.control_motion = QControlMotion(self, level.dvd.move)
+        self.addTab(self.control_motion, section_list[2])
 
         # Sight
         # self.addTab(QLabel(section_list[3]), section_list[3])
@@ -45,4 +49,10 @@ class QControl(QTabWidget):
         # self.addTab(QLabel(section_list[8]), section_list[8])
 
         # ...
+
+    def update(self):
+        pass
+
+    def add_view(self, view):
+        self.control_motion.add_view(view.view_motion)
 

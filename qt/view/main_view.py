@@ -2,7 +2,8 @@ from PyQt6.QtCore import Qt, QPointF
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene
 
-from .sub_scene import MoveScene
+from .abstract_view import View
+from .move import QViewMotion
 
 
 class QViewport(QGraphicsView):
@@ -20,23 +21,23 @@ class QViewport(QGraphicsView):
         self.zoom_factor = 1.2
 
 
-class QScene(QGraphicsScene):
-    def __init__(self, parent, info_bar, level):
-        super().__init__(parent)
+class QMainView(View, QGraphicsScene):
+    def __init__(self, control, info_bar):
+        super().__init__(control)
         self.info_bar = info_bar
-        self.control = None
+        # super(QGraphicsScene, self).__init__(control)
         self.viewport = QViewport(self)
-
-        pixmap = QPixmap(level.dvm.level_map)
+        pixmap = QPixmap(self.control.level.dvm.level_map)
         self.map = self.addPixmap(pixmap)
 
-        self.move_scene = MoveScene(self, level.dvd.move)
+        self.view_motion = QViewMotion(self, self.control.control_motion)
+
 
     def mouseMoveEvent(self, event):
         pos = event.scenePos()
         self.info_bar.set_widget(x=pos.x(), y=pos.y())
 
-        self.move_scene.refresh(pos)
+        self.view_motion.refresh(pos)
 
     def wheelEvent(self, event):
         event.accept()
@@ -58,6 +59,3 @@ class QScene(QGraphicsScene):
                                scene_position.y() + (size.height()/2-relative_position.y()) / (1.1 * self.viewport.zoom))
         self.viewport.centerOn(new_position)
         self.info_bar.set_widget(zoom=self.viewport.zoom)
-
-    def set_control_pointer(self, control):
-        self.control = control

@@ -1,19 +1,11 @@
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog
 
-import sys
-import re
-from math import floor, ceil
-
-from PyQt6.QtCore import Qt, QSize, QPoint, QLineF, QRectF, QPointF
-from PyQt6.QtGui import QImage, QPixmap, QPolygonF, QAction, QIcon
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, \
-    QGraphicsLineItem, QVBoxLayout, QHBoxLayout, QLabel, QToolBar, QSplitter, QFileDialog, QMessageBox
-from PyQt6.QtGui import QPen, QBrush, QColor
-
-from odv.level import Level, original_name, OriginalLevel
+from odv.level import Level, OriginalLevel
 from qt.preferences import QPreferencesDialog
 from qt.viewer import QViewer
-from qt.control import QControl
-from common import remove_extension
+from qt.controller.main_controller import QMainControl
 
 # from settings import original_level_filename_we
 from config import CONFIG
@@ -104,13 +96,19 @@ class QWindow(QMainWindow):
             main_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         else:
             main_widget = QSplitter(self)
-            viewer = QViewer(self.current_level)
-            control = QControl(viewer.scene, self.current_level)
-            viewer.scene.set_control_pointer(control)
+
+            # bi-directional pointer:
+            # main_control has pointer on main_view
+            # main_view has pointer on main_control
+
+            main_control = QMainControl(self.current_level)
+            viewer = QViewer(self, main_control)
+            main_control.add_view(viewer.main_view)
+
             viewer.info_bar.set_widget(level_index=self.current_level.index)
 
             main_widget.addWidget(viewer)
-            main_widget.addWidget(control)
+            main_widget.addWidget(main_control)
             main_widget.setChildrenCollapsible(False)
 
         self.setCentralWidget(main_widget)

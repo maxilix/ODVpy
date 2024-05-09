@@ -20,19 +20,19 @@ motion = level.dvd.move
 
 # print(motion[0][0][103][1].point)
 # motion[0][0][103][1].point = Coordinate(1000, 300)
-r = []
-for layer in motion:
-    for sublayer in layer:
-        for area in sublayer:
-            for cp in area:
-                r.append(cp.unk_short)
-
-rr = [0,0,0,0]
-for i in range(0, 4):
-    t = [e[i] for e in r if e[i] < 32767]
-    rr[i] = sum(t)/len(t)
-
-print(rr)
+# r = []
+# for layer in motion:
+#     for sublayer in layer:
+#         for area in sublayer:
+#             for cp in area:
+#                 r.append(cp.unk_short)
+#
+# rr = [0,0,0,0]
+# for i in range(0, 4):
+#     t = [e[i] for e in r if e[i] < 32767]
+#     rr[i] = sum(t)/len(t)
+#
+# print(rr)
 
 # print(motion[0][0][103][1].unk_short)
 

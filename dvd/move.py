@@ -97,12 +97,9 @@ class PathLink(RWStreamable):
         for unk_obj_index in self.global_unk_obj_index_list:
             stream.write(unk_obj_index)
 
-
-    def QLineF(self, motion):
-        i1, j1, k1, l1 = self.indexes1
-        i2, j2, k2, l2 = self.indexes2
-        p1 = motion[i1][j1][k1][l1].QPointF()
-        p2 = motion[i2][j2][k2][l2].QPointF()
+    def QLineF(self):
+        p1 = self.point1.QPointF()
+        p2 = self.point2.QPointF()
         return QLineF(p1, p2)
 
 
@@ -116,14 +113,14 @@ class CrossingPoint(RWStreamable):
         self.path_link_list = path_link_list
 
     def __iter__(self):
-        return iter(self.global_path_link_index_list)
+        return iter(self.path_link_list)
 
     def __getitem__(self, item):
-        return self.global_path_link_index_list[item]
+        return self.path_link_list[item]
 
     def __len__(self):
-        assert (len(self.path_link_list) == len(self.global_path_link_index_list))
-        return len(self.global_path_link_index_list)
+        # assert (len(self.path_link_list) == len(self.global_path_link_index_list))
+        return len(self.path_link_list)
 
     @classmethod
     def from_stream(cls, stream, *, w=None):
@@ -187,9 +184,16 @@ class CrossingPoint(RWStreamable):
 
 
 class MoveArea(RWStreamable):
-    def __init__(self, area, crossing_point_list):
+    def __init__(self, area, crossing_point_list=None, main=False):
         self.area = area
-        self.crossing_point_list = crossing_point_list
+        if crossing_point_list is None:
+            self.crossing_point_list = []
+        else:
+            self.crossing_point_list = crossing_point_list
+        self.main = main
+
+    def is_main(self):
+        return self.main
 
     def __iter__(self):
         return iter(self.crossing_point_list)
@@ -201,9 +205,9 @@ class MoveArea(RWStreamable):
         return len(self.crossing_point_list)
 
     @classmethod
-    def from_stream(cls, stream):
+    def from_stream(cls, stream, main=False):
         move_area = stream.read(Area)
-        return cls(move_area, [])
+        return cls(move_area, [], main)
 
     def to_stream(self, stream):
         stream.write(self.area)
@@ -229,7 +233,7 @@ class Sublayer(RWStreamable):
 
     @classmethod
     def from_stream(cls, stream):
-        main_area = stream.read(MoveArea)
+        main_area = stream.read(MoveArea, main=True)
         # stream.debug_new_line()
 
         nb_segment = stream.read(UShort)
@@ -352,6 +356,13 @@ class Motion(Section):
                 for area in sublayer:
                     for cp in area:
                         cp.path_link_list = [self.global_path_link_list[index] for index in cp.global_path_link_index_list]
+        for path_link in self.global_path_link_list:
+            i1, j1, k1, l1 = path_link.indexes1
+            path_link.point1 = self[i1][j1][k1][l1]
+            assert path_link not in iter(path_link.point1)
+            i2, j2, k2, l2 = path_link.indexes2
+            path_link.point2 = self[i2][j2][k2][l2]
+            assert path_link in iter(path_link.point2)
 
         # part 2.3 : unknown last object
         max_index = max([max(path_link.global_unk_obj_index_list)

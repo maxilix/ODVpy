@@ -1,12 +1,3 @@
-from math import floor
-
-from PyQt6.QtCore import Qt, QPointF
-from PyQt6.QtGui import QWheelEvent
-from PyQt6.QtWidgets import QWidget, QGraphicsView
-
-from qt.scene import QScene
-
-
 # class QViewport(QGraphicsView):
 #
 #     def __init__(self, scene: QScene):
