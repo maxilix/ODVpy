@@ -23,7 +23,7 @@ def original_name(index, root=None):
     name.append("data")
     name.append("levels")
     name.append(f"level_{index:02}")
-    return os.path.join(*name)
+    return str(os.path.join(*name))
 
 
 class Level(object):
@@ -42,7 +42,6 @@ class Level(object):
         # self._scb = None
         self._dvm = None
 
-
     @property
     def dvd(self):
         if self._dvd is None:
@@ -56,7 +55,7 @@ class Level(object):
                 self._dvm = DvmParser(self.abs_name + ".dvm")
             except FileNotFoundError as e:
                 if 0 <= self.index <= 25 and CONFIG.automatically_load_original_dvm is True:
-                    self._dvm = DvmParser(os.path.join(CONFIG.backup_path, original_name(self.index) + ".dvm"))
+                    self._dvm = DvmParser(original_name(self.index, root=CONFIG.backup_path) + ".dvm")
                 else:
                     raise e
         return self._dvm
@@ -110,8 +109,7 @@ class Level(object):
         # scb and stf
 
     def insert_in_game(self):
-        # print(os.path.join(CONFIG.installation_path, original_name(self.index)))
-        self.dvd.save_to_file(os.path.join(CONFIG.installation_path, original_name(self.index) + ".dvd"))
+        self.dvd.save_to_file(original_name(self.index, root=CONFIG.installation_path) + ".dvd")
 
         # self.dvm.save_to_file(os.path.join(CONFIG.installation_path, original_name(self.index)))
 
@@ -119,4 +117,4 @@ class Level(object):
 class OriginalLevel(Level):
     def __init__(self, index):
         assert 0 <= index <= 25
-        super().__init__(os.path.join(CONFIG.backup_path, original_name(index)), index)
+        super().__init__(original_name(index, root=CONFIG.backup_path), index)

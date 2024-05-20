@@ -1,4 +1,4 @@
-from .rw_base import Bytes, UShort, UInt
+from .rw_base import Bytes, Short, UShort, UInt
 from .rw_stream import RWStreamable, ReadStream
 from .exception import PaddingError
 
@@ -47,22 +47,19 @@ class Padding(Bytes):
         super().to_stream(stream)
 
 
-class Coordinate(RWStreamable):
+class Point(RWStreamable):
+    integer_type = Short
 
     def __init__(self, x: int, y: int):
         if not (isinstance(x, int) and isinstance(y, int)):
-            raise TypeError("Coordinate must be (int, int)")
-        self.x = UShort(x)
-        if self.x < 0 or self.x > X_MAX_OFFICIAL:
-            print(f"Warning: Coordinate x={self.x}")
-        self.y = UShort(y)
-        if self.y < 0 or self.y > Y_MAX_OFFICIAL:
-            print(f"Warning: Coordinate y={self.y}")
+            raise TypeError("Point must be couple of integer")
+        self.x = self.integer_type(x)
+        self.y = self.integer_type(y)
 
     @classmethod
     def from_stream(cls, stream: ReadStream):
-        x = stream.read(UShort)
-        y = stream.read(UShort)
+        x = stream.read(cls.integer_type)
+        y = stream.read(cls.integer_type)
         # stream.debug_new_space()
         return cls(x, y)
 
@@ -73,25 +70,35 @@ class Coordinate(RWStreamable):
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Point(self.x - other.x, self.y - other.y)
+
     def __repr__(self):
-        return f"<Coordinate {str(self)}>"
+        return f"<{type(self).__name__} {str(self)}>"
 
     def __str__(self):
         return f"({self.x}, {self.y})"
 
 
+class UPoint(Point):
+    integer_type = UShort
+
+
 class Segment(RWStreamable):
 
-    def __init__(self, coor1: Coordinate, coor2: Coordinate):
-        if not (isinstance(coor1, Coordinate) and isinstance(coor1, Coordinate)):
+    def __init__(self, coor1: UPoint, coor2: UPoint):
+        if not (isinstance(coor1, UPoint) and isinstance(coor1, UPoint)):
             raise TypeError("Segment must be Coordinate to Coordinate")
         self.coor1 = coor1
         self.coor2 = coor2
 
     @classmethod
     def from_stream(cls, stream: ReadStream):
-        coor1 = stream.read(Coordinate)
-        coor2 = stream.read(Coordinate)
+        coor1 = stream.read(UPoint)
+        coor2 = stream.read(UPoint)
         # stream.debug_new_line()
         return cls(coor1, coor2)
 
@@ -107,21 +114,33 @@ class Segment(RWStreamable):
 
 
 class Area(RWStreamable):
-    def __init__(self, coor_list):
-        if not (isinstance(coor_list, list) and all(isinstance(c, Coordinate) for c in coor_list)):
+    def __init__(self, point_list):
+        if not (isinstance(point_list, list) and all(isinstance(c, UPoint) for c in point_list)):
             raise TypeError("Area must be a list of Coordinate")
-        self.coor_list = coor_list
+        self.point_list = point_list
+
+    def __iter__(self):
+        return iter(self.point_list)
+
+    def __getitem__(self, item):
+        return self.point_list[item]
+
+    def __len__(self):
+        return len(self.point_list)
+
+    def index(self, point):
+        return self.point_list.index(point)
+
+    def to_stream(self, stream):
+        nb_point = UShort(len(self.point_list))
+        stream.write(nb_point)
+        for point in self.point_list:
+            stream.write(point)
 
     @classmethod
     def from_stream(cls, stream: ReadStream):
-        nb_coor = stream.read(UShort)
-        coor_list = [stream.read(Coordinate) for _ in range(nb_coor)]
-        # coor_list = stream.read(Array, Coordinate, comment="area", in_line=True)
+        nb_point = stream.read(UShort)
+        point_list = [stream.read(UPoint) for _ in range(nb_point)]
+        # point_list = stream.read(Array, Coordinate, comment="area", in_line=True)
         # stream.debug_new_line()
-        return cls(coor_list)
-
-    def to_stream(self, stream):
-        nb_coor = UShort(len(self.coor_list))
-        stream.write(nb_coor)
-        for coor in self.coor_list:
-            stream.write(coor)
+        return cls(point_list)

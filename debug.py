@@ -84,7 +84,7 @@ def search_coor(stream, limit):
 
 	while True:
 		if (x := b * 256 + a) < X_MAX and (y := d * 256 + c) < Y_MAX:
-			rop.append(Coordinate(x, y))
+			rop.append(UPoint(x, y))
 		a, b, c, d = b, c, d, stream.read(UChar)
 		if stream.tell() >= limit:
 			break

@@ -11,6 +11,13 @@ from debug import hxs
 from .section import Section
 
 
+# w flags
+# F_HEROES = (UInt(0x40c00000), UInt(0x40400000))
+# F_ENEMIES = (UInt(0x41300000), UInt(0x40c00000))
+# F_PETS = (UInt(0x40400000), UInt(0x40000000))
+# F_CIVILIANS = (UInt(0x41980000), UInt(0x41300000))
+
+
 class UnkLastObject(RWStreamable):
 
     def __init__(self, unk_tab1, unk_tab2):
@@ -55,7 +62,6 @@ class UnkLastObject(RWStreamable):
                 stream.write(u)
 
 
-
 class PathLink(RWStreamable):
 
     def __init__(self, indexes1, point1, indexes2, point2, unk_int, global_unk_obj_index_list, unk_obj_list):
@@ -76,13 +82,13 @@ class PathLink(RWStreamable):
             raise IndexError(f"Link has no {indexes}")
 
     @classmethod
-    def from_stream(cls, stream, *, w=None):
+    def from_stream(cls, stream, *, nb_w=None):
         indexes1 = tuple(stream.read(UShort) for _ in range(4))
         indexes2 = tuple(stream.read(UShort) for _ in range(4))
         unk_int = stream.read(UInt)
         # last bytes of unk_int is in [0, 63, 64, 65, 66, 67, 68, 69]
         nb_unk_obj = stream.read(UShort)  # w again
-        assert w is None or w == nb_unk_obj
+        assert nb_w is None or nb_w == nb_unk_obj
         global_unk_obj_index_list = [stream.read(UShort) for _ in range(nb_unk_obj)]
         return cls(indexes1, None, indexes2, None, unk_int, global_unk_obj_index_list, [])
 
@@ -105,10 +111,11 @@ class PathLink(RWStreamable):
 
 class CrossingPoint(RWStreamable):
 
-    def __init__(self, unk_char, point, unk_short, global_link_path_index_list, path_link_list):
+    def __init__(self, unk_char, point, previous_point, next_point, global_link_path_index_list, path_link_list):
         self.unk_char = unk_char
         self.point = point
-        self.unk_short = unk_short  # 4 length tab
+        self.previous_point = previous_point
+        self.next_point = next_point
         self.global_path_link_index_list = global_link_path_index_list
         self.path_link_list = path_link_list
 
@@ -123,46 +130,31 @@ class CrossingPoint(RWStreamable):
         return len(self.path_link_list)
 
     @classmethod
-    def from_stream(cls, stream, *, w=None):
+    def from_stream(cls, stream, *, nb_w=None):
         nb_bytes = stream.read(UShort)  # w again
-        assert w is None or w == nb_bytes
+        assert nb_w is None or nb_w == nb_bytes
         unk_char = [stream.read(UChar) for _ in range(nb_bytes)]
-        for byte in unk_char:
-            assert byte in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]  # never 15
+        # unk_char[0] define the position of area around the point, as a flag:
+        # X=0 if obstacle is presente in the quarter
+        # X=1 if no obstacle in the quarter
+        #
+        #    NW      |      NE
+        #      ___X  |  __X_
+        #     _______|_______
+        #            |
+        #      X___  |  _X__
+        #    SW      |      SE
+        #
+        # 0x0f = 0b00001111 cannot be possible
 
-        point = stream.read(Coordinate)
-        # read as 8 UChar (hypothetical)
-        # b1 = [stream.read(UChar) for _ in range(8)]
-        # 00000 or 11111 on 5 first bits
-        # flags ? on the 3 last bits
-        # 0    00000000
-        # 1    00000001
-        # 2    00000010
-        # 3    00000011
-        # 4    00000100
-        # 5    ________  never appear in official level
-        # 6    00000110
-        # 7    00000111
+        point = stream.read(UPoint)
 
-        # 248  11111000
-        # 249  11111001
-        # 250  11111010
-        # 251  11111011
-        # 252  11111100
-        # 253  11111101
-        # 254  11111110
-        # 255  11111111
-        # assert b1[1] in [0, 1, 2, 3, 4,    6, 7,       248,      250, 251, 252, 253, 254, 255]
-        # assert b1[3] in [0, 1, 2, 3,       6,               249, 250, 251, 252, 253, 254, 255]
-        # assert b1[5] in [0, 1, 2, 3, 4,    6, 7,       248,      250, 251, 252, 253, 254, 255]
-        # assert b1[7] in [0, 1, 2, 3,       6,               249, 250, 251, 252, 253, 254, 255]
+        next_point = point + stream.read(Point)
+        previous_point = point - stream.read(Point)
 
-        # read as 4 UShort (same as decompiler)
-        unk_short = [stream.read(Short) for _ in range(4)]
-
-        nb_link_path = stream.read(UShort)
-        global_link_path_index_list = [stream.read(UShort) for _ in range(nb_link_path)]
-        return cls(unk_char, point, unk_short, global_link_path_index_list, [])
+        nb_path_link = stream.read(UShort)
+        global_path_link_index_list = [stream.read(UShort) for _ in range(nb_path_link)]
+        return cls(unk_char, point, previous_point, next_point, global_path_link_index_list, [])
 
     def to_stream(self, stream):
         nb_bytes = UShort(len(self.unk_char))  # w
@@ -170,30 +162,56 @@ class CrossingPoint(RWStreamable):
         for char in self.unk_char:
             stream.write(char)
         stream.write(self.point)
-        for short in self.unk_short:
-            stream.write(short)
-        nb_link_path = UShort(len(self.global_path_link_index_list))
-        stream.write(nb_link_path)
+        stream.write(self.next_point - self.point)
+        stream.write(self.point - self.previous_point)
+
+        nb_path_link = UShort(len(self.global_path_link_index_list))
+        stream.write(nb_path_link)
         for path_link_index in self.global_path_link_index_list:
             stream.write(path_link_index)
-
-
 
     def QPointF(self):
         return QPointF(self.point.x + 0.5, self.point.y + 0.5)
 
 
 class MoveArea(RWStreamable):
-    def __init__(self, area, crossing_point_list=None, main=False):
+    def __init__(self, area: Area, crossing_point_list=None, main=False):
         self.area = area
         if crossing_point_list is None:
             self.crossing_point_list = []
         else:
             self.crossing_point_list = crossing_point_list
-        self.main = main
+        self._main = main
 
-    def is_main(self):
-        return self.main
+    """
+    def check(self):
+        # check if previous vector (resp. next vector) of each crossing point
+        # really refer to the previous (resp. next) point of the area.
+        for cp in self.crossing_point_list:
+            if cp.previous_point not in self.previous_of(cp.point):
+                print(f"{cp.point=}")
+                print(f"{self.area.point_list=}")
+                print(f"previous failed: {cp.previous_point} {self.previous_of(cp.point)}")
+                print()
+            if cp.next_point not in self.next_of(cp.point):
+                print(f"{cp.point=}")
+                print(f"{self.area.point_list=}")
+                print(f"next failed: {cp.next_point} {self.next_of(cp.point)}")
+                print()
+
+    def next_of(self, point, incr=1):
+        n = len(self.area)
+        if self._main:
+            incr = -incr
+        return [self.area[(i + incr) % n] for i in range(n) if self.area[i] == point]
+
+    def previous_of(self, point):
+        return self.next_of(point, incr=-1)
+    """
+
+    @property
+    def main(self):
+        return self._main
 
     def __iter__(self):
         return iter(self.crossing_point_list)
@@ -213,7 +231,7 @@ class MoveArea(RWStreamable):
         stream.write(self.area)
 
     def QPolygonF(self):
-        return QPolygonF([QPointF(p.x + 0.5, p.y + 0.5) for p in self.area.coor_list])
+        return QPolygonF([QPointF(p.x + 0.5, p.y + 0.5) for p in self.area.point_list])
 
 
 class Sublayer(RWStreamable):
@@ -256,7 +274,6 @@ class Sublayer(RWStreamable):
         stream.write(nb_obstacle)
         for obstacle in self.area_list[1:]:
             stream.write(obstacle)
-
 
     def QPainterPath(self):
         positive = QPainterPath()
@@ -325,8 +342,8 @@ class Motion(Section):
         self.layer_list = [stream.read(Layer) for _ in range(nb_layer)]
 
         # part 2 : pathfinder
-        self.w = stream.read(UShort)  # this number appears several times in the section
-        self.w_list = [stream.read(UInt) for _ in range(2 * self.w)]
+        nb_w = stream.read(UShort)  # this number appears several times in the section
+        self.w = [[stream.read(UInt), stream.read(UInt)] for _ in range(nb_w)]
 
         # part 2.1 : crossing points
         nb_layer = stream.read(UShort)
@@ -339,7 +356,7 @@ class Motion(Section):
                 assert nb_area == len(sublayer)
                 for area in sublayer:
                     nb_crossing_point = stream.read(UShort)
-                    area.crossing_point_list = [stream.read(CrossingPoint, w=self.w) for _ in range(nb_crossing_point)]
+                    area.crossing_point_list = [stream.read(CrossingPoint, nb_w=len(self.w)) for _ in range(nb_crossing_point)]
 
         # part 2.2 : path links
         max_index = max([max(cp.global_path_link_index_list) if len(cp.global_path_link_index_list) > 0 else 0
@@ -350,12 +367,13 @@ class Motion(Section):
                          ])
         nb_path_link = stream.read(UShort)
         assert nb_path_link == max_index + 1
-        self.global_path_link_list = [stream.read(PathLink, w=self.w) for _ in range(nb_path_link)]
+        self.global_path_link_list = [stream.read(PathLink, nb_w=len(self.w)) for _ in range(nb_path_link)]
         for layer in self:
             for sublayer in layer:
                 for area in sublayer:
                     for cp in area:
-                        cp.path_link_list = [self.global_path_link_list[index] for index in cp.global_path_link_index_list]
+                        cp.path_link_list = [self.global_path_link_list[index] for index in
+                                             cp.global_path_link_index_list]
         for path_link in self.global_path_link_list:
             i1, j1, k1, l1 = path_link.indexes1
             path_link.point1 = self[i1][j1][k1][l1]
@@ -380,9 +398,12 @@ class Motion(Section):
         substream.write(nb_layer)
         for layer in self:
             substream.write(layer)
-        substream.write(self.w)
-        for element in self.w_list:
-            substream.write(element)
+
+        nb_w = UShort(len(self.w))
+        substream.write(nb_w)
+        for element in self.w:
+            substream.write(element[0])
+            substream.write(element[1])
         substream.write(nb_layer)
         for layer in self:
             nb_sublayer = UShort(len(layer))
@@ -395,6 +416,7 @@ class Motion(Section):
                     substream.write(nb_crossing_point)
                     for crossing_point in area:
                         substream.write(crossing_point)
+
         nb_path_link = UShort(len(self.global_path_link_list))
         substream.write(nb_path_link)
         for path_link in self.global_path_link_list:
@@ -403,9 +425,6 @@ class Motion(Section):
         substream.write(nb_unk_obj)
         for unk_obj in self.global_unk_obj_list:
             substream.write(unk_obj)
-
-
-
 
     def print(self, file=sys.stdout):
         for i, layer in enumerate(self.layer_list):

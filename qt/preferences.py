@@ -82,7 +82,7 @@ class QPreferencesDialog(QDialog):
     def check_installation_path(self):
         for index in range(26):
             try:
-                level = Level(os.path.join(CONFIG.installation_path, original_name(index)), index)
+                level = Level(original_name(index, root=CONFIG.installation_path), index)
 
                 # print(f"level {level.abs_name} is {level.is_original()}")
                 if level.is_original() is False:

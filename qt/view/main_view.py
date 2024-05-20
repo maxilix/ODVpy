@@ -10,7 +10,7 @@ class QViewport(QGraphicsView):
 
     def __init__(self, scene):
         super().__init__(scene)
-        self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setMouseTracking(True)
@@ -19,19 +19,38 @@ class QViewport(QGraphicsView):
         self.min_zoom = 0.5
         self.zoom = 1
         self.zoom_factor = 1.2
+        self.drag_position = None
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.MiddleButton:
+            self.setCursor(Qt.CursorShape.DragMoveCursor)
+            self.drag_position = event.pos()
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.MiddleButton and self.drag_position is not None:
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+            self.drag_position = None
+        super().mouseReleaseEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.drag_position is not None:
+            delta = self.drag_position - event.pos()
+            self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + delta.x())
+            self.verticalScrollBar().setValue(self.verticalScrollBar().value() + delta.y())
+            self.drag_position = event.pos()
+        super().mouseMoveEvent(event)
 
 
 class QMainView(View, QGraphicsScene):
     def __init__(self, control, info_bar):
         super().__init__(control)
         self.info_bar = info_bar
-        # super(QGraphicsScene, self).__init__(control)
         self.viewport = QViewport(self)
         pixmap = QPixmap(self.control.level.dvm.level_map)
         self.map = self.addPixmap(pixmap)
 
         self.view_motion = QViewMotion(self, self.control.control_motion)
-
 
     def mouseMoveEvent(self, event):
         pos = event.scenePos()

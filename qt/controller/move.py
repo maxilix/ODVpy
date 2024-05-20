@@ -45,7 +45,7 @@ class QControlArea(QTreeWidgetItem, HierarchicalControl):
         super().__init__(parent)
         self.area = area
         self.index = index
-        if area.is_main():
+        if area.main:
             self.setText(0, f"Main Area")
         else:
             self.setText(0, f"Obstacle {self.index}")
@@ -230,7 +230,6 @@ class QControlLayer(HierarchicalControl, QScrollArea):
             if control_sublayer.checkbox.checkState() == Qt.CheckState.Checked:
                 active += 1
                 control_sublayer.view.setVisible(True)
-                print("visible")
             else:
                 control_sublayer.view.setVisible(False)
 

@@ -199,10 +199,10 @@ class Masks(Section):
                 flag = self._stream.read(Bytes, 1)[0]
                 if flag & 1:
                     nb_coor = self._stream.read(UShort)
-                    coor_list1 = [self._stream.read(Coordinate) for _ in range(nb_coor)]
+                    coor_list1 = [self._stream.read(UPoint) for _ in range(nb_coor)]
                 if flag & 2:
                     nb_coor = self._stream.read(UShort)
-                    coor_list2 = [self._stream.read(Coordinate) for _ in range(nb_coor)]
+                    coor_list2 = [self._stream.read(UPoint) for _ in range(nb_coor)]
                 if flag & 16:
                     u4 = self._stream.read(UShort)
                 u5 = self._stream.read(UShort)

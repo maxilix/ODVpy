@@ -23,7 +23,6 @@ class QViewPathLink(View, QGraphicsLineItem):
         scene.addItem(self)
 
 
-
 class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
     def __init__(self, scene, control):
         super().__init__(control)
@@ -38,13 +37,14 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
         self.pen.setWidth(1)
         self.pen.setCapStyle(Qt.PenCapStyle.RoundCap)
 
-        self.setVisible(False)
-        self.setPos(self.control.crossing_point.QPointF() - QPointF(self.size/2, self.size/2))
+        self.setVisible(True)
+        self.setPos(self.control.crossing_point.QPointF() - QPointF(self.size / 2, self.size / 2))
         scene.addItem(self)
 
-
     def boundingRect(self) -> QRectF:
-        return QRectF(-1, -1, self.size + 2, self.size + 2)
+        # return QRectF(-1, -1, self.size + 2, self.size + 2)
+        # return QRectF(-3 * self.size-2, -3 * self.size-2, 7 * self.size + 2*2, 7*self.size + 2*2)
+        return QRectF(-10 * self.size, -1 * self.size, 21 * self.size, 3 * self.size)
 
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -55,60 +55,38 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
         painter.drawLine(QPointF(0, self.size), QPointF(self.size, 0))
 
         # draw cardinal point
-        pad = 3
+        pad = 2
         # North
         font = painter.font()
-        font.setPixelSize(int(2*self.size))
+        font.setPixelSize(int(1.8 * self.size))
         painter.setFont(font)
+        # c = QColor(255 if v >= 0 else 0, 255 if v <= 0 else 0, 0)
+        c = QColor(255, 255, 0)
+        painter.setPen(QPen(c))
 
-        v = self.control.crossing_point.unk_short[1]
-        if v >= 32768:
-            painter.setPen(QPen(QColor(255, 0, 0)))
-            painter.setBrush(QBrush(QColor(255, 0, 0)))
-            t = str(65535-v)
-        else:
-            painter.setPen(QPen(QColor(0, 255, 0)))
-            painter.setBrush(QBrush(QColor(0, 255, 0)))
-            t = str(v)
-        painter.drawText(QRectF(-self.size, -3*self.size-pad, 3*self.size, 3*self.size), Qt.AlignmentFlag.AlignCenter, t)
+        cp = self.control.crossing_point
+        t = f"{bin(cp.unk_char[0])[2:].zfill(4)}"
+
+        # previous_str = f"{self.control.crossing_point.previous_point} "
+        # next_str = f" {self.control.crossing_point.next_point}"
+
+        # North
+        # painter.drawText(QRectF(-self.size, -3 * self.size - pad, 3 * self.size, 3 * self.size),
+        #                  Qt.AlignmentFlag.AlignCenter, str(v))
 
         # East
-        v = self.control.crossing_point.unk_short[2]
-        if v >= 32768:
-            painter.setPen(QPen(QColor(255, 0, 0)))
-            painter.setBrush(QBrush(QColor(255, 0, 0)))
-            t = str(65535-v)
-        else:
-            painter.setPen(QPen(QColor(0, 255, 0)))
-            painter.setBrush(QBrush(QColor(0, 255, 0)))
-            t = str(v)
-        painter.drawText(QRectF(self.size+pad, -self.size, 3*self.size, 3*self.size), Qt.AlignmentFlag.AlignCenter, t)
+        # painter.drawText(QRectF(self.size + pad, -self.size, 3 * self.size, 3 * self.size),
+        #                  Qt.AlignmentFlag.AlignCenter, str(v))
+        painter.drawText(QRectF(self.size, -self.size, 10 * self.size, 3 * self.size),
+                         Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, t)
 
         # South
-        v = self.control.crossing_point.unk_short[3]
-        if v >= 32768:
-            painter.setPen(QPen(QColor(255, 0, 0)))
-            painter.setBrush(QBrush(QColor(255, 0, 0)))
-            t = str(65535-v)
-        else:
-            painter.setPen(QPen(QColor(0, 255, 0)))
-            painter.setBrush(QBrush(QColor(0, 255, 0)))
-            t = str(v)
-        painter.drawText(QRectF(-self.size, self.size+pad, 3*self.size, 3*self.size), Qt.AlignmentFlag.AlignCenter, t)
-
+        # painter.drawText(QRectF(-self.size, self.size + pad, 3 * self.size, 3 * self.size),
+        #                  Qt.AlignmentFlag.AlignCenter, str(v))
 
         # West
-        v = self.control.crossing_point.unk_short[0]
-        if v >= 32768:
-            painter.setPen(QPen(QColor(255, 0, 0)))
-            painter.setBrush(QBrush(QColor(255, 0, 0)))
-            t = str(65535-v)
-        else:
-            painter.setPen(QPen(QColor(0, 255, 0)))
-            painter.setBrush(QBrush(QColor(0, 255, 0)))
-            t = str(v)
-        painter.drawText(QRectF(-3*self.size-pad, -self.size, 3*self.size, 3*self.size), Qt.AlignmentFlag.AlignCenter, t)
-
+        # painter.drawText(QRectF(-10 * self.size, -self.size, 10 * self.size, 3 * self.size),
+        #                  Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight, previous_str)
 
     def shape(self):
         path = QPainterPath()
@@ -122,7 +100,7 @@ class QViewArea(HierarchicalView, QGraphicsPolygonItem):
         for l, _ in enumerate(self.control):
             self.view_list.append(QViewCrossingPoint(scene, self.control[l]))
 
-        if self.control.area.is_main():
+        if self.control.area.main:
             self.main_color = QColor(160, 200, 40)
         else:
             self.main_color = QColor(255, 90, 40)
@@ -143,7 +121,7 @@ class QViewArea(HierarchicalView, QGraphicsPolygonItem):
         scene.addItem(self)
 
     def refresh(self, mousse_position):
-        if self.control.area.is_main():
+        if self.control.area.main:
             pass
         else:
             brush_color = self.main_color
@@ -172,12 +150,10 @@ class QViewSublayer(HierarchicalView, QGraphicsPathItem):
         for k, _ in enumerate(self.control):
             self.view_list.append(QViewArea(scene, self.control[k]))
 
-
         # self.graphic_area_list = []
         # for k, _ in enumerate(self.control_sublayer.sublayer):
         #     graphic_area = QViewArea(self.control_sublayer.control_area_list[k])
         #     self.graphic_area_list.append(graphic_area)
-
 
         # self.main_color = QColor(64, 128, 64)
         self.main_color = QColor(180, 110, 30)
@@ -207,6 +183,7 @@ class QViewSublayer(HierarchicalView, QGraphicsPathItem):
         for view in self.view_list:
             view.refresh(mousse_position)
 
+
 class QViewLayer(HierarchicalView):
     def __init__(self, scene, control):
         super().__init__(control)
@@ -217,11 +194,6 @@ class QViewLayer(HierarchicalView):
     def refresh(self, mousse_position):
         for view in self.view_list:
             view.refresh(mousse_position)
-
-
-
-
-
 
 
 class QViewMotion(HierarchicalView):

@@ -35,72 +35,71 @@ class Bytes(bytes, RWStreamable):
 #             stream.write_raw(b'\x00')
 
 
-class LittleEndianNumber(int, RWStreamable):
+class LittleEndianInteger(int, RWStreamable):
     length = 0  # must be defined by inheriting objects
+    signed = True  # must be defined by inheriting objects
 
     def __new__(cls, value):
-        if value < - 2 ** (8 * cls.length - 1):
-            raise TooSmallError(f"{cls.__name__} cannot be smaller than {- 2 ** (8 * cls.length - 1)}")
-        elif value >= 2 ** (8 * cls.length - 1):
-            raise TooBigError(f"{cls.__name__} cannot be greater than {2 ** (8 * cls.length - 1) - 1}")
+        if value < cls.min():
+            raise TooSmallError(f"{cls.__name__} cannot be smaller than {cls.min()}")
+        elif value > cls.max():
+            raise TooBigError(f"{cls.__name__} cannot be greater than {cls.max()}")
         else:
             return super().__new__(cls, value)
+
+    @classmethod
+    def max(cls):
+        if cls.signed is True:
+            return 2 ** (8 * cls.length - 1) - 1
+        else:
+            return 2 ** (8 * cls.length) - 1
+
+    @classmethod
+    def min(cls):
+        if cls.signed is True:
+            return - 2 ** (8 * cls.length - 1)
+        else:
+            return 0
 
     @classmethod
     def from_stream(cls, stream):
         raw_bytes = stream.read_raw(cls.length)
         # stream.debug_print(raw_bytes.hex())
-        return cls.from_bytes(raw_bytes, byteorder="little", signed=True)
+        return cls.from_bytes(raw_bytes, byteorder="little", signed=cls.signed)
 
     def to_stream(self, stream):
-        raw_bytes = self.to_bytes(self.length, byteorder="little", signed=True)
+        raw_bytes = self.to_bytes(self.length, byteorder="little", signed=self.signed)
         stream.write_raw(raw_bytes)
 
 
-class Char(LittleEndianNumber):
+class Char(LittleEndianInteger):
     length = 1
+    signed = True
 
 
-class Short(LittleEndianNumber):
+class Short(LittleEndianInteger):
     length = 2
+    signed = True
 
 
-class Int(LittleEndianNumber):
+class Int(LittleEndianInteger):
     length = 4
+    signed = True
 
 
-class ULittleEndianNumber(int, RWStreamable):
-    length = 0  # must be defined by inheriting objects
-
-    def __new__(cls, value):
-        if value < 0:
-            raise NegativeUnsignedError(f"{cls.__name__} cannot be negative")
-        elif value >= 2 ** (8 * cls.length):
-            raise TooBigError(f"{cls.__name__} cannot be greater than {2 ** (8 * cls.length) - 1}")
-        else:
-            return super().__new__(cls, value)
-
-    @classmethod
-    def from_stream(cls, stream):
-        raw_bytes = stream.read_raw(cls.length)
-        # stream.debug_print(raw_bytes.hex())
-        return cls.from_bytes(raw_bytes, byteorder="little", signed=False)
-
-    def to_stream(self, stream):
-        raw_bytes = self.to_bytes(self.length, byteorder="little", signed=False)
-        stream.write_raw(raw_bytes)
-
-
-class UChar(ULittleEndianNumber):
+class UChar(LittleEndianInteger):
     length = 1
+    signed = False
 
 
-class UShort(ULittleEndianNumber):
+class UShort(LittleEndianInteger):
     length = 2
+    signed = False
 
 
-class UInt(ULittleEndianNumber):
+class UInt(LittleEndianInteger):
     length = 4
+    signed = False
 
 
 class UFloat(float, RWStreamable):
