@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtCore import Qt, QPointF, QPropertyAnimation, pyqtProperty
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene
 
@@ -25,6 +25,8 @@ class QViewport(QGraphicsView):
         if event.button() == Qt.MouseButton.MiddleButton:
             self.setCursor(Qt.CursorShape.DragMoveCursor)
             self.drag_position = event.pos()
+        elif event.button() == Qt.MouseButton.RightButton:
+            self.move_to(100, 100)
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -39,7 +41,40 @@ class QViewport(QGraphicsView):
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + delta.x())
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + delta.y())
             self.drag_position = event.pos()
+        print(f"{self.x} {self.y}")
         super().mouseMoveEvent(event)
+
+    # def wheelEvent(self, event):
+    #     pass
+
+    @pyqtProperty(int)
+    def x(self):
+        return self.horizontalScrollBar().value()
+
+    @x.setter
+    def x(self, value):
+        self.horizontalScrollBar().setValue(value)
+
+    @pyqtProperty(int)
+    def y(self):
+        return self.verticalScrollBar().value()
+
+    @y.setter
+    def y(self, value):
+        self.verticalScrollBar().setValue(value)
+
+    def move_to(self, x, y):
+        self.x_anim = QPropertyAnimation(self, b"x")
+        self.x_anim.setDuration(1000)
+        self.x_anim.setEndValue(x)
+
+        self.y_anim = QPropertyAnimation(self, b"y")
+        self.y_anim.setDuration(1000)
+        self.y_anim.setEndValue(y)
+
+        self.x_anim.start()
+        self.y_anim.start()
+
 
 
 class QMainView(View, QGraphicsScene):
