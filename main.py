@@ -1,15 +1,17 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QPushButton
 
-from odv.level import Level, OriginalLevel
+from odv.level import Level, BackupedLevel, InstalledLevel
+from qt.common.simple_messagebox import QErrorBox, QInfoBox
 from qt.preferences import QPreferencesDialog
 from qt.viewer import QViewer
 from qt.controller.main_controller import QMainControl
 
-# from settings import original_level_filename_we
 from config import CONFIG
-from debug import *
+from common import *
+
+# from debug import *
 
 
 class QWindow(QMainWindow):
@@ -57,7 +59,76 @@ class QWindow(QMainWindow):
         edit_menu.addAction(open_preferences_dialog_action)
         # ============================== Edit menu ==============================
 
+        # ============================== Mod manager menu =======================
+        mod_manager_menu = menu.addMenu("Mod manager")
+
+        self.insert_current_level_action = QAction("Insert in game", self)
+        # self.insert_current_level_action.setEnabled(False)
+        self.insert_current_level_action.triggered.connect(self.insert_current_level)
+        mod_manager_menu.addAction(self.insert_current_level_action)
+
+        backup_submenu = mod_manager_menu.addMenu("Backup")
+        backup_all_action = QAction("Backup all", self)
+        backup_all_action.triggered.connect(lambda state: self.backup_level(range(26)))
+        backup_submenu.addAction(backup_all_action)
+        backup_submenu.addSeparator()
+        for i in range(26):
+            if i == 0:
+                backup_action = QAction(f"Demo level", self)
+            else:
+                backup_action = QAction(f"Level {i}", self)
+            backup_action.triggered.connect(lambda state, index=i: self.backup_level([index]))
+            backup_submenu.addAction(backup_action)
+
+        restore_submenu = mod_manager_menu.addMenu("Restore")
+        restore_all_action = QAction("Restore all", self)
+        restore_all_action.triggered.connect(lambda state: self.restore_level(range(26)))
+        restore_submenu.addAction(restore_all_action)
+        restore_submenu.addSeparator()
+        for i in range(26):
+            if i == 0:
+                restore_action = QAction(f"Demo level", self)
+            else:
+                restore_action = QAction(f"Level {i}", self)
+            restore_action.triggered.connect(lambda state, index=i: self.restore_level([index]))
+            restore_submenu.addAction(restore_action)
+
+        # ============================== Mod manager menu =======================
+
+        self.setStyleSheet("""
+            QMenu::item:!enabled {
+                color: gray;
+            }
+        """)
         self.set_widget()
+
+    @staticmethod
+    def backup_level(selected):
+        for index in selected:
+            try:
+                level = InstalledLevel(index)
+                level.backup()
+            except (InvalidHashError, FileNotFoundError) as e:
+                QErrorBox(e).exec()
+
+        if len(selected) > 1:
+            QInfoBox("Backup Completed").exec()
+
+    @staticmethod
+    def restore_level(selected):
+        for index in selected:
+            try:
+                level = BackupedLevel(index)
+                level.restore()
+            except (InvalidHashError, FileNotFoundError) as e:
+                QErrorBox(e).exec()
+
+        if len(selected) > 1:
+            QInfoBox("Restore Completed").exec()
+
+    def insert_current_level(self):
+        assert self.current_level is not None
+        self.current_level.insert_in_game()
 
     def open_preferences_dialog(self):
         dialog = QPreferencesDialog(self)
@@ -83,7 +154,7 @@ class QWindow(QMainWindow):
                 self.set_widget()
 
     def load_original_level(self, index):
-        self.current_level = OriginalLevel(index)
+        self.current_level = BackupedLevel(index)
         self.set_widget()
 
     def unload_level(self):
@@ -92,9 +163,11 @@ class QWindow(QMainWindow):
 
     def set_widget(self):
         if self.current_level is None:
+            self.insert_current_level_action.setEnabled(False)
             main_widget = QLabel("Select level")
             main_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         else:
+            self.insert_current_level_action.setEnabled(True)
             main_widget = QSplitter(self)
 
             # bi-directional pointer:

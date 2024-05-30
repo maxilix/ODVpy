@@ -4,7 +4,6 @@ from common import *
 from .section import Section, section_list
 
 
-
 class Sight(Section):
 
     section_index = 3  # SGHT

@@ -10,7 +10,7 @@ from config import CONFIG
 from dvd import DvdParser
 from dvm import DvmParser
 
-from common import copy
+from common import copy, InvalidHashError
 
 
 def original_name(index, root=None):
@@ -24,6 +24,18 @@ def original_name(index, root=None):
     name.append("levels")
     name.append(f"level_{index:02}")
     return str(os.path.join(*name))
+#
+#
+# def backup_all_level():
+#     for index in range(26):
+#         level = InstalledLevel(index)
+#         level.backup()
+#
+#
+# def restore_all_level():
+#     for index in range(26):
+#         level = BackupedLevel(index)
+#         level.restore()
 
 
 class Level(object):
@@ -39,8 +51,9 @@ class Level(object):
             self.index = index
 
         self._dvd = None
-        # self._scb = None
         self._dvm = None
+        # self._scb = None
+        # self._stf = None
 
     @property
     def dvd(self):
@@ -90,14 +103,15 @@ class Level(object):
 
     def backup(self):
         assert CONFIG.installation_path in self.abs_name
-        assert self.is_original()
+        if self.is_original() is False:
+            raise InvalidHashError()
         source = self.abs_name
         destination = self.abs_name.replace(CONFIG.installation_path, CONFIG.backup_path)
         copy(f"{source}.dvd", f"{destination}.dvd")
-        # copy(f"{source}.dvm", f"{destination}.dvm")
-        # copy(f"{source}.scb", f"{destination}.scb")
-        # copy(f"{source[:-8]}{os.sep}briefing{os.sep}b00bs{self.index:02}",
-        #      f"{destination[:-8]}{os.sep}briefing{os.sep}b00bs{self.index:02}")
+        copy(f"{source}.dvm", f"{destination}.dvm")
+        copy(f"{source}.scb", f"{destination}.scb")
+        copy(f"{source[:-9]}{os.sep}briefing{os.sep}d00bs{self.index:02}",
+             f"{destination[:-9]}{os.sep}briefing{os.sep}d00bs{self.index:02}")
 
     def restore(self):
         assert CONFIG.backup_path in self.abs_name
@@ -105,8 +119,10 @@ class Level(object):
         source = self.abs_name
         destination = self.abs_name.replace(CONFIG.backup_path, CONFIG.installation_path)
         copy(f"{source}.dvd", f"{destination}.dvd")
-        # copy(f"{source}.dvm", f"{destination}.dvm")
-        # scb and stf
+        copy(f"{source}.dvm", f"{destination}.dvm")
+        copy(f"{source}.scb", f"{destination}.scb")
+        copy(f"{source[:-9]}{os.sep}briefing{os.sep}d00bs{self.index:02}",
+             f"{destination[:-9]}{os.sep}briefing{os.sep}d00bs{self.index:02}")
 
     def insert_in_game(self):
         self.dvd.save_to_file(original_name(self.index, root=CONFIG.installation_path) + ".dvd")
@@ -114,7 +130,13 @@ class Level(object):
         # self.dvm.save_to_file(os.path.join(CONFIG.installation_path, original_name(self.index)))
 
 
-class OriginalLevel(Level):
+class BackupedLevel(Level):
     def __init__(self, index):
         assert 0 <= index <= 25
         super().__init__(original_name(index, root=CONFIG.backup_path), index)
+
+
+class InstalledLevel(Level):
+    def __init__(self, index):
+        assert 0 <= index <= 25
+        super().__init__(original_name(index, root=CONFIG.installation_path), index)

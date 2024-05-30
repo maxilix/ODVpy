@@ -3,7 +3,7 @@ import hashlib
 from common import *
 from config import CONFIG
 from dvd import DvdParser
-from odv.level import Level, OriginalLevel, original_name
+from odv.level import Level, BackupedLevel, original_name
 from settings import *
 
 
