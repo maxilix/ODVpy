@@ -1,9 +1,7 @@
 import hashlib
+import os
 import re
 
-from PyQt6.QtWidgets import QMessageBox
-
-from qt.common.simple_messagebox import QErrorBox
 from settings import *
 from config import CONFIG
 
@@ -24,18 +22,6 @@ def original_name(index, root=None):
     name.append("levels")
     name.append(f"level_{index:02}")
     return str(os.path.join(*name))
-#
-#
-# def backup_all_level():
-#     for index in range(26):
-#         level = InstalledLevel(index)
-#         level.backup()
-#
-#
-# def restore_all_level():
-#     for index in range(26):
-#         level = BackupedLevel(index)
-#         level.restore()
 
 
 class Level(object):

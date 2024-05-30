@@ -7,9 +7,8 @@ from PyQt6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QWidge
 from odv.level import Level, original_name
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
 from common import *
-from settings import *
+# from settings import *
 from config import CONFIG
-# from backup import check_installation, InvalidHashError
 
 
 class QPreferencesDialog(QDialog):
@@ -40,19 +39,6 @@ class QPreferencesDialog(QDialog):
         installation_path_layout.addWidget(check_button)
         check_button.clicked.connect(self.check_installation_path)
 
-        # # backup original files
-        # backup_widget = QWidget()
-        # backup_layout = QHBoxLayout(backup_widget)
-        # label = QLabel(f'Manage original data files')
-        # backup_layout.addWidget(label)
-        # backup_layout.addStretch()
-        # restore_button = QPushButton('Restore')
-        # backup_layout.addWidget(restore_button)
-        # restore_button.clicked.connect(self.restore_original_files)
-        # backup_button = QPushButton('Backup')
-        # backup_layout.addWidget(backup_button)
-        # backup_button.clicked.connect(self.backup_original_files)
-
         # close buttons
         close_buttons_widget = QWidget()
         close_buttons_layout = QHBoxLayout(close_buttons_widget)
@@ -65,7 +51,6 @@ class QPreferencesDialog(QDialog):
         close_buttons_layout.addWidget(save_button)
 
         main_layout.addWidget(installation_path_widget)
-        # main_layout.addWidget(backup_widget)
         main_layout.addStretch()
         main_layout.addWidget(close_buttons_widget)
 
@@ -79,12 +64,12 @@ class QPreferencesDialog(QDialog):
                 CONFIG.installation_path = dirname[0]
                 self.installation_path_label.setText(CONFIG.installation_path)
 
-    def check_installation_path(self, root=None):
-        if root is None:
-            root = CONFIG.installation_path
+    def check_installation_path(self):
+        if self.installation_path_label.text() == "":
+            return False
         for index in range(26):
             try:
-                level = Level(original_name(index, root=root), index)
+                level = Level(original_name(index, root=CONFIG.installation_path), index)
                 if level.is_original() is False:
                     raise InvalidHashError(f"invalid hash for {index} level")
             except (InvalidHashError, FileNotFoundError) as e:
@@ -94,34 +79,6 @@ class QPreferencesDialog(QDialog):
                 return False
         QInfoBox("Check Completed").exec()
         return True
-
-    # def backup_original_files(self):
-    #     try:
-    #         self.check_installation(CONFIG.installation_path)
-    #     except (InvalidHashError, FileNotFoundError) as e:
-    #         QErrorBox(e).exec()
-    #         return
-    #
-    #     for filename in ORIGINAL_HASH:
-    #         source_filename = os.path.join(CONFIG.installation_path, filename)
-    #         destination_filename = os.path.join("backup", filename)
-    #         os.makedirs(os.path.dirname(destination_filename), exist_ok=True)
-    #         shutil.copy2(source_filename, destination_filename)
-    #     QInfoBox("Backup Completed").exec()
-    #
-    # def restore_original_files(self):
-    #     pass
-    #     try:
-    #         check_installation("backup")
-    #     except (InvalidHashError, FileNotFoundError) as e:
-    #         QErrorBox(e).exec()
-    #         return
-    #
-    #     for filename in ORIGINAL_HASH:
-    #         source_filename = os.path.join("backup", filename)
-    #         destination_filename = os.path.join(CONFIG.installation_path, filename)
-    #         shutil.copy2(source_filename, destination_filename)
-    #     QInfoBox("Restore Completed").exec()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Escape:

@@ -29,20 +29,3 @@ def temp_filename(prefix=".", suffix=".temp", alphabet="0123456789abcdef", lengt
 def copy(source, destination):
     os.makedirs(os.path.dirname(destination), exist_ok=True)
     shutil.copy2(source, destination)
-
-
-# def copy_dvd(source, destination):
-#     copy(f"{source}.dvd", f"{destination}.dvd")
-#
-#
-# def copy_dvm(source, destination):
-#     copy(f"{source}.dvm", f"{destination}.dvm")
-#
-# def copy_scb(source, destination):
-#     copy(f"{source}.scb", f"{destination}.scb")
-#
-#
-# def copy_stf(source, destination):
-#     index_str = destination[-2:]
-#     copy(f"{source[:-8]}{os.sep}briefing{os.sep}b00bs{index_str}",
-#          f"{destination[:-8]}{os.sep}briefing{os.sep}b00bs{index_str}")

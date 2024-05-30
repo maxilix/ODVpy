@@ -30,7 +30,6 @@ class QWindow(QMainWindow):
         file_menu = menu.addMenu("File")
         open_original_submenu = file_menu.addMenu("Open Original Level")
 
-
         for i in range(26):
             if i == 0:
                 open_original_level_action = QAction(f"Demo level", self)
@@ -63,7 +62,6 @@ class QWindow(QMainWindow):
         mod_manager_menu = menu.addMenu("Mod manager")
 
         self.insert_current_level_action = QAction("Insert in game", self)
-        # self.insert_current_level_action.setEnabled(False)
         self.insert_current_level_action.triggered.connect(self.insert_current_level)
         mod_manager_menu.addAction(self.insert_current_level_action)
 
@@ -92,7 +90,6 @@ class QWindow(QMainWindow):
                 restore_action = QAction(f"Level {i}", self)
             restore_action.triggered.connect(lambda state, index=i: self.restore_level([index]))
             restore_submenu.addAction(restore_action)
-
         # ============================== Mod manager menu =======================
 
         self.setStyleSheet("""
@@ -136,7 +133,6 @@ class QWindow(QMainWindow):
 
     def load_custom_level(self):
         dialog = QFileDialog(self)
-        # dialog.setDirectory(r'C:\images')
         dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
         filters = ["Any Level file (*.dvd *.dvm *.scb *.stf)",
                    "DVD file (*.dvd)",

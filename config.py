@@ -1,18 +1,23 @@
+import json
+
 from settings import *
 
 
 class CONFIG(object):
-    installation_path: str
-    backup_path: str
-    automatically_load_original_dvm: bool
+    installation_path: str = ""
+    backup_path: str = "backup"
+    automatically_load_original_dvm: bool = True
 
     @classmethod
     def load(cls):
-        with open(CONFIG_FILENAME, "r") as json_file:
-            data = json.load(json_file)
-        cls.installation_path = data["installation_path"]
-        cls.backup_path = data["backup_path"]
-        cls.automatically_load_original_dvm = bool(data["automatically_load_original_dvm"])
+        try:
+            with open(CONFIG_FILENAME, "r") as json_file:
+                data = json.load(json_file)
+            cls.installation_path = data["installation_path"]
+            cls.backup_path = data["backup_path"]
+            cls.automatically_load_original_dvm = bool(data["automatically_load_original_dvm"])
+        except (FileNotFoundError, json.JSONDecodeError):
+            print("Default Config")
 
     @classmethod
     def save(cls):
