@@ -67,6 +67,9 @@ class Point(RWStreamable):
         stream.write(self.x)
         stream.write(self.y)
 
+    def distance(self, other):
+        return ((self.x - other.x)**2 + (self.y - other.y)**2)**0.5
+
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 
