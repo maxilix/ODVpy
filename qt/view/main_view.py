@@ -20,14 +20,18 @@ class QViewport(QGraphicsView):
         self.drag_position = None
 
         self.zoom_factor = 1.1
-        self.zoom_shift_factor = 1.1
+        self.zoom_shift_factor = 1.0
         self.zoom_max = 25
         self.zoom_min = 0.5
 
         # initial view position
-        self.zoom = 1.5  # set zoom first, as it defines the margins around the dvm
+        self.zoom = 0.7  # set zoom first, as it defines the margins around the dvm
         self.x = dvm_size.width() // 2
         self.y = dvm_size.height() // 2
+
+        self.zoom = 3.4
+        self.x = 700
+        self.y = 1700
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
@@ -40,16 +44,14 @@ class QViewport(QGraphicsView):
             pass
         elif event.button() == Qt.MouseButton.RightButton:
             # self.move_to(QRectF(100, 300, 50, 50))
-            self.move_to(30, 30, 10)
+            self.move_to(100, 100)
             # self.zoom = 1
             pass
-        super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton and self.drag_position is not None:
             self.setCursor(Qt.CursorShape.ArrowCursor)
             self.drag_position = None
-        super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
         event.accept()
@@ -60,7 +62,10 @@ class QViewport(QGraphicsView):
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + delta.x())
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + delta.y())
             self.drag_position = event.pos()
-        super().mouseMoveEvent(event)
+        self.scene().refresh(mouse_scene_pos)
+
+    def leaveEvent(self, event):
+        self.scene().refresh(QPointF(-1,-1))
 
     def wheelEvent(self, event):
         mouse_view_pos = event.position().toPoint()
@@ -89,8 +94,8 @@ class QViewport(QGraphicsView):
     def zoom(self, new_zoom):
         current_zoom = self.zoom
         self.scale(new_zoom/current_zoom, new_zoom/current_zoom)
-        x_margin = self.horizontalScrollBar().pageStep()/new_zoom / 2 + 10
-        y_margin = self.verticalScrollBar().pageStep()/new_zoom / 2 + 10
+        x_margin = self.horizontalScrollBar().pageStep()/new_zoom / 2# + 10
+        y_margin = self.verticalScrollBar().pageStep()/new_zoom / 2# + 10
         self.setSceneRect(QRectF(-x_margin, -y_margin, self.dvm_size.width() + 2*x_margin, self.dvm_size.height() + 2*y_margin))
         self.info_bar.set_widget(zoom=self.zoom)
 
@@ -197,6 +202,8 @@ class QMainView(View, QGraphicsScene):
 
         self.view_motion = QViewMotion(self, self.control.control_motion)
 
-    def mouseMoveEvent(self, event):
-        pos = event.scenePos()
+    def refresh(self, pos):
         self.view_motion.refresh(pos)
+
+
+

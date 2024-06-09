@@ -33,6 +33,8 @@ class Pixel(RWStreamable):
 		return cls(r8, g8, b8)
 
 
+
+
 class Pixmap(ABC):
 
 	@staticmethod

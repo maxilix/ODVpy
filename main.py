@@ -22,8 +22,10 @@ class QWindow(QMainWindow):
         self.showMaximized()
         # self.setMinimumSize(800, 600)
         # self.setGeometry(0, 0, 500, 500)
+
         self.current_level = None
-        # self.current_level = ODVLevel(original_level_filename(0))
+        # self.current_level = Level("./dev/empty_level/empty_level_19")
+        # self.current_level = InstalledLevel(19)
 
         menu = self.menuBar()
         # ============================== File menu ==============================
@@ -59,7 +61,7 @@ class QWindow(QMainWindow):
         # ============================== Edit menu ==============================
 
         # ============================== Mod manager menu =======================
-        mod_manager_menu = menu.addMenu("Mod manager")
+        mod_manager_menu = menu.addMenu("Mod")
 
         self.insert_current_level_action = QAction("Insert in game", self)
         self.insert_current_level_action.triggered.connect(self.insert_current_level)

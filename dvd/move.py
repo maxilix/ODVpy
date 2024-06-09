@@ -11,18 +11,16 @@ from debug import hxs
 from .section import Section
 
 
-# w flags
-# F_HEROES = (UInt(0x40c00000), UInt(0x40400000))
-# F_ENEMIES = (UInt(0x41300000), UInt(0x40c00000))
-# F_PETS = (UInt(0x40400000), UInt(0x40000000))
-# F_CIVILIANS = (UInt(0x41980000), UInt(0x41300000))
 
 
 class UnkLastObject(RWStreamable):
 
     def __init__(self, unk_tab1, unk_tab2):
-        self.unk_tab1 = unk_tab1
-        self.unk_tab2 = unk_tab2
+        self.t1 = unk_tab1
+        self.t2 = unk_tab2
+
+    def is_ff(self) -> bool :
+        return self.t1 == []
 
     @classmethod
     def from_stream(cls, stream):
@@ -45,33 +43,33 @@ class UnkLastObject(RWStreamable):
             return cls(l1, l2)
 
     def to_stream(self, stream):
-        if self.unk_tab1 == [] and self.unk_tab2 == []:
+        if self.t1 == [] and self.t2 == []:
             stream.write(UChar(255))
         else:
-            u1 = UChar(reduce(lambda x, y: x | y, self.unk_tab1))
+            u1 = UChar(reduce(lambda x, y: x | y, self.t1))
             stream.write(u1)
-            u2 = UChar(reduce(lambda x, y: x | y, self.unk_tab2))
+            u2 = UChar(reduce(lambda x, y: x | y, self.t2))
             stream.write(u2)
-            n1 = UShort(len(self.unk_tab1))
+            n1 = UShort(len(self.t1))
             stream.write(n1)
-            for u in self.unk_tab1:
+            for u in self.t1:
                 stream.write(u)
-            n2 = UShort(len(self.unk_tab2))
+            n2 = UShort(len(self.t2))
             stream.write(n2)
-            for u in self.unk_tab2:
+            for u in self.t2:
                 stream.write(u)
 
 
 class PathLink(RWStreamable):
 
-    def __init__(self, indexes1, point1, indexes2, point2, unk_int, global_unk_obj_index_list, unk_obj_list):
+    def __init__(self, indexes1, point1, indexes2, point2, link_length, global_unk_obj_index_list, unk_obj):
         self.indexes1 = indexes1
         self.point1 = point1
         self.indexes2 = indexes2
         self.point2 = point2
-        self.unk_int = unk_int
+        self.link_length = link_length
         self.global_unk_obj_index_list = global_unk_obj_index_list
-        self.unk_obj_list = unk_obj_list
+        self.unk_obj = unk_obj
 
     def get_other(self, indexes):
         if indexes == self.indexes1:
@@ -85,19 +83,18 @@ class PathLink(RWStreamable):
     def from_stream(cls, stream, *, nb_w=None):
         indexes1 = tuple(stream.read(UShort) for _ in range(4))
         indexes2 = tuple(stream.read(UShort) for _ in range(4))
-        unk_int = stream.read(UInt)
-        # last bytes of unk_int is in [0, 63, 64, 65, 66, 67, 68, 69]
+        link_length = stream.read(UFloat)
         nb_unk_obj = stream.read(UShort)  # w again
         assert nb_w is None or nb_w == nb_unk_obj
         global_unk_obj_index_list = [stream.read(UShort) for _ in range(nb_unk_obj)]
-        return cls(indexes1, None, indexes2, None, unk_int, global_unk_obj_index_list, [])
+        return cls(indexes1, None, indexes2, None, link_length, global_unk_obj_index_list, [])
 
     def to_stream(self, stream):
         for index1 in self.indexes1:
             stream.write(index1)
         for index2 in self.indexes2:
             stream.write(index2)
-        stream.write(self.unk_int)
+        stream.write(self.link_length)
         unk_obj_index_list_length = UShort(len(self.global_unk_obj_index_list))
         stream.write(unk_obj_index_list_length)
         for unk_obj_index in self.global_unk_obj_index_list:
@@ -343,7 +340,8 @@ class Motion(Section):
 
         # part 2 : pathfinder
         nb_w = stream.read(UShort)  # this number appears several times in the section
-        self.w = [[stream.read(UInt), stream.read(UInt)] for _ in range(nb_w)]
+        # self.w = [[stream.read(UInt), stream.read(UInt)] for _ in range(nb_w)]
+        self.w = [[stream.read(UFloat), stream.read(UFloat)] for _ in range(nb_w)]
 
         # part 2.1 : crossing points
         nb_layer = stream.read(UShort)
@@ -390,7 +388,7 @@ class Motion(Section):
         assert self.nb_unk_obj == max_index + 1
         self.global_unk_obj_list = [stream.read(UnkLastObject) for _ in range(self.nb_unk_obj)]
         for path_link in self.global_path_link_list:
-            path_link.unk_obj_list = [self.global_unk_obj_list[index] for index in path_link.global_unk_obj_index_list]
+            path_link.unk_obj = [self.global_unk_obj_list[index] for index in path_link.global_unk_obj_index_list]
 
     def _save(self, substream):
         substream.write(Version(1))
@@ -426,17 +424,8 @@ class Motion(Section):
         for unk_obj in self.global_unk_obj_list:
             substream.write(unk_obj)
 
-    def print(self, file=sys.stdout):
-        for i, layer in enumerate(self.layer_list):
-            print(f"Layer {i}", file=file)
-            print(f"  total_area={layer.total_area}", file=file)
-            for j, sublayer in enumerate(layer):
-                print(f"  Sublayer {j}", file=file)
-                print(f"    nb_point_in_main_area={len(sublayer.area_list[0])}", file=file)
-                print(f"    nb_segment={len(sublayer.segment_list)}", file=file)
-                print(f"    nb_excluded_area={len(sublayer.area_list[1:])}", file=file)
-                for excluded_area in sublayer[1:]:
-                    print(f"      nb_point_in_excluded_area = {len(excluded_area)}", file=file)
+    def get_ff_index(self):
+        for i, uo in enumerate(self.global_unk_obj_list):
+            if uo.is_ff():
+                return i
 
-    def get_path_link(self, index):
-        return self.global_path_link_list[index]

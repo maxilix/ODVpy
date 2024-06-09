@@ -32,7 +32,7 @@ class Section(RWStreamable):
         stream.write(UInt(len(self._data)))
         stream.write(self._data)
 
-    def load(self, force):
+    def load(self):
         substream = ReadStream(self._data)
         self._load(substream)
         next_byte = substream.read(Bytes, 1)
