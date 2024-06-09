@@ -38,7 +38,7 @@ class Level(object):
 
         self._dvd = None
         self._dvm = None
-        # self._scb = None
+        self._scb = None
         # self._stf = None
 
     @property
@@ -111,9 +111,20 @@ class Level(object):
              f"{destination[:-9]}{os.sep}briefing{os.sep}d00bs{self.index:02}")
 
     def insert_in_game(self):
-        self.dvd.save_to_file(original_name(self.index, root=CONFIG.installation_path) + ".dvd")
+        source = self.abs_name
+        destination = original_name(self.index, root=CONFIG.installation_path)
+        if self._dvd is None:
+            copy(f"{source}.dvd", f"{destination}.dvd")
+        else:
+            self.dvd.save_to_file(destination + ".dvd")
 
-        # self.dvm.save_to_file(os.path.join(CONFIG.installation_path, original_name(self.index)))
+        if self._dvm is None:
+            copy(f"{source}.dvm", f"{destination}.dvm")
+        else:
+            self.dvm.save_to_file(destination + ".dvm")
+
+        print("copy of scb")
+        copy(f"{source}.scb", f"{destination}.scb")
 
 
 class BackupedLevel(Level):

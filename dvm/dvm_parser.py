@@ -4,7 +4,8 @@
 
 #import hqx
 from PIL import Image, ImageDraw
-from PyQt6.QtGui import QImage
+from PyQt6.QtCore import QByteArray, QBuffer, QIODevice
+from PyQt6.QtGui import QImage, QPainter, QPixmap
 import gzip
 import bz2
 
@@ -87,9 +88,10 @@ class DvmParser(Parser):
 		compression = self.stream.read(UInt)
 		assert compression == 2
 		compressed_data_length = self.stream.read(UInt)
-		compressed_data = self.stream.read(Bytes, compressed_data_length)
-		self._data = bz2.decompress(compressed_data)
+		self.compressed_data = self.stream.read(Bytes, compressed_data_length)
+		self._data = bz2.decompress(self.compressed_data)
 		self._level_map = None
+		self._draw = None
 
 	@property
 	def level_map(self):
@@ -101,8 +103,62 @@ class DvmParser(Parser):
 	def size(self):
 		return (self._width, self._height)
 
-	# def print_size(self):
-	# 	print(f"{i_to_hsi(self.size[0])} {i_to_hsi(self.size[1])}")
-		
+	def draw(self, poly, pen, brush):
+		if self._draw is None:
+			self._draw = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
 
+		painter = QPainter(self._draw)
+		painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
+		painter.setPen(pen)
+		painter.setBrush(brush)
+		painter.drawPolygon(poly)
+
+		painter.end()
+		# self._draw.save("test.png")
+
+	def save_to_file(self, filename):
+		if self._draw is None:
+			data = self._data
+		else:
+			s = self._draw.sizeInBytes()
+			data = bytes(self._draw.bits().asarray(s))
+		compressed_data = Bytes(bz2.compress(data))
+		compressed_data_length = UInt(len(compressed_data))
+
+		stream = WriteStream()
+		stream.write(self._width)
+		stream.write(self._height)
+		stream.write(UInt(2))  # compression type
+		stream.write(compressed_data_length)
+		stream.write(compressed_data)
+		with open(filename, 'wb') as file:
+			file.write(stream.get_value())
+		print(f"Saved to {filename}")
+
+	# def save_to_file(self, filename):
+	# 	if self._draw is None:
+	# 		data = self._data
+	# 	else:
+	# 		result = bytearray()
+	# 		for y in range(self._height):
+	# 			for x in range(self._width):
+	# 				pixel = self._draw.pixel(x, y)
+	# 				r5 = ((pixel & 0xFF0000) >> 19) & 0x1F
+	# 				g6 = ((pixel & 0xFF00) >> 10) & 0x3F
+	# 				b5 = ((pixel & 0xFF) >> 3) & 0x1F
+	# 				rgb565 = ((r5 << 11) | (g6 << 5) | b5).to_bytes(2, byteorder='little')
+	# 				result.extend(rgb565)
+	# 		data = bytes(result)
+	# 	compressed_data = Bytes(bz2.compress(data))
+	# 	compressed_data_length = UInt(len(compressed_data))
+	#
+	# 	stream = WriteStream()
+	# 	stream.write(self._width)
+	# 	stream.write(self._height)
+	# 	stream.write(UInt(2))  # compression type
+	# 	stream.write(compressed_data_length)
+	# 	stream.write(compressed_data)
+	# 	with open(filename, 'wb') as file:
+	# 		file.write(stream.get_value())
+	# 	print(f"Saved to {filename}")
