@@ -108,12 +108,13 @@ class UFloat(float, RWStreamable):
         if value < 0:
             raise NegativeUnsignedError(f"{cls.__name__} cannot be negative")
         else:
-            super().__new__(cls, value)
+            return super().__new__(cls, value)
 
     @classmethod
     def from_stream(cls, stream):
         raw_bytes = stream.read_raw(4)
         # stream.debug_print(raw_bytes.hex())
+        # print(unpack('f', raw_bytes)[0])
         return cls(unpack('f', raw_bytes)[0])
 
     def to_stream(self, stream):
