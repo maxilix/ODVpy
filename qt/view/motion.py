@@ -10,7 +10,7 @@ from .abstract_view import View, HierarchicalView
 
 class QViewArea(View, QGraphicsPolygonItem):
     def __init__(self, scene, control):
-        super().__init__(control, control.area.QPolygonF())
+        super().__init__(scene, control, control.area.QPolygonF())
 
         if self.control.area.main:
             self.main_color = QColor(160, 200, 40)
@@ -54,8 +54,8 @@ class QViewArea(View, QGraphicsPolygonItem):
 
 class QViewSublayer(HierarchicalView, QGraphicsPathItem):
     def __init__(self, scene, control):
-        super().__init__(control, control.sublayer.QPainterPath())
-        # super(QGraphicsPathItem, self).__init__(control)
+        super().__init__(scene, control, control.sublayer.QPainterPath())
+        # self.scene = scene
         for k, _ in enumerate(self.control):
             self.view_list.append(QViewArea(scene, self.control[k]))
 
@@ -95,24 +95,29 @@ class QViewSublayer(HierarchicalView, QGraphicsPathItem):
 
 class QViewLayer(HierarchicalView):
     def __init__(self, scene, control):
-        super().__init__(control)
+        super().__init__(scene, control)
+        # self.scene = scene
 
         for j, _ in enumerate(self.control):
             self.view_list.append(QViewSublayer(scene, self.control[j]))
 
-    def refresh(self, mousse_position):
-        for view in self.view_list:
-            view.refresh(mousse_position)
 
-
-class QViewMotion(HierarchicalView):
+class QViewAreas(HierarchicalView):
     def __init__(self, scene, control):
-        super().__init__(control)
+        super().__init__(scene, control)
+        # self.scene = scene
 
         for i, _ in enumerate(self.control):
             self.view_list.append(QViewLayer(scene, self.control[i]))
 
 
+class QViewMotion(View):
+    def __init__(self, scene, control):
+        super().__init__(scene, control)
+        # self.scene = scene
+        self.view_areas = QViewAreas(scene, self.control.control_areas)
+        # self.view_pathfinder = QViewPathfinder(self, self.control.control_pathfinder)
+
     def refresh(self, mousse_position):
-        for view in self.view_list:
-            view.refresh(mousse_position)
+        self.view_areas.refresh()
+        # self.view_pathfinder.refresh()

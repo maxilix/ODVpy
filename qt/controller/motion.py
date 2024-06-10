@@ -22,7 +22,7 @@ class QControlArea(Control, QTreeWidgetItem):
     #     self.view.setVisible(self.checkState(0) == Qt.CheckState.Checked)
 
 
-class QControlSublayer(Control, QTreeWidgetItem):
+class QControlSublayer(HierarchicalControl, QTreeWidgetItem):
     def __init__(self, parent, sublayer, index):
         super().__init__(parent)
         self.sublayer = sublayer
@@ -138,6 +138,7 @@ class QControlAreas(HierarchicalControl, QScrollArea):
             layout.addWidget(tree_widget)
 
             self.control_list = [QControlLayer(tree_widget, layer, i) for i, layer in enumerate(self.motion)]
+            self.view.__init__(self.view.scene, self)
 
             tree_widget.update_height()
 
@@ -163,6 +164,12 @@ class QControlMotion(Control, QTabWidget):
 
         self.control_pathfinder = QWidget(self)
         self.addTab(self.control_pathfinder, f"PathFinder")
+
+
+    def add_view(self, view):
+        super().add_view(view)
+        self.control_areas.add_view(view.view_areas)
+        # self.control_pathfinder.add_view(view.view_pathfinder)
 
 
 

@@ -166,7 +166,7 @@ class QViewport(QGraphicsView):
 
 class QMainView(View, QGraphicsScene):
     def __init__(self, control, info_bar):
-        super().__init__(control)
+        super().__init__(self, control)
         self.info_bar = info_bar
         pixmap = QPixmap(self.control.level.dvm.level_map)
         dvm_size = pixmap.size()
@@ -177,28 +177,28 @@ class QMainView(View, QGraphicsScene):
 
         self.view_motion = QViewMotion(self, self.control.control_motion)
 
-        # Draw a rectangle item, setting the dimensions.
-        rect = QGraphicsRectItem(0, 0, 200, 50)
-        rect.setPos(50, 20)
-
-        brush = QBrush(Qt.GlobalColor.red)
-        rect.setBrush(brush)
-
-        pen = QPen(Qt.GlobalColor.cyan)
-        pen.setWidth(5)
-        rect.setPen(pen)
-
-        self.addItem(rect)
-
-        rect.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-        rect.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+        # # Draw a rectangle item, setting the dimensions.
+        # rect = QGraphicsRectItem(0, 0, 200, 50)
+        # rect.setPos(50, 20)
+        #
+        # brush = QBrush(Qt.GlobalColor.red)
+        # rect.setBrush(brush)
+        #
+        # pen = QPen(Qt.GlobalColor.cyan)
+        # pen.setWidth(5)
+        # rect.setPen(pen)
+        #
+        # self.addItem(rect)
+        #
+        # rect.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        # rect.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
 
     # def refresh(self, pos):
     #     self.view_motion.refresh(pos)
 
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
-        pos = QPointF(-1,-1)
+        pos = QPointF(-1, -1)
         self.view_motion.refresh(pos)
 
 
