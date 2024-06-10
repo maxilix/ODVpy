@@ -14,7 +14,7 @@ class Section(RWStreamable):
     def __init__(self, name, data):
         self._name = name
         self._data = data
-        self._loaded = False
+        # self._loaded = False
         # log.info(f"Section {self.section} initialized.")
 
     @classmethod
@@ -26,23 +26,24 @@ class Section(RWStreamable):
         return cls(name, data)
 
     def to_stream(self, stream):
-        if self._loaded:
-            self.save()  # update self._data
+        # if self._loaded:
+        self.save()  # update self._data
         stream.write(self._name)
         stream.write(UInt(len(self._data)))
         stream.write(self._data)
 
-    def load(self):
+    def load(self, **kwargs):
         substream = ReadStream(self._data)
-        self._load(substream)
-        next_byte = substream.read(Bytes, 1)
-        assert next_byte == b''
-        self._loaded = True
+        self._load(substream, **kwargs)
+        # next_byte = substream.read(Bytes, 1)
+        # assert next_byte == b''
+        # self._loaded = True
         # log.info(f"Section {self.section} built")
 
     @abstractmethod
-    def _load(self, substream):
+    def _load(self, substream, **kwargs):
         # must read (and create) self state from substream
+        # must set self._loaded
         pass
 
     def save(self):
@@ -60,6 +61,6 @@ class Section(RWStreamable):
         # must write self state in substream
         pass
 
-    @property
-    def loaded(self):
-        return self._loaded
+    # @property
+    # def loaded(self):
+    #     return self._loaded

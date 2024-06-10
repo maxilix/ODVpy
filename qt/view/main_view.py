@@ -1,10 +1,10 @@
 from PyQt6.QtCore import Qt, QPointF, QPropertyAnimation, pyqtProperty, QParallelAnimationGroup, QRectF, \
     QVariantAnimation, QSequentialAnimationGroup, QEasingCurve, QPoint, QSizeF, QRect, QSize
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene
+from PyQt6.QtGui import QPixmap, QBrush, QPen
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsRectItem
 
 from .abstract_view import View
-from .move import QViewMotion
+from .motion import QViewMotion
 
 
 class QViewport(QGraphicsView):
@@ -24,14 +24,14 @@ class QViewport(QGraphicsView):
         self.zoom_max = 25
         self.zoom_min = 0.5
 
-        # initial view position
-        self.zoom = 0.7  # set zoom first, as it defines the margins around the dvm
-        self.x = dvm_size.width() // 2
-        self.y = dvm_size.height() // 2
-
-        self.zoom = 3.4
-        self.x = 700
-        self.y = 1700
+        # # initial view position
+        # self.zoom = 0.7  # set zoom first, as it defines the margins around the dvm
+        # self.x = dvm_size.width() // 2
+        # self.y = dvm_size.height() // 2
+        #
+        # self.zoom = 3.4
+        # self.x = 700
+        # self.y = 1700
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
@@ -47,11 +47,13 @@ class QViewport(QGraphicsView):
             self.move_to(100, 100)
             # self.zoom = 1
             pass
+        super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton and self.drag_position is not None:
             self.setCursor(Qt.CursorShape.ArrowCursor)
             self.drag_position = None
+        super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
         event.accept()
@@ -62,10 +64,11 @@ class QViewport(QGraphicsView):
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + delta.x())
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + delta.y())
             self.drag_position = event.pos()
-        self.scene().refresh(mouse_scene_pos)
+        # self.scene().refresh(mouse_scene_pos)
+        super().mouseMoveEvent(event)
 
-    def leaveEvent(self, event):
-        self.scene().refresh(QPointF(-1,-1))
+    # def leaveEvent(self, event):
+        # self.scene().refresh(QPointF(-1,-1))
 
     def wheelEvent(self, event):
         mouse_view_pos = event.position().toPoint()
@@ -160,34 +163,6 @@ class QViewport(QGraphicsView):
             group.addAnimation(anim)
         group.start()
 
-        # current_rect_view = self.mapToScene(self.viewport().rect()).boundingRect()
-        # transition_rect_view = current_rect_view.united(new_rect_view)
-        # # w_r = 0.1*transition_rect_view.width()
-        # # h_r = 0.1*transition_rect_view.height()
-        # # transition_rect_view.setLeft(transition_rect_view.left() + w_r)
-        # # transition_rect_view.setRight(transition_rect_view.right() - w_r)
-        # # transition_rect_view.setTop(transition_rect_view.top() + h_r)
-        # # transition_rect_view.setBottom(transition_rect_view.bottom() - h_r)
-        #
-        # anim_out = QVariantAnimation()
-        # anim_out.setDuration(350)
-        # anim_out.setStartValue(current_rect_view)
-        # anim_out.setEndValue(transition_rect_view)
-        # anim_out.setEasingCurve(QEasingCurve.Type.OutSine)
-        # anim_out.valueChanged.connect(self.set_rect_view)
-        #
-        # anim_in = QVariantAnimation()
-        # anim_in.setDuration(350)
-        # anim_in.setStartValue(transition_rect_view)
-        # anim_in.setEndValue(new_rect_view)
-        # anim_out.setEasingCurve(QEasingCurve.Type.InSine)
-        # anim_in.valueChanged.connect(self.set_rect_view)
-        #
-        # anim = QSequentialAnimationGroup(self)
-        # anim.addAnimation(anim_out)
-        # anim.addAnimation(anim_in)
-        # anim.start()
-
 
 class QMainView(View, QGraphicsScene):
     def __init__(self, control, info_bar):
@@ -202,8 +177,31 @@ class QMainView(View, QGraphicsScene):
 
         self.view_motion = QViewMotion(self, self.control.control_motion)
 
-    def refresh(self, pos):
+        # Draw a rectangle item, setting the dimensions.
+        rect = QGraphicsRectItem(0, 0, 200, 50)
+        rect.setPos(50, 20)
+
+        brush = QBrush(Qt.GlobalColor.red)
+        rect.setBrush(brush)
+
+        pen = QPen(Qt.GlobalColor.cyan)
+        pen.setWidth(5)
+        rect.setPen(pen)
+
+        self.addItem(rect)
+
+        rect.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        rect.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+
+    # def refresh(self, pos):
+    #     self.view_motion.refresh(pos)
+
+    def mouseMoveEvent(self, event):
+        super().mouseMoveEvent(event)
+        pos = QPointF(-1,-1)
         self.view_motion.refresh(pos)
+
+
 
 
 

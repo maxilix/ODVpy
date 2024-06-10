@@ -321,6 +321,16 @@ class Layer(RWStreamable):
 class Motion(Section):
     section_index = 2  # MOVE
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.loaded_areas = False
+        self.layer_list = None
+
+        self.loaded_pathfinder = False
+        self.element_size = None
+        self.general_link_list = None
+        self.link_context_list = None
+
     def __iter__(self):
         return iter(self.layer_list)
 
@@ -330,7 +340,14 @@ class Motion(Section):
     def __len__(self):
         return len(self.layer_list)
 
-    def _load(self, stream):
+    def _load(self, stream, only_areas=False):
+        self.load_areas(stream)
+        self.loaded_areas = True
+        if only_areas is False:
+            self.load_pathfinder(stream)
+            self. loaded_pathfinder = True
+
+    def load_areas(self, stream):
         version = stream.read(Version)
         assert version == 1
 
@@ -338,10 +355,11 @@ class Motion(Section):
         nb_layer = stream.read(UShort)
         self.layer_list = [stream.read(Layer) for _ in range(nb_layer)]
 
+    def load_pathfinder(self, stream):
         # part 2 : pathfinder
-        nb_w = stream.read(UShort)  # this number appears several times in the section
-        # self.w = [[stream.read(UInt), stream.read(UInt)] for _ in range(nb_w)]
-        self.w = [[stream.read(UFloat), stream.read(UFloat)] for _ in range(nb_w)]
+        nb_pathfinder = stream.read(UShort)  # this number appears several times in the section
+        # self.w = [[stream.read(UInt), stream.read(UInt)] for _ in range(nb_pathfinder)]
+        self.element_size = [[stream.read(UFloat), stream.read(UFloat)] for _ in range(nb_pathfinder)]
 
         # part 2.1 : crossing points
         nb_layer = stream.read(UShort)
@@ -354,7 +372,7 @@ class Motion(Section):
                 assert nb_area == len(sublayer)
                 for area in sublayer:
                     nb_crossing_point = stream.read(UShort)
-                    area.crossing_point_list = [stream.read(CrossingPoint, nb_w=len(self.w)) for _ in range(nb_crossing_point)]
+                    area.crossing_point_list = [stream.read(CrossingPoint, nb_w=len(self.element_size)) for _ in range(nb_crossing_point)]
 
         # part 2.2 : path links
         max_index = max([max(cp.global_path_link_index_list) if len(cp.global_path_link_index_list) > 0 else 0
@@ -365,14 +383,14 @@ class Motion(Section):
                          ])
         nb_path_link = stream.read(UShort)
         assert nb_path_link == max_index + 1
-        self.global_path_link_list = [stream.read(PathLink, nb_w=len(self.w)) for _ in range(nb_path_link)]
+        self.general_link_list = [stream.read(PathLink, nb_w=len(self.element_size)) for _ in range(nb_path_link)]
         for layer in self:
             for sublayer in layer:
                 for area in sublayer:
                     for cp in area:
-                        cp.path_link_list = [self.global_path_link_list[index] for index in
+                        cp.path_link_list = [self.general_link_list[index] for index in
                                              cp.global_path_link_index_list]
-        for path_link in self.global_path_link_list:
+        for path_link in self.general_link_list:
             i1, j1, k1, l1 = path_link.indexes1
             path_link.point1 = self[i1][j1][k1][l1]
             assert path_link not in iter(path_link.point1)
@@ -382,13 +400,13 @@ class Motion(Section):
 
         # part 2.3 : unknown last object
         max_index = max([max(path_link.global_unk_obj_index_list)
-                         for path_link in self.global_path_link_list
+                         for path_link in self.general_link_list
                          ])
-        self.nb_unk_obj = stream.read(UShort)
-        assert self.nb_unk_obj == max_index + 1
-        self.global_unk_obj_list = [stream.read(UnkLastObject) for _ in range(self.nb_unk_obj)]
-        for path_link in self.global_path_link_list:
-            path_link.unk_obj = [self.global_unk_obj_list[index] for index in path_link.global_unk_obj_index_list]
+        nb_unk_obj = stream.read(UShort)
+        assert nb_unk_obj == max_index + 1
+        self.link_context_list = [stream.read(UnkLastObject) for _ in range(nb_unk_obj)]
+        for path_link in self.general_link_list:
+            path_link.unk_obj = [self.link_context_list[index] for index in path_link.global_unk_obj_index_list]
 
     def _save(self, substream):
         substream.write(Version(1))
@@ -397,9 +415,9 @@ class Motion(Section):
         for layer in self:
             substream.write(layer)
 
-        nb_w = UShort(len(self.w))
+        nb_w = UShort(len(self.element_size))
         substream.write(nb_w)
-        for element in self.w:
+        for element in self.element_size:
             substream.write(element[0])
             substream.write(element[1])
         substream.write(nb_layer)
@@ -415,17 +433,17 @@ class Motion(Section):
                     for crossing_point in area:
                         substream.write(crossing_point)
 
-        nb_path_link = UShort(len(self.global_path_link_list))
+        nb_path_link = UShort(len(self.general_link_list))
         substream.write(nb_path_link)
-        for path_link in self.global_path_link_list:
+        for path_link in self.general_link_list:
             substream.write(path_link)
-        nb_unk_obj = UShort(len(self.global_unk_obj_list))
+        nb_unk_obj = UShort(len(self.link_context_list))
         substream.write(nb_unk_obj)
-        for unk_obj in self.global_unk_obj_list:
+        for unk_obj in self.link_context_list:
             substream.write(unk_obj)
 
     def get_ff_index(self):
-        for i, uo in enumerate(self.global_unk_obj_list):
+        for i, uo in enumerate(self.link_context_list):
             if uo.is_ff():
                 return i
 

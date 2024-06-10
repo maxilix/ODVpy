@@ -34,22 +34,22 @@ class DvdParser(Parser):
 			file.write(stream.get_value())
 		print(f"Saved to {filename}")
 
-	@property
-	def misc(self):
-		if self._misc.loaded is False:
-			self._misc.load()
-		return self._misc
-
-	@property
-	def bgnd(self):
-		if self._bgnd.loaded is False:
-			self._bgnd.load()
-		return self._bgnd
+	# @property
+	# def misc(self):
+	# 	if self._misc.loaded is False:
+	# 		self._misc.load()
+	# 	return self._misc
+	#
+	# @property
+	# def bgnd(self):
+	# 	if self._bgnd.loaded is False:
+	# 		self._bgnd.load()
+	# 	return self._bgnd
 
 	@property
 	def move(self):
-		if self._move.loaded is False:
-			self._move.load()
+		# if self._move.loaded is False:
+		# 	self._move.load()
 		return self._move
 
 

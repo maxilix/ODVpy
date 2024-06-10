@@ -71,7 +71,7 @@ L25   [6.0, 3.0]  [11.0, 6.0]
 level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/DemoMod_L00/level_00")
 # level = InstalledLevel(2)
-# level = BackupedLeve  l(5)
+# level = BackupedLevel(5)
 
 motion = level.dvd.move
 # t = [pl.unk_int - motion.w_list[1] for pl in motion.global_path_link_list]
@@ -95,8 +95,8 @@ motion = level.dvd.move
 # motion[0][0][41][4][6].unk_obj_list[0].t2 = []
 
 index = motion.get_ff_index()
-motion.global_unk_obj_list[0].t1 = [UChar(1)]
-motion.global_unk_obj_list[0].t2 = [UChar(1)]
+motion.link_context_list[0].t1 = [UChar(1)]
+motion.link_context_list[0].t2 = [UChar(1)]
 
 for i, layer in enumerate(motion):
     for j, sublayer in enumerate(layer):

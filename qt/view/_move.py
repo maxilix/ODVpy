@@ -114,14 +114,18 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
         self.size = 3
         self.nb_pathfinder = len(self.control.crossing_point.unk_char)
 
-        self.setVisible(True)
-        self.setPos(self.control.crossing_point.QPointF() - QPointF(self.size / 2, self.size / 2))
+        self.setVisible(False)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+
+        self.setPos(self.control.crossing_point.QPointF())  # - QPointF(self.size / 2, self.size / 2))
         scene.addItem(self)
 
     def boundingRect(self) -> QRectF:
-        # return QRectF(-1, -1, self.size + 2, self.size + 2)
-        # return QRectF(-3 * self.size-2, -3 * self.size-2, 7 * self.size + 2*2, 7*self.size + 2*2)
-        return QRectF(-5*self.size, -3*self.size, 11*self.size, 7*self.size)
+        return QRectF(1 - 1.5*self.nb_pathfinder - self.size/2,
+                      -2 - self.size/2,
+                      self.size + 3*self.nb_pathfinder - 2,
+                      self.size + 4)
 
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -132,8 +136,8 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
         cross_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         painter.setPen(cross_pen)
 
-        painter.drawLine(QPointF(0, 0), QPointF(self.size, self.size))
-        painter.drawLine(QPointF(0, self.size), QPointF(self.size, 0))
+        painter.drawLine(QPointF(-self.size/2, -self.size/2), QPointF(self.size/2, self.size/2))
+        painter.drawLine(QPointF(-self.size/2, self.size/2), QPointF(self.size/2, -self.size/2))
 
         # draw accesses
         allow_pen = QPen(QColor(0, 255, 0, 255))
@@ -152,22 +156,41 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
             access_SE = bool(accesses & 0b1000)
 
             painter.setPen(access_pens[access_NE])
-            painter.drawPoint(QPointF(1.5 + 1.5*path_index - 1.5*self.nb_pathfinder, -1.5))
+            painter.drawPoint(QPointF(1.5 + 1.5*path_index - 1.5*self.nb_pathfinder - self.size/2, -1.5 - self.size/2))
 
             painter.setPen(access_pens[access_NW])
-            painter.drawPoint(QPointF(self.size + 1.5*path_index, -1.5))
+            painter.drawPoint(QPointF(self.size/2 + 1.5*path_index, -1.5 - self.size/2))
 
             painter.setPen(access_pens[access_SW])
-            painter.drawPoint(QPointF(self.size + 1.5*path_index, self.size + 1.5))
+            painter.drawPoint(QPointF(self.size/2 + 1.5*path_index, 1.5 + self.size/2))
 
             painter.setPen(access_pens[access_SE])
-            painter.drawPoint(QPointF(1.5 + 1.5*path_index - 1.5*self.nb_pathfinder, self.size + 1.5))
+            painter.drawPoint(QPointF(1.5 + 1.5*path_index - 1.5*self.nb_pathfinder - self.size/2, 1.5 + self.size/2))
+
+        # # draw W rect:
+        # w_rect_pen = QPen(QColor(255, 255, 255, 255))
+        # w_rect_pen.setWidthF(0.1)
+        # w_rect_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        # w_rect_brush = QBrush(QColor(255, 255, 255, 64))
+        # painter.setPen(w_rect_pen)
+        # painter.setBrush(w_rect_brush)
+        # w = ([6.0, 3.0], [11.0, 6.0], [19.0, 11.0])
+        # for e in w:
+        #     painter.drawRect(QRectF(-2*e[0], -2*e[1], 4*e[0], 4*e[1]))
 
     def shape(self):
         path = QPainterPath()
-        path.addRect(self.boundingRect())
+        path.addRect(QRectF(-self.size/2, -self.size/2, self.size, self.size))
+        # path.addRect(self.boundingRect())
         return path
 
+    def refresh(self, mousse_position):
+        pass
+
+    def mouseDoubleClickEvent(self, event):
+        super().mouseDoubleClickEvent(event)
+        self.size *= 1.5
+        self.update(self.boundingRect())
 
 class QViewArea(HierarchicalView, QGraphicsPolygonItem):
     def __init__(self, scene, control):
@@ -277,6 +300,7 @@ class QViewMotion(HierarchicalView):
 
         for i, _ in enumerate(self.control):
             self.view_list.append(QViewLayer(scene, self.control[i]))
+
 
     def refresh(self, mousse_position):
         for view in self.view_list:

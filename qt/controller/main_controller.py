@@ -5,7 +5,7 @@ from PyQt6.QtGui import QPalette, QColor
 
 from dvd import section_list
 from .abstract_controller import Control
-from .move import QControlMotion
+from .motion import QControlMotion
 
 
 class QMainControl(Control, QTabWidget):
@@ -29,6 +29,7 @@ class QMainControl(Control, QTabWidget):
         # Motion
         self.control_motion = QControlMotion(self, level.dvd.move)
         self.addTab(self.control_motion, section_list[2])
+        self.sub_control.append(self.control_motion)
 
         # Sight
         # self.addTab(QLabel(section_list[3]), section_list[3])
@@ -50,9 +51,9 @@ class QMainControl(Control, QTabWidget):
 
         # ...
 
-    def update(self):
-        pass
-
-    def add_view(self, view):
-        self.control_motion.add_view(view.view_motion)
+    # def update(self):
+    #     pass
+    #
+    # def add_view(self, view):
+    #     self.control_motion.add_view(view.view_motion)
 
