@@ -1,4 +1,4 @@
 # Open Death Valley py
-### A level data viewer for Desperados Wanted Dead or Alive
+### A mission editor for Desperados Wanted Dead or Alive
 
 WIP
