@@ -4,10 +4,10 @@ from qt.controller.abstract_controller import HierarchicalControl
 
 
 class View(object):
-    def __init__(self, scene, control, *args, **kwargs):
+    def __init__(self, control, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.control = control
-        self.scene = scene
+        # self.scene = scene
 
     # @abstractmethod
     def refresh(self, *args, **kwargs):

@@ -5,7 +5,7 @@ from PyQt6.QtGui import QPalette, QColor
 
 from dvd import section_list
 from .abstract_controller import Control
-from .motion import QControlMotion
+from ._move import QControlMotion
 
 
 class QMainControl(Control, QTabWidget):

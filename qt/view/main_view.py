@@ -4,7 +4,7 @@ from PyQt6.QtGui import QPixmap, QBrush, QPen
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsRectItem
 
 from .abstract_view import View
-from .motion import QViewMotion
+from ._move import QViewMotion
 
 
 class QViewport(QGraphicsView):
@@ -166,7 +166,7 @@ class QViewport(QGraphicsView):
 
 class QMainView(View, QGraphicsScene):
     def __init__(self, control, info_bar):
-        super().__init__(self, control)
+        super().__init__(control)
         self.info_bar = info_bar
         pixmap = QPixmap(self.control.level.dvm.level_map)
         dvm_size = pixmap.size()
