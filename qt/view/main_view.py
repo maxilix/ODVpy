@@ -15,6 +15,8 @@ class QViewport(QGraphicsView):
         self.info_bar = info_bar
         self.control = control
 
+
+
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setMouseTracking(True)
@@ -54,14 +56,16 @@ class QViewport(QGraphicsView):
         #     self.move_to(100, 100)
         #     # self.zoom = 1
         #     pass
-        self.control.mousse_event(mouse_scene_pos, event)
+        # self.control.mousse_event(mouse_scene_pos, event)
+        super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
         mouse_scene_pos = self.mapToScene(event.pos())
         if event.button() == Qt.MouseButton.MiddleButton and self.drag_position is not None:
             self.setCursor(Qt.CursorShape.ArrowCursor)
             self.drag_position = None
-        self.control.mousse_event(mouse_scene_pos, event)
+        # self.control.mousse_event(mouse_scene_pos, event)
+        super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
         event.accept()
@@ -74,10 +78,12 @@ class QViewport(QGraphicsView):
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + delta.y())
             self.drag_position = event.pos()
         # self.scene().refresh(mouse_scene_pos)
-        self.control.mousse_event(mouse_scene_pos, event)
+        # self.control.mousse_event(mouse_scene_pos, event)
+        super().mouseMoveEvent(event)
 
     def leaveEvent(self, event: QEvent):
-        self.control.mousse_event(None, event)
+        super().leaveEvent(event)
+        # self.control.mousse_event(None, event)
 
     def wheelEvent(self, event):
         mouse_view_pos = event.position().toPoint()
@@ -96,8 +102,8 @@ class QViewport(QGraphicsView):
         self.x = mouse_scene_pos.x() + (h.pageStep()/2 - mouse_view_pos.x()) / (self.zoom_shift_factor * self.zoom)
         self.y = mouse_scene_pos.y() + (v.pageStep()/2 - mouse_view_pos.y()) / (self.zoom_shift_factor * self.zoom)
 
-        self.control.mousse_event(mouse_scene_pos, event)
-
+        # self.control.mousse_event(mouse_scene_pos, event)
+        event.ignore()
 
     @pyqtProperty(float)
     def zoom(self):

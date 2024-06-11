@@ -1,11 +1,79 @@
-from PyQt6.QtCore import Qt, QPointF, QEvent
-from PyQt6.QtGui import QColor, QPen, QBrush
+from PyQt6.QtCore import Qt, QPointF, QEvent, QRectF
+from PyQt6.QtGui import QColor, QPen, QBrush, QPolygonF, QPainter, QPainterPath
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QVBoxLayout, QCheckBox, QWidget, \
     QScrollArea, QTreeWidgetItemIterator, QPushButton, QHBoxLayout, QSpinBox, QGraphicsPolygonItem, QGraphicsScene, \
     QGraphicsItem
 
 # from q_tests import scene
 from .abstract_controller import Control, HierarchicalControl
+
+
+class QViewAreaPoint(QGraphicsItem):
+    def __init__(self, area, scene):
+        super().__init__()
+
+
+        self.size = 3
+
+        self.setVisible(False)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+
+        poly: QPolygonF = area.QPolygonF()
+        self.setPos(poly[0])
+        scene.addItem(self)
+        self.setAcceptHoverEvents(True)
+
+
+    def boundingRect(self) -> QRectF:
+        return QRectF(-self.size/2 - 0.5,
+                      -self.size/2 - 0.5,
+                      self.size + 1,
+                      self.size + 1)
+
+    def paint(self, painter: QPainter, option, widget=None):
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        # draw cross
+        cross_pen = QPen(QColor(0, 180, 255, 255))
+        cross_pen.setWidth(1)
+        cross_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        painter.setPen(cross_pen)
+
+        painter.drawLine(QPointF(-self.size/2, -self.size/2), QPointF(self.size/2, self.size/2))
+        painter.drawLine(QPointF(-self.size/2, self.size/2), QPointF(self.size/2, -self.size/2))
+
+    def shape(self):
+        path = QPainterPath()
+        path.addRect(QRectF(-self.size/2, -self.size/2, self.size, self.size))
+        # path.addRect(self.boundingRect())
+        return path
+
+    def refresh(self, mousse_position):
+        pass
+
+    def mouseDoubleClickEvent(self, event):
+        super().mouseDoubleClickEvent(event)
+        self.size *= 1.5
+        self.update(self.boundingRect())
+
+    def mouseMoveEvent(self, event):
+        super().mouseMoveEvent(event)
+        print("mouse")
+
+    def hoverMoveEvent(self, event):
+        super().hoverMoveEvent(event)
+        print("hover")
+
+    def hoverEnterEvent(self, event):
+        super().hoverEnterEvent(event)
+        self.size *= 1.5
+        self.update(self.boundingRect())
+    def hoverLeaveEvent(self, event):
+        super().hoverLeaveEvent(event)
+        update_rect = self.boundingRect()
+        self.size /= 1.5
+        self.update(update_rect)
 
 
 class QGraphicsArea(QGraphicsPolygonItem):
@@ -27,6 +95,9 @@ class QGraphicsArea(QGraphicsPolygonItem):
         brush_color.setAlpha(32)
         brush = QBrush(brush_color)
         self.setBrush(brush)
+
+        self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
 
     # def refresh(self, mousse_position):
     #     if self.control.area.main:
@@ -55,10 +126,8 @@ class QControlArea(QTreeWidgetItem):
         self.area = area
         self.index = index
 
-        self.graphic_area_item = QGraphicsArea(area)
-        self.scene.addItem(self.graphic_area_item)
-        # self.graphic_area_item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-        # self.graphic_area_item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+        self.graphic_item = QViewAreaPoint(area, scene)
+        # self.scene.addItem(self.graphic_area_item)
 
         if area.main is True:
             self.setText(0, f"Main Area")
@@ -69,16 +138,16 @@ class QControlArea(QTreeWidgetItem):
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate)
 
     def update(self):
-        self.graphic_area_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
+        self.graphic_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
 
     def mousse_event(self, scene_position: QPointF, event: QEvent):
         if self.area.main is False:
             if scene_position is not None and self.area.QPolygonF().containsPoint(scene_position, Qt.FillRule.OddEvenFill):
                 self.setSelected(True)
-                self.graphic_area_item.setVisible(True)
+                self.graphic_item.setVisible(True)
             else:
                 self.setSelected(False)
-                self.graphic_area_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
+                self.graphic_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
 
 
 class QControlSublayer(QTreeWidgetItem):
