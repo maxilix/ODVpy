@@ -8,48 +8,6 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsPolygonIt
 from .abstract_view import View, HierarchicalView
 
 
-# class QViewPathLink(View, QGraphicsLineItem):
-#     def __init__(self, scene, control):
-#         super().__init__(control, control.path_link.QLineF())
-#         self.main_color = QColor(0, 255, 255)
-#
-#         pen_color = self.main_color
-#         pen_color.setAlpha(128)
-#         pen = QPen(pen_color)
-#         pen.setWidth(1)
-#         pen.setStyle(Qt.PenStyle.DotLine)
-#
-#         self.setPen(pen)
-#         scene.addItem(self)
-#         font = QFont()
-#         font.setPixelSize(10)
-#
-#         p1 = QPointF(control.path_link.point1.point.x, control.path_link.point1.point.y)
-#         p2 = QPointF(control.path_link.point2.point.x, control.path_link.point2.point.y)
-#
-#         t1_text = f"{control.path_link.unk_obj_list[0].t1}"
-#         self.t1_text_item = QGraphicsSimpleTextItem(t1_text)
-#         self.t1_text_item.setFont(font)
-#         self.t1_text_item.setPos(0.1*p1 + 0.9*p2)
-#         scene.addItem(self.t1_text_item)
-#
-#         t2_text = f"{control.path_link.unk_obj_list[0].t2}"
-#         self.t2_text_item = QGraphicsSimpleTextItem(t2_text)
-#         self.t2_text_item.setFont(font)
-#         self.t2_text_item.setPos(0.9*p1+0.1*p2)
-#         scene.addItem(self.t2_text_item)
-#
-#
-#
-#
-#         self.setVisible(False)
-#
-#     def setVisible(self, visible):
-#         self.t1_text_item.setVisible(visible)
-#         self.t2_text_item.setVisible(visible)
-#         super().setVisible(visible)
-
-
 class QViewPathLink(View, QGraphicsItem):
     def __init__(self, scene, control):
         super().__init__(control)
@@ -167,7 +125,7 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
             painter.setPen(access_pens[access_SE])
             painter.drawPoint(QPointF(1.5 + 1.5*path_index - 1.5*self.nb_pathfinder - self.size/2, 1.5 + self.size/2))
 
-        # # draw W rect:
+        # draw W rect:
         # w_rect_pen = QPen(QColor(255, 255, 255, 255))
         # w_rect_pen.setWidthF(0.1)
         # w_rect_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
