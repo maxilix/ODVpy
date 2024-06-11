@@ -1,49 +1,137 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QPointF, QEvent
+from PyQt6.QtGui import QColor, QPen, QBrush
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QVBoxLayout, QCheckBox, QWidget, \
-    QScrollArea, QTreeWidgetItemIterator, QPushButton, QHBoxLayout, QSpinBox
+    QScrollArea, QTreeWidgetItemIterator, QPushButton, QHBoxLayout, QSpinBox, QGraphicsPolygonItem, QGraphicsScene, \
+    QGraphicsItem
 
+# from q_tests import scene
 from .abstract_controller import Control, HierarchicalControl
 
 
-class QControlArea(Control, QTreeWidgetItem):
-    def __init__(self, parent, area, index):
+class QGraphicsArea(QGraphicsPolygonItem):
+    def __init__(self, area):
+        super().__init__(area.QPolygonF())
+
+        if area.main:
+            self.main_color = QColor(160, 200, 40)
+        else:
+            self.main_color = QColor(255, 90, 40)
+
+        pen_color = self.main_color
+        pen_color.setAlpha(128)
+        pen = QPen(pen_color)
+        pen.setWidth(1)
+        self.setPen(pen)
+
+        brush_color = self.main_color
+        brush_color.setAlpha(32)
+        brush = QBrush(brush_color)
+        self.setBrush(brush)
+
+    # def refresh(self, mousse_position):
+    #     if self.control.area.main:
+    #         pass
+    #     else:
+    #         brush_color = self.main_color
+    #         if self.polygon().containsPoint(mousse_position, Qt.FillRule.OddEvenFill):
+    #             self.control.setSelected(True)
+    #             brush_color.setAlpha(64)
+    #             self.setBrush(QBrush(brush_color))
+    #             self.setVisible(True)
+    #         else:
+    #             self.control.setSelected(False)
+    #             brush_color.setAlpha(32)
+    #             self.setBrush(QBrush(brush_color))
+    #             if self.control.checkState(0) == Qt.CheckState.Checked:
+    #                 self.setVisible(True)
+    #             else:
+    #                 self.setVisible(False)
+
+
+class QControlArea(QTreeWidgetItem):
+    def __init__(self, parent, scene: QGraphicsScene, area, index):
         super().__init__(parent)
+        self.scene = scene
         self.area = area
         self.index = index
-        if area.main:
+
+        self.graphic_area_item = QGraphicsArea(area)
+        self.scene.addItem(self.graphic_area_item)
+        # self.graphic_area_item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        # self.graphic_area_item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+
+        if area.main is True:
             self.setText(0, f"Main Area")
         else:
             self.setText(0, f"Obstacle {self.index}")
 
         self.setCheckState(0, Qt.CheckState.Unchecked)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate)
-    #
-    # def update(self):
-    #     self.view.setVisible(self.checkState(0) == Qt.CheckState.Checked)
+
+    def update(self):
+        self.graphic_area_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
+
+    def mousse_event(self, scene_position: QPointF, event: QEvent):
+        if self.area.main is False:
+            if scene_position is not None and self.area.QPolygonF().containsPoint(scene_position, Qt.FillRule.OddEvenFill):
+                self.setSelected(True)
+                self.graphic_area_item.setVisible(True)
+            else:
+                self.setSelected(False)
+                self.graphic_area_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
 
 
-class QControlSublayer(HierarchicalControl, QTreeWidgetItem):
-    def __init__(self, parent, sublayer, index):
+class QControlSublayer(QTreeWidgetItem):
+    def __init__(self, parent, scene, sublayer, index):
         super().__init__(parent)
+        self.scene = scene
         self.sublayer = sublayer
         self.index = index
         self.setText(0, f"Sublayer {self.index}")
         self.setCheckState(0, Qt.CheckState.Unchecked)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate)
 
-        self.control_list = [QControlArea(self, area, k) for k, area in enumerate(self.sublayer)]
+        self.area_item = [QControlArea(self, self.scene, area, k) for k, area in enumerate(sublayer)]
 
+    def __iter__(self):
+        return iter(self.area_item)
 
-class QControlLayer(HierarchicalControl, QTreeWidgetItem):
-    def __init__(self, parent, layer, index):
+    def __len__(self):
+        return len(self.area_item)
+
+    def __getitem__(self, index):
+        return self.area_item[index]
+
+    def mousse_event(self, scene_position: QPointF, event: QEvent):
+        for area_item in self:
+            area_item.mousse_event(scene_position, event)
+
+class QControlLayer(QTreeWidgetItem):
+    def __init__(self, parent, scene, layer, index):
         super().__init__(parent)
+        self.scene = scene
         self.layer = layer
         self.index = index
         self.setText(0, f"Layer {self.index}")
         self.setCheckState(0, Qt.CheckState.Unchecked)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate)
 
-        self.control_list = [QControlSublayer(self, sublayer, j) for j, sublayer in enumerate(self.layer)]
+        self.sublayer_item = [QControlSublayer(self, self.scene, sublayer, j) for j, sublayer in enumerate(layer)]
+
+    def __iter__(self):
+        return iter(self.sublayer_item)
+
+    def __len__(self):
+        return len(self.sublayer_item)
+
+    def __getitem__(self, index):
+        return self.sublayer_item[index]
+
+    def mousse_event(self, scene_position: QPointF, event: QEvent):
+        for sublayer_item in self:
+            sublayer_item.mousse_event(scene_position, event)
+
+
 
 
 class QHighlightWidget(QWidget):
@@ -94,14 +182,21 @@ class QAreaTreeWidget(QTreeWidget):
         self.setHeaderHidden(True)
 
         self.itemDoubleClicked.connect(self.item_double_clicked)
+        self.itemChanged.connect(self.item_changed)
         self.itemExpanded.connect(self.update_height)
         self.itemCollapsed.connect(self.update_height)
+
+    def item_changed(self, item, column):
+        if column == 0 and isinstance(item, QControlArea):
+            item.update()
 
     def item_double_clicked(self, item, column):
         pass
 
     def update_height(self):
-        h = 18 * self.count_visible_item() + 2 + 22
+        # h = 18 * self.count_visible_item() + 24  # with header
+        h = 18 * self.count_visible_item() + 2  # without header
+
         self.setMinimumHeight(h)
         self.setMaximumHeight(h)
         self.resizeColumnToContents(0)
@@ -115,62 +210,85 @@ class QAreaTreeWidget(QTreeWidget):
         return count
 
 
-class QControlAreas(HierarchicalControl, QScrollArea):
-    def __init__(self, parent, motion):
+class QControlAreas(QScrollArea):
+    def __init__(self, parent, scene, motion):
         super().__init__(parent)
+        self.highlight_widget = None
+        self.scene = scene
         self.motion = motion
-        self.set_widget()
+        self.layer_item = []
+        self.init_ui()
 
-    def set_widget(self):
+    def init_ui(self):
         content = QWidget()
         layout = QVBoxLayout(content)
         if self.motion.loaded_areas is False:
-            load_areas_button = QPushButton("Load areas")
-            load_areas_button.clicked.connect(self.load_areas)
-            layout.addWidget(load_areas_button)
+            label = QLabel("No loaded areas")
+            layout.addWidget(label)
         else:
-            reload_area_button = QPushButton("Reload from data")
-            reload_area_button.clicked.connect(self.load_areas)
-            layout.addWidget(reload_area_button)
-            highlight_widget = QHighlightWidget(self, len(self.motion))
-            layout.addWidget(highlight_widget)
+            self.highlight_widget = QHighlightWidget(self, len(self.motion))
+            layout.addWidget(self.highlight_widget)
             tree_widget = QAreaTreeWidget(self)
-            layout.addWidget(tree_widget)
-
-            self.control_list = [QControlLayer(tree_widget, layer, i) for i, layer in enumerate(self.motion)]
-            self.view.__init__(self.view.scene, self)
+            self.layer_item = [QControlLayer(tree_widget, self.scene, layer, i) for i, layer in enumerate(self.motion)]
 
             tree_widget.update_height()
+            layout.addWidget(tree_widget)
 
         layout.addStretch(255)
         self.setWidgetResizable(True)
         self.setWidget(content)
 
-    def load_areas(self):
-        self.motion.load(only_areas=True)
-        self.set_widget()
+    def __iter__(self):
+        return iter(self.layer_item)
+
+    def __len__(self):
+        return len(self.layer_item)
+
+    def __getitem__(self, index):
+        return self.layer_item[index]
+
+    def mousse_event(self, scene_position: QPointF, event: QEvent):
+        if self.highlight_widget is not None and (i := self.highlight_widget.value()) != -1:
+            self[i].mousse_event(scene_position, event)
 
 
-class QControlMotion(Control, QTabWidget):
-    def __init__(self, parent, motion):
+class QControlMotion(QWidget):
+    def __init__(self, parent, scene, motion):
         super().__init__(parent)
+        self.scene = scene
         self.motion = motion
 
-        self.setTabPosition(QTabWidget.TabPosition.North)
-        self.setMovable(False)
+        self.init_ui()
 
-        self.control_areas = QControlAreas(self, self.motion)
-        self.addTab(self.control_areas, f"Areas")
+    def init_ui(self):
+        # content = QWidget()
+        layout = QVBoxLayout(self)
 
+        load_areas_button = QPushButton("(re)Load areas only")
+        load_areas_button.clicked.connect(self.load_areas_click)
+        layout.addWidget(load_areas_button)
+
+        load_all_button = QPushButton("(re)Load areas and pathfinder")
+        load_all_button.clicked.connect(self.load_all_click)
+        layout.addWidget(load_all_button)
+
+        tabs = QTabWidget()
+        tabs.setTabPosition(QTabWidget.TabPosition.North)
+        tabs.setMovable(False)
+        self.control_areas = QControlAreas(self, self.scene, self.motion)
+        tabs.addTab(self.control_areas, f"Areas")
         self.control_pathfinder = QWidget(self)
-        self.addTab(self.control_pathfinder, f"PathFinder")
+        tabs.addTab(self.control_pathfinder, f"PathFinder")
+        layout.addWidget(tabs)
 
+    def load_areas_click(self):
+        self.motion.load(only_areas=True)
+        self.control_areas.init_ui()
 
-    def add_view(self, view):
-        super().add_view(view)
-        self.control_areas.add_view(view.view_areas)
-        # self.control_pathfinder.add_view(view.view_pathfinder)
+    def load_all_click(self):
+        self.motion.load(only_areas=False)
+        self.control_areas.init_ui()
+        # self.control_pathfinder.init_ui()
 
-
-
-
+    def mousse_event(self, scene_position: QPointF, event: QEvent):
+        self.control_areas.mousse_event(scene_position, event)

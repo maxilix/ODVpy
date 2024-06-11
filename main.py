@@ -1,15 +1,19 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QPushButton
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QAction, QPalette, QColor
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QPushButton, QWidget, \
+    QVBoxLayout, QGraphicsScene
 
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
+from qt.info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
-from qt.viewer import QViewer
-from qt.controller.main_controller import QMainControl
+# from qt.view import QScene
+# from qt.viewer import QViewer
+from qt.controller.main_controller import QControl
 
 from config import CONFIG
 from common import *
+from qt.view.main_view import QViewport
 
 # from debug import *
 
@@ -168,26 +172,50 @@ class QWindow(QMainWindow):
             self.insert_current_level_action.setEnabled(True)
             main_widget = QSplitter(self)
 
-            # bi-directional pointer:
-            # main_control has pointer on main_view
-            # main_view has pointer on main_control
+            visualizer = QWidget(main_widget)
+            info_bar = QInfoBar(visualizer)
+            scene = QGraphicsScene(visualizer)
+            dvm_size = QSize(*self.current_level.dvm.size)
+            control = QControl(main_widget, scene, self.current_level)
+            viewport = QViewport(scene, dvm_size, info_bar, control)
+            info_bar.set_info(level_index=self.current_level.index)
+            info_bar.set_info(level_size=dvm_size)
 
-            main_control = QMainControl(self.current_level)
-            viewer = QViewer(self, main_control)
-            main_control.add_view(viewer.main_view)
+            layout = QVBoxLayout(visualizer)
+            layout.addWidget(viewport)
+            layout.addWidget(info_bar)
 
-            viewer.info_bar.set_widget(level_index=self.current_level.index)
 
-            main_widget.addWidget(viewer)
-            main_widget.addWidget(main_control)
+            main_widget.addWidget(visualizer)
+            main_widget.addWidget(control)
             main_widget.setChildrenCollapsible(False)
 
         self.setCentralWidget(main_widget)
 
 
+def set_dark_mode(app):
+    dark_palette = QPalette()
+    dark_palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
+    dark_palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))
+    dark_palette.setColor(QPalette.ColorRole.Base, QColor(25, 25, 25))
+    dark_palette.setColor(QPalette.ColorRole.AlternateBase, QColor(53, 53, 53))
+    dark_palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(255, 255, 220))
+    dark_palette.setColor(QPalette.ColorRole.ToolTipText, QColor(255, 255, 255))
+    dark_palette.setColor(QPalette.ColorRole.Text, QColor(255, 255, 255))
+    dark_palette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
+    dark_palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))
+    dark_palette.setColor(QPalette.ColorRole.BrightText, QColor(255, 0, 0))
+    dark_palette.setColor(QPalette.ColorRole.Highlight, QColor(142, 45, 197))
+    dark_palette.setColor(QPalette.ColorRole.HighlightedText, QColor(0, 0, 0))
+
+    app.setPalette(dark_palette)
+    app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
+
+
 if __name__ == '__main__':
     CONFIG.load()
     app = QApplication([])
+    # set_dark_mode(app)
     window = QWindow()
     window.show()
     app.exec()

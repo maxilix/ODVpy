@@ -324,7 +324,7 @@ class Motion(Section):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loaded_areas = False
-        self.layer_list = None
+        self.layer_list = []
 
         self.loaded_pathfinder = False
         self.element_size = None

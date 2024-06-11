@@ -94,7 +94,7 @@ class DvmParser(Parser):
 		self._draw = None
 
 	@property
-	def level_map(self):
+	def level_map(self) -> QImage:
 		if self._level_map is None:
 			self._level_map = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
 		return self._level_map

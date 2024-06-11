@@ -16,7 +16,7 @@ class QInfoBar(QLabel):
         self._level_size = QSize(0, 0)
         self.refresh()
 
-    def set_widget(self, **kwargs):
+    def set_info(self, **kwargs):
         if "x" in kwargs:
             self._x = kwargs["x"]
         if "y" in kwargs:

@@ -1,3 +1,3 @@
 
-from .main_view import QMainView
+# from .main_view import QScene
 from ._move import QViewMotion
