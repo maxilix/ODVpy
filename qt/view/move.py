@@ -8,48 +8,6 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsPolygonIt
 from .abstract_view import View, HierarchicalView
 
 
-# class QViewPathLink(View, QGraphicsLineItem):
-#     def __init__(self, scene, control):
-#         super().__init__(control, control.path_link.QLineF())
-#         self.main_color = QColor(0, 255, 255)
-#
-#         pen_color = self.main_color
-#         pen_color.setAlpha(128)
-#         pen = QPen(pen_color)
-#         pen.setWidth(1)
-#         pen.setStyle(Qt.PenStyle.DotLine)
-#
-#         self.setPen(pen)
-#         scene.addItem(self)
-#         font = QFont()
-#         font.setPixelSize(10)
-#
-#         p1 = QPointF(control.path_link.point1.point.x, control.path_link.point1.point.y)
-#         p2 = QPointF(control.path_link.point2.point.x, control.path_link.point2.point.y)
-#
-#         t1_text = f"{control.path_link.unk_obj_list[0].t1}"
-#         self.t1_text_item = QGraphicsSimpleTextItem(t1_text)
-#         self.t1_text_item.setFont(font)
-#         self.t1_text_item.setPos(0.1*p1 + 0.9*p2)
-#         scene.addItem(self.t1_text_item)
-#
-#         t2_text = f"{control.path_link.unk_obj_list[0].t2}"
-#         self.t2_text_item = QGraphicsSimpleTextItem(t2_text)
-#         self.t2_text_item.setFont(font)
-#         self.t2_text_item.setPos(0.9*p1+0.1*p2)
-#         scene.addItem(self.t2_text_item)
-#
-#
-#
-#
-#         self.setVisible(False)
-#
-#     def setVisible(self, visible):
-#         self.t1_text_item.setVisible(visible)
-#         self.t2_text_item.setVisible(visible)
-#         super().setVisible(visible)
-
-
 class QViewPathLink(View, QGraphicsItem):
     def __init__(self, scene, control):
         super().__init__(control)
@@ -114,13 +72,11 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
         self.size = 3
         self.nb_pathfinder = len(self.control.crossing_point.unk_char)
 
-        self.setVisible(True)
+        self.setVisible(False)
         self.setPos(self.control.crossing_point.QPointF() - QPointF(self.size / 2, self.size / 2))
         scene.addItem(self)
 
     def boundingRect(self) -> QRectF:
-        # return QRectF(-1, -1, self.size + 2, self.size + 2)
-        # return QRectF(-3 * self.size-2, -3 * self.size-2, 7 * self.size + 2*2, 7*self.size + 2*2)
         return QRectF(-5*self.size, -3*self.size, 11*self.size, 7*self.size)
 
     def paint(self, painter: QPainter, option, widget=None):

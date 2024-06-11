@@ -109,45 +109,14 @@ class CustomTreeWidget(QTreeWidget):
             pass
 
 
-    #     self.update()
-    #
-    # def update(self):
-    #     pass
-        # iterator = QTreeWidgetItemIterator(self)
-        # while iterator.value():
-        #     item = iterator.value()
-        #     if isinstance(item, QControlArea):
-        #         if item.checkState(0) == Qt.CheckState.Checked:
-        #             # self.scene.move_scene.show_area(item.i, item.j, item.k)
-        #             pass
-        #         else:
-        #             # self.scene.move_scene.hide_area(item.i, item.j, item.k)
-        #             pass
-        #     elif isinstance(item, QControlCrossingPoint):
-        #         if item.checkState(1) == Qt.CheckState.Checked:
-        #             # self.scene.move_scene.show_crossing_point(item.i, item.j, item.k, item.l)
-        #             pass
-        #         else:
-        #             # self.scene.move_scene.hide_crossing_point(item.i, item.j, item.k, item.l)
-        #             pass
-        #     elif isinstance(item, QControlPathLink):
-        #         if item.checkState(2) == Qt.CheckState.Checked:
-        #             # self.scene.move_scene.show_path_link(item.m)
-        #             pass
-        #         else:
-        #             # self.scene.move_scene.hide_path_link(item.m)
-        #             pass
-        #     else:
-        #         raise Exception("oups")  # TODO
-        #     iterator += 1
-
     def update_height(self):
         h = 18 * self.count_visible_item() + 2 + 22
         self.setMinimumHeight(h)
         self.setMaximumHeight(h)
-        self.resizeColumnToContents(0)
-        self.resizeColumnToContents(1)
         self.resizeColumnToContents(2)
+        self.resizeColumnToContents(1)
+        self.resizeColumnToContents(0)
+
 
     def count_visible_item(self):
         count = 0
@@ -167,29 +136,17 @@ class QControlSublayer(HierarchicalControl, QWidget):
         layout.setContentsMargins(30, 0, 0, 30)
 
         self.checkbox = QCheckBox(f"Show sublayer {self.index} movable area")
-        # myFont = QFont()
-        # myFont.setBold(True)
-        # myFont.setUnderline(True)
-        # self.checkbox.setFont(myFont)
         self.checkbox.released.connect(parent.update)
         layout.addWidget(self.checkbox)
 
         self.tree = CustomTreeWidget(self)
 
-        # self.control_area_list = []
         for k, area in enumerate(self.sublayer):
             control_area = QControlArea(self.tree, area, k)
             self.control_list.append(control_area)
-
         self.tree.update_height()
-        # print(f"{self.tree} updated at init")
-        layout.addWidget(self.tree)
 
-    # def catch_click(self, item):
-    #     print("Clicked", item.text(0))
-    #
-    # def catch_change(self, item):
-    #     print("Changed", item.text(0))
+        layout.addWidget(self.tree)
 
 
 class QControlLayer(HierarchicalControl, QScrollArea):
