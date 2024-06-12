@@ -1,10 +1,11 @@
 from PyQt6.QtCore import Qt, QPointF, QPropertyAnimation, pyqtProperty, QParallelAnimationGroup, QRectF, \
     QVariantAnimation, QSequentialAnimationGroup, QEasingCurve, QPoint, QSizeF, QRect, QSize, QEvent
 from PyQt6.QtGui import QPixmap, QBrush, QPen, QMouseEvent
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsRectItem
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsRectItem, QGraphicsSceneMouseEvent
 
 from .abstract_view import View
 from .motion import QViewMotion
+from ..controller.motion import QGraphicsObstacle
 
 
 class QViewport(QGraphicsView):
@@ -14,8 +15,6 @@ class QViewport(QGraphicsView):
         self.dvm_size = dvm_size
         self.info_bar = info_bar
         self.control = control
-
-
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -68,18 +67,19 @@ class QViewport(QGraphicsView):
         super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
-        event.accept()
         mouse_scene_pos = self.mapToScene(event.pos())
-
         self.info_bar.set_info(x=mouse_scene_pos.x(), y=mouse_scene_pos.y())
         if self.drag_position is not None:
             delta = self.drag_position - event.pos()
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + delta.x())
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + delta.y())
             self.drag_position = event.pos()
-        # self.scene().refresh(mouse_scene_pos)
-        # self.control.mousse_event(mouse_scene_pos, event)
+
         super().mouseMoveEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        event.ignore()
+        super().mouseDoubleClickEvent(event)
 
     def leaveEvent(self, event: QEvent):
         super().leaveEvent(event)
@@ -182,42 +182,11 @@ class QViewport(QGraphicsView):
         group.start()
 
 
-# class QScene(QGraphicsScene):
-#     # def __init__(self, parent):
-#     #     super().__init__(parent)
-#     #     self.info_bar = info_bar
-#     #     # pixmap = QPixmap(self.control.level.dvm.level_map)
-#     #     # dvm_size = pixmap.size()
-#     #     self.info_bar.set_widget(level_size=dvm_size)
-#     #     self.map = self.addPixmap(pixmap)
-#     #
-#     #     self.viewport = QViewport(self, dvm_size, info_bar)
-#     #
-#     #     self.view_motion = QViewMotion(self, self.control.control_motion)
-#     #
-#     #     # # Draw a rectangle item, setting the dimensions.
-#     #     # rect = QGraphicsRectItem(0, 0, 200, 50)
-#     #     # rect.setPos(50, 20)
-#     #     #
-#     #     # brush = QBrush(Qt.GlobalColor.red)
-#     #     # rect.setBrush(brush)
-#     #     #
-#     #     # pen = QPen(Qt.GlobalColor.cyan)
-#     #     # pen.setWidth(5)
-#     #     # rect.setPen(pen)
-#     #     #
-#     #     # self.addItem(rect)
-#     #     #
-#     #     # rect.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-#     #     # rect.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-#     #
-#     # # def refresh(self, pos):
-#     # #     self.view_motion.refresh(pos)
-#
-#     def mouseMoveEvent(self, event):
-#         super().mouseMoveEvent(event)
-#         pos = QPointF(-1, -1)
-#         self.view_motion.refresh(pos)
+class QScene(QGraphicsScene):
+    def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
+        for i in self.items(event.scenePos()):
+            i.mouseMoveEvent(event)
+        super().mouseMoveEvent(event)
 
 
 

@@ -13,7 +13,8 @@ from qt.controller.main_controller import QControl
 
 from config import CONFIG
 from common import *
-from qt.view.main_view import QViewport
+from qt.view.main_view import QViewport, QScene
+
 
 # from debug import *
 
@@ -174,7 +175,7 @@ class QWindow(QMainWindow):
 
             visualizer = QWidget(main_widget)
             info_bar = QInfoBar(visualizer)
-            scene = QGraphicsScene(visualizer)
+            scene = QScene(visualizer)
             dvm_size = QSize(*self.current_level.dvm.size)
             control = QControl(main_widget, scene, self.current_level)
             viewport = QViewport(scene, dvm_size, info_bar, control)

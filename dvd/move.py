@@ -227,7 +227,7 @@ class MoveArea(RWStreamable):
     def to_stream(self, stream):
         stream.write(self.area)
 
-    def QPolygonF(self):
+    def QPolygonF(self) -> QPolygonF:
         return QPolygonF([QPointF(p.x + 0.5, p.y + 0.5) for p in self.area.point_list])
 
 
