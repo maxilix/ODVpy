@@ -24,21 +24,21 @@ class QGraphicsObstacle(QGraphicsItem):
         self.main_color = QColor(255, 0, 0)
 
         self.poly_pen_color = self.main_color
-        self.poly_pen_color.setAlpha(255)
+        self.poly_pen_color.setAlpha(128)
         self.poly_pen = QPen(self.poly_pen_color)
         self.poly_pen.setWidthF(0.5)
+        self.poly_pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
 
         self.poly_brush_color = self.main_color
         self.poly_brush_color.setAlpha(32)
         self.poly_brush = QBrush(self.poly_brush_color)
 
         self.size = 3
+        self._highlight_visibility = True
         self._highlight = False
+        self._normal_visibility = True
         self._editable = False
-        # self._visible = False
-        self.hovering = False
 
-        self.setVisible(False)
 
         # self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         # self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
@@ -46,49 +46,40 @@ class QGraphicsObstacle(QGraphicsItem):
         # poly: QPolygonF = area.QPolygonF()
         # self.setPos(poly[0])
         scene.addItem(self)
+        self.setVisible(False)
         self.setAcceptHoverEvents(True)
 
-    @property
-    def highlight(self) -> bool:
-        return self._highlight
+    def setVisible(self, normal_visibility: bool) -> None:
+        self._normal_visibility = normal_visibility
+        super().setVisible(self._normal_visibility or self._highlight_visibility)
+        self.update()
 
-    @highlight.setter
-    def highlight(self, value: bool) -> None:
-        assert isinstance(value, bool)
-        self._highlight = value
-        self.poly_brush_color = self.main_color
-        if value is True:
-            self.poly_brush_color.setAlpha(64)
-            self.control.setSelected(True)
-            self.setVisible(True)
-        else:
-            self.poly_brush_color.setAlpha(32)
-            self.control.setSelected(False)
-            self.setVisible(self.control.checkState(0) == Qt.CheckState.Checked)
-        self.poly_brush = QBrush(self.poly_brush_color)
-
-    # def setVisible(self, visible: bool) -> None:
-    #     if visible is True:
-    #         self.setOpacity(1)
-    #     else:
-    #         self.setOpacity(0.1)
-    #     # super().setVisible(True)
+    def setHighlight(self, highlight_visibility: bool) -> None:
+        self._highlight_visibility = highlight_visibility
+        super().setVisible(self._normal_visibility or self._highlight_visibility)
+        self.update()
 
     def boundingRect(self) -> QRectF:
-        return self.area.QPolygonF().boundingRect()
+        r = self.area.QPolygonF().boundingRect()
+        r.setX(r.x() - self.poly_pen.widthF()/2)
+        r.setY(r.y() - self.poly_pen.widthF()/2)
+        r.setWidth(r.width() + self.poly_pen.widthF())
+        r.setHeight(r.height() + self.poly_pen.widthF())
+        return r
 
     def paint(self, painter: QPainter, option, widget=None):
+        if self._highlight is True:
+            assert self._highlight_visibility is True
+            self.poly_brush_color.setAlpha(64)
+        else:
+            if self._normal_visibility is True:
+                self.poly_brush_color.setAlpha(32)
+            else:
+                return
+
+        self.poly_brush = QBrush(self.poly_brush_color)
+
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        # # draw cross
-        # cross_pen = QPen(QColor(0, 180, 255, 255))
-        # cross_pen.setWidth(1)
-        # cross_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-        # painter.setPen(cross_pen)
-        #
-        # painter.drawLine(QPointF(-self.size/2, -self.size/2), QPointF(self.size/2, self.size/2))
-        # painter.drawLine(QPointF(-self.size/2, self.size/2), QPointF(self.size/2, -self.size/2))
-
         painter.setPen(self.poly_pen)
         painter.setBrush(self.poly_brush)
 
@@ -99,99 +90,28 @@ class QGraphicsObstacle(QGraphicsItem):
         path.addPolygon(self.area.QPolygonF())
         return path
 
-    # def mouseDoubleClickEvent(self, event):
-    #     print("double")
-    #     super().mouseDoubleClickEvent(event)
+    def mouseDoubleClickEvent(self, event):
+        print("double")
 
     def mouseMoveEvent(self, event):
         print("mouse", event.type())
-        super().mouseMoveEvent(event)
 
-    # def hoverMoveEvent(self, event):
-    #     print("hover")
-    #     super().hoverMoveEvent(event)
-
+    def hoverMoveEvent(self, event):
+        print("hover")
 
     def hoverEnterEvent(self, event):
-        # self.hovering = True
-        # # self.hoverEntered.emit()
-        # super().hoverEnterEvent(event)
-
         print("enter")
-        self.highlight = True
+        if self._highlight_visibility is True:
+            self._highlight = True
+            self.control.setSelected(True)
+            self.update()
 
     def hoverLeaveEvent(self, event):
-        # self.hovering = False
-        # # self.hoverLeft.emit()
-        # super().hoverLeaveEvent(event)
-
         print("leave")
-        self.highlight = False
-
-    # def sceneEventFilter(self, watched, event):
-    #     if event.type() == QEvent.Type.Enter and watched == self.scene():
-    #         # La souris est entrée dans la scène
-    #         self._emitHoverSignalsIfHovering(event)
-    #     elif event.type() == QEvent.Type.Leave and watched == self.scene():
-    #         # La souris est sortie de la scène
-    #         self.hovering = False
-    #         self.hoverLeft.emit()
-    #     return super().sceneEventFilter(watched, event)
-    #
-    # def _emitHoverSignalsIfHovering(self, event):
-    #     pos = event.scenePos()
-    #     if self.contains(pos):
-    #         if not self.hovering:
-    #             self.hovering = True
-    #             self.hoverEntered.emit()
-    #     else:
-    #         if self.hovering:
-    #             self.hovering = False
-    #             self.hoverLeft.emit()
-
-
-
-class QGraphicsArea(QGraphicsPolygonItem):
-    def __init__(self, area):
-        super().__init__(area.QPolygonF())
-
-        if area.main:
-            self.main_color = QColor(160, 200, 40)
-        else:
-            self.main_color = QColor(255, 90, 40)
-
-        pen_color = self.main_color
-        pen_color.setAlpha(128)
-        pen = QPen(pen_color)
-        pen.setWidth(1)
-        self.setPen(pen)
-
-        brush_color = self.main_color
-        brush_color.setAlpha(32)
-        brush = QBrush(brush_color)
-        self.setBrush(brush)
-
-        self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-        self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-
-    # def refresh(self, mousse_position):
-    #     if self.control.area.main:
-    #         pass
-    #     else:
-    #         brush_color = self.main_color
-    #         if self.polygon().containsPoint(mousse_position, Qt.FillRule.OddEvenFill):
-    #             self.control.setSelected(True)
-    #             brush_color.setAlpha(64)
-    #             self.setBrush(QBrush(brush_color))
-    #             self.setVisible(True)
-    #         else:
-    #             self.control.setSelected(False)
-    #             brush_color.setAlpha(32)
-    #             self.setBrush(QBrush(brush_color))
-    #             if self.control.checkState(0) == Qt.CheckState.Checked:
-    #                 self.setVisible(True)
-    #             else:
-    #                 self.setVisible(False)
+        if self._highlight_visibility is True:
+            self._highlight = False
+            self.control.setSelected(False)
+            self.update()
 
 
 class QControlArea(QTreeWidgetItem):
@@ -200,7 +120,6 @@ class QControlArea(QTreeWidgetItem):
         self.scene = scene
         self.area = area
         self.index = index
-
 
         # self.scene.addItem(self.graphic_area_item)
 
@@ -217,15 +136,7 @@ class QControlArea(QTreeWidgetItem):
     def update(self):
         self.graphic_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
 
-    def mousse_event(self, scene_position: QPointF, event: QEvent):
-        if self.area.main is False:
-            if scene_position is not None and self.area.QPolygonF().containsPoint(scene_position,
-                                                                                  Qt.FillRule.OddEvenFill):
-                self.setSelected(True)
-                self.graphic_item.setVisible(True)
-            else:
-                self.setSelected(False)
-                self.graphic_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
+
 
 
 class QControlSublayer(QTreeWidgetItem):
@@ -249,10 +160,6 @@ class QControlSublayer(QTreeWidgetItem):
     def __getitem__(self, index):
         return self.area_item[index]
 
-    def mousse_event(self, scene_position: QPointF, event: QEvent):
-        for area_item in self:
-            area_item.mousse_event(scene_position, event)
-
 
 class QControlLayer(QTreeWidgetItem):
     def __init__(self, parent, scene, layer, index):
@@ -274,10 +181,6 @@ class QControlLayer(QTreeWidgetItem):
 
     def __getitem__(self, index):
         return self.sublayer_item[index]
-
-    def mousse_event(self, scene_position: QPointF, event: QEvent):
-        for sublayer_item in self:
-            sublayer_item.mousse_event(scene_position, event)
 
 
 class QHighlightWidget(QWidget):
