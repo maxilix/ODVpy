@@ -1,118 +1,117 @@
-import sys
 from functools import reduce
-from io import StringIO
 
-from PyQt6.QtCore import QPointF, QPoint, QLineF
+from PyQt6.QtCore import QPointF, QLineF
 from PyQt6.QtGui import QPolygonF, QPainterPath
 
 from common import *
-from debug import hxs
-
 from .section import Section
 
 
+class LinkViability(RWStreamable):
 
-
-class UnkLastObject(RWStreamable):
-
-    def __init__(self, unk_tab1, unk_tab2):
-        self.t1 = unk_tab1
-        self.t2 = unk_tab2
-
-    def is_ff(self) -> bool :
-        return self.t1 == []
+    def __init__(self,
+                 start_viabilities: list[UChar],
+                 end_viabilities: list[UChar]):
+        self.start_viabilities = start_viabilities
+        self.end_viabilities = end_viabilities
 
     @classmethod
-    def from_stream(cls, stream):
-        u1 = stream.read(UChar)
-        if u1 == 255:  # 0xff is read
+    def from_stream(cls, stream: ReadStream):
+        start_reduce = stream.read(UChar)
+        if start_reduce == 255:
+            # 0xff is read
+            # the corresponding link is totally unavailable
             return cls([], [])
         else:
-            u2 = stream.read(UChar)
+            end_reduce = stream.read(UChar)
 
             n1 = stream.read(UShort)
-            l1 = [stream.read(UChar) for _ in range(n1)]
-            assert all([u in [1, 2, 4, 8] for u in l1])
-            assert u1 == reduce(lambda x, y: x | y, l1)
+            start_viabilities = [stream.read(UChar) for _ in range(n1)]
+            # assert all([u in [1, 2, 4, 8] for u in start_viabilities])
+            # assert start_reduce == reduce(lambda x, y: x | y, start_viabilities)
 
             n2 = stream.read(UShort)
-            assert n1 == n2
-            l2 = [stream.read(UChar) for _ in range(n2)]
-            assert all([u in [1, 2, 4, 8] for u in l2])
-            assert u2 == reduce(lambda x, y: x | y, l2)
-            return cls(l1, l2)
+            # assert n1 == n2
+            end_viabilities = [stream.read(UChar) for _ in range(n2)]
+            # assert all([u in [1, 2, 4, 8] for u in end_viabilities])
+            # assert end_reduce == reduce(lambda x, y: x | y, end_viabilities)
+            return cls(start_viabilities, end_viabilities)
 
-    def to_stream(self, stream):
-        if self.t1 == [] and self.t2 == []:
+    def to_stream(self, stream: WriteStream) -> None:
+        if self.start_viabilities == [] and self.end_viabilities == []:
             stream.write(UChar(255))
         else:
-            u1 = UChar(reduce(lambda x, y: x | y, self.t1))
-            stream.write(u1)
-            u2 = UChar(reduce(lambda x, y: x | y, self.t2))
-            stream.write(u2)
-            n1 = UShort(len(self.t1))
+            start_reduce = UChar(reduce(lambda x, y: x | y, self.start_viabilities))
+            stream.write(start_reduce)
+            end_reduce = UChar(reduce(lambda x, y: x | y, self.end_viabilities))
+            stream.write(end_reduce)
+            n1 = UShort(len(self.start_viabilities))
             stream.write(n1)
-            for u in self.t1:
+            for u in self.start_viabilities:
                 stream.write(u)
-            n2 = UShort(len(self.t2))
+            n2 = UShort(len(self.end_viabilities))
             stream.write(n2)
-            for u in self.t2:
+            for u in self.end_viabilities:
                 stream.write(u)
 
 
 class PathLink(RWStreamable):
 
-    def __init__(self, indexes1, point1, indexes2, point2, link_length, global_unk_obj_index_list, unk_obj):
-        self.indexes1 = indexes1
-        self.point1 = point1
-        self.indexes2 = indexes2
-        self.point2 = point2
-        self.link_length = link_length
-        self.global_unk_obj_index_list = global_unk_obj_index_list
-        self.unk_obj = unk_obj
-
-    def get_other(self, indexes):
-        if indexes == self.indexes1:
-            return self.indexes2
-        elif indexes == self.indexes2:
-            return self.indexes1
-        else:
-            raise IndexError(f"Link has no {indexes}")
+    def __init__(self,
+                 start_cp_indexes,
+                 start_position,
+                 end_cp_indexes,
+                 end_position,
+                 length,
+                 global_link_viability_index_list,
+                 link_viability):
+        self.start_cp_indexes = start_cp_indexes
+        self.start_position = start_position
+        self.end_cp_indexes = end_cp_indexes
+        self.end_position = end_position
+        self.length = length
+        self.global_link_viability_index_list = global_link_viability_index_list
+        self.link_viability = link_viability
 
     @classmethod
-    def from_stream(cls, stream, *, nb_w=None):
+    def from_stream(cls, stream):
         indexes1 = tuple(stream.read(UShort) for _ in range(4))
         indexes2 = tuple(stream.read(UShort) for _ in range(4))
-        link_length = stream.read(UFloat)
-        nb_unk_obj = stream.read(UShort)  # w again
-        assert nb_w is None or nb_w == nb_unk_obj
-        global_unk_obj_index_list = [stream.read(UShort) for _ in range(nb_unk_obj)]
-        return cls(indexes1, None, indexes2, None, link_length, global_unk_obj_index_list, [])
+        length = stream.read(UFloat)
+        nb_pathfinder = stream.read(UShort)
+        global_link_viability_index_list = [stream.read(UShort) for _ in range(nb_pathfinder)]
+        return cls(indexes1, None, indexes2, None, length, global_link_viability_index_list, [])
 
     def to_stream(self, stream):
-        for index1 in self.indexes1:
+        for index1 in self.start_cp_indexes:
             stream.write(index1)
-        for index2 in self.indexes2:
+        for index2 in self.end_cp_indexes:
             stream.write(index2)
-        stream.write(self.link_length)
-        unk_obj_index_list_length = UShort(len(self.global_unk_obj_index_list))
+        stream.write(self.length)
+        unk_obj_index_list_length = UShort(len(self.global_link_viability_index_list))
         stream.write(unk_obj_index_list_length)
-        for unk_obj_index in self.global_unk_obj_index_list:
-            stream.write(unk_obj_index)
+        for link_viability_index in self.global_link_viability_index_list:
+            stream.write(link_viability_index)
 
     def QLineF(self):
-        p1 = self.point1.QPointF()
-        p2 = self.point2.QPointF()
+        p1 = self.start_position.QPointF()
+        p2 = self.end_position.QPointF()
         return QLineF(p1, p2)
 
 
 class CrossingPoint(RWStreamable):
 
-    def __init__(self, unk_char, point, previous_point, next_point, global_link_path_index_list, path_link_list):
-        self.unk_char = unk_char
-        self.point = point
-        self.previous_point = previous_point
-        self.next_point = next_point
+    def __init__(self,
+                 accesses,
+                 position,
+                 vector_to_next,
+                 vector_to_previous,
+                 global_link_path_index_list,
+                 path_link_list):
+        self.accesses = accesses
+        self.position = position
+        self.vector_to_next = vector_to_next
+        self.vector_to_previous = vector_to_previous
         self.global_path_link_index_list = global_link_path_index_list
         self.path_link_list = path_link_list
 
@@ -127,11 +126,10 @@ class CrossingPoint(RWStreamable):
         return len(self.path_link_list)
 
     @classmethod
-    def from_stream(cls, stream, *, nb_w=None):
-        nb_bytes = stream.read(UShort)  # w again
-        assert nb_w is None or nb_w == nb_bytes
-        unk_char = [stream.read(UChar) for _ in range(nb_bytes)]
-        # unk_char[0] define the position of area around the point, as a flag:
+    def from_stream(cls, stream):
+        nb_pathfinder = stream.read(UShort)
+        accesses = [stream.read(UChar) for _ in range(nb_pathfinder)]
+        # each access (in accesses) define if obstacles are present around the point
         # X=0 if obstacle is presente in the quarter
         # X=1 if no obstacle in the quarter
         #
@@ -142,25 +140,27 @@ class CrossingPoint(RWStreamable):
         #      X___  |  _X__
         #    SW      |      SE
         #
+        # note:
+        # 4 msb are always zero
         # 0x0f = 0b00001111 cannot be possible
 
-        point = stream.read(UPoint)
+        position = stream.read(UPoint)
 
-        next_point = point + stream.read(Point)
-        previous_point = point - stream.read(Point)
+        vector_to_next = stream.read(Point)
+        vector_to_previous = position - stream.read(Point)
 
         nb_path_link = stream.read(UShort)
         global_path_link_index_list = [stream.read(UShort) for _ in range(nb_path_link)]
-        return cls(unk_char, point, previous_point, next_point, global_path_link_index_list, [])
+        return cls(accesses, position, vector_to_next, vector_to_previous, global_path_link_index_list, [])
 
     def to_stream(self, stream):
-        nb_bytes = UShort(len(self.unk_char))  # w
-        stream.write(nb_bytes)
-        for char in self.unk_char:
-            stream.write(char)
-        stream.write(self.point)
-        stream.write(self.next_point - self.point)
-        stream.write(self.point - self.previous_point)
+        nb_pathfinder = UShort(len(self.accesses))  # w
+        stream.write(nb_pathfinder)
+        for access in self.accesses:
+            stream.write(access)
+        stream.write(self.position)
+        stream.write(self.vector_to_next)
+        stream.write(self.vector_to_previous)
 
         nb_path_link = UShort(len(self.global_path_link_index_list))
         stream.write(nb_path_link)
@@ -168,11 +168,14 @@ class CrossingPoint(RWStreamable):
             stream.write(path_link_index)
 
     def QPointF(self):
-        return QPointF(self.point.x + 0.5, self.point.y + 0.5)
+        return QPointF(self.position.x + 0.5, self.position.y + 0.5)
 
 
 class MoveArea(RWStreamable):
-    def __init__(self, area: Area, crossing_point_list=None, main=False):
+    def __init__(self,
+                 area: Area,
+                 crossing_point_list=None,
+                 main=False):
         self.area = area
         if crossing_point_list is None:
             self.crossing_point_list = []
@@ -180,31 +183,29 @@ class MoveArea(RWStreamable):
             self.crossing_point_list = crossing_point_list
         self._main = main
 
-    """
-    def check(self):
-        # check if previous vector (resp. next vector) of each crossing point
-        # really refer to the previous (resp. next) point of the area.
-        for cp in self.crossing_point_list:
-            if cp.previous_point not in self.previous_of(cp.point):
-                print(f"{cp.point=}")
-                print(f"{self.area.point_list=}")
-                print(f"previous failed: {cp.previous_point} {self.previous_of(cp.point)}")
-                print()
-            if cp.next_point not in self.next_of(cp.point):
-                print(f"{cp.point=}")
-                print(f"{self.area.point_list=}")
-                print(f"next failed: {cp.next_point} {self.next_of(cp.point)}")
-                print()
-
-    def next_of(self, point, incr=1):
-        n = len(self.area)
-        if self._main:
-            incr = -incr
-        return [self.area[(i + incr) % n] for i in range(n) if self.area[i] == point]
-
-    def previous_of(self, point):
-        return self.next_of(point, incr=-1)
-    """
+    # def check(self):
+    #     # check if previous vector (resp. next vector) of each crossing point
+    #     # really refer to the previous (resp. next) point of the area.
+    #     for cp in self.crossing_point_list:
+    #         if cp.previous_point not in self.previous_of(cp.point):
+    #             print(f"{cp.point=}")
+    #             print(f"{self.area.point_list=}")
+    #             print(f"previous failed: {cp.previous_point} {self.previous_of(cp.point)}")
+    #             print()
+    #         if cp.next_point not in self.next_of(cp.point):
+    #             print(f"{cp.point=}")
+    #             print(f"{self.area.point_list=}")
+    #             print(f"next failed: {cp.next_point} {self.next_of(cp.point)}")
+    #             print()
+    #
+    # def next_of(self, point, incr=1):
+    #     n = len(self.area)
+    #     if self._main:
+    #         incr = -incr
+    #     return [self.area[(i + incr) % n] for i in range(n) if self.area[i] == point]
+    #
+    # def previous_of(self, point):
+    #     return self.next_of(point, incr=-1)
 
     @property
     def main(self):
@@ -233,7 +234,9 @@ class MoveArea(RWStreamable):
 
 class Sublayer(RWStreamable):
 
-    def __init__(self, area_list, segment_list):
+    def __init__(self,
+                 area_list,
+                 segment_list):
         self.area_list = area_list  # [main_area] + obstacle_list
         self.segment_list = segment_list
 
@@ -249,15 +252,10 @@ class Sublayer(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         main_area = stream.read(MoveArea, main=True)
-        # stream.debug_new_line()
-
         nb_segment = stream.read(UShort)
         segment_list = [stream.read(Segment) for _ in range(nb_segment)]
-        # segment_list = stream.read(Array, Segment, comment="nb segment")
-
         nb_obstacle = stream.read(UShort)
-        obstacle_list = [stream.read(MoveArea) for _ in range(nb_obstacle)]
-        # sub_area_list = stream.read(Array, Area, comment="nb excluded area")
+        obstacle_list = [stream.read(MoveArea, main=False) for _ in range(nb_obstacle)]
 
         return cls([main_area] + obstacle_list, segment_list)
 
@@ -285,8 +283,10 @@ class Sublayer(RWStreamable):
 
 
 class Layer(RWStreamable):
-    def __init__(self, total_area, sublayer_list):
-        self.total_area = total_area
+    def __init__(self,
+                 total_area,
+                 sublayer_list):
+        self.total_area = total_area  # is not yet dynamic
         self.sublayer_list = sublayer_list
 
     def __iter__(self):
@@ -301,13 +301,8 @@ class Layer(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         total_area = stream.read(UShort)
-        # stream.debug_comment("nb total area")
-        # stream.debug_new_line()
-
         nb_sublayer = stream.read(UShort)
         sublayer_list = [stream.read(Sublayer) for _ in range(nb_sublayer)]
-        # sublayer_list = stream.read(Array, Sublayer, comment="nb sublayer")
-
         return cls(total_area, sublayer_list)
 
     def to_stream(self, stream):
@@ -345,7 +340,7 @@ class Motion(Section):
         self.loaded_areas = True
         if only_areas is False:
             self.load_pathfinder(stream)
-            self. loaded_pathfinder = True
+            self.loaded_pathfinder = True
 
     def load_areas(self, stream):
         version = stream.read(Version)
@@ -357,8 +352,7 @@ class Motion(Section):
 
     def load_pathfinder(self, stream):
         # part 2 : pathfinder
-        nb_pathfinder = stream.read(UShort)  # this number appears several times in the section
-        # self.w = [[stream.read(UInt), stream.read(UInt)] for _ in range(nb_pathfinder)]
+        nb_pathfinder = stream.read(UShort)
         self.element_size = [[stream.read(UFloat), stream.read(UFloat)] for _ in range(nb_pathfinder)]
 
         # part 2.1 : crossing points
@@ -372,7 +366,8 @@ class Motion(Section):
                 assert nb_area == len(sublayer)
                 for area in sublayer:
                     nb_crossing_point = stream.read(UShort)
-                    area.crossing_point_list = [stream.read(CrossingPoint, nb_w=len(self.element_size)) for _ in range(nb_crossing_point)]
+                    area.crossing_point_list = [stream.read(CrossingPoint, nb_w=len(self.element_size)) for _ in
+                                                range(nb_crossing_point)]
 
         # part 2.2 : path links
         max_index = max([max(cp.global_path_link_index_list) if len(cp.global_path_link_index_list) > 0 else 0
@@ -391,22 +386,22 @@ class Motion(Section):
                         cp.path_link_list = [self.general_link_list[index] for index in
                                              cp.global_path_link_index_list]
         for path_link in self.general_link_list:
-            i1, j1, k1, l1 = path_link.indexes1
-            path_link.point1 = self[i1][j1][k1][l1]
-            assert path_link not in iter(path_link.point1)
-            i2, j2, k2, l2 = path_link.indexes2
-            path_link.point2 = self[i2][j2][k2][l2]
-            assert path_link in iter(path_link.point2)
+            i1, j1, k1, l1 = path_link.start_cp_indexes
+            path_link.start_position = self[i1][j1][k1][l1]
+            assert path_link not in iter(path_link.start_position)
+            i2, j2, k2, l2 = path_link.end_cp_indexes
+            path_link.end_position = self[i2][j2][k2][l2]
+            assert path_link in iter(path_link.end_position)
 
         # part 2.3 : unknown last object
-        max_index = max([max(path_link.global_unk_obj_index_list)
+        max_index = max([max(path_link.global_link_viability_index_list)
                          for path_link in self.general_link_list
                          ])
         nb_unk_obj = stream.read(UShort)
         assert nb_unk_obj == max_index + 1
-        self.link_context_list = [stream.read(UnkLastObject) for _ in range(nb_unk_obj)]
+        self.link_context_list = [stream.read(LinkViability) for _ in range(nb_unk_obj)]
         for path_link in self.general_link_list:
-            path_link.unk_obj = [self.link_context_list[index] for index in path_link.global_unk_obj_index_list]
+            path_link.link_viability = [self.link_context_list[index] for index in path_link.global_link_viability_index_list]
 
     def _save(self, substream):
         substream.write(Version(1))
@@ -446,4 +441,3 @@ class Motion(Section):
         for i, uo in enumerate(self.link_context_list):
             if uo.is_ff():
                 return i
-

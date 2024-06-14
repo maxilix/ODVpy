@@ -11,8 +11,8 @@ class QControlPathLink(Control, QTreeWidgetItem):
         self.path_link = path_link
         self.index = index
 
-        i_o, j_o, k_o, l_o = self.path_link.indexes1
-        self.setText(2, f"{self.path_link.point1.point} on {i_o} {j_o} {k_o}")
+        i_o, j_o, k_o, l_o = self.path_link.start_cp_indexes
+        self.setText(2, f"{self.path_link.start_position.position} on {i_o} {j_o} {k_o}")
         self.setCheckState(2, Qt.CheckState.Unchecked)
 
     def update(self):
@@ -25,7 +25,7 @@ class QControlCrossingPoint(HierarchicalControl, QTreeWidgetItem):
         self.crossing_point = crossing_point
         self.index = index
 
-        self.setText(1, str(self.crossing_point.point))
+        self.setText(1, str(self.crossing_point.position))
         self.setCheckState(1, Qt.CheckState.Unchecked)
         if (nb_path_link := len(self.crossing_point)) > 0:
             self.setText(2, f"{nb_path_link} link{"s" if nb_path_link > 1 else ""}")

@@ -95,15 +95,15 @@ motion = level.dvd.move
 # motion[0][0][41][4][6].unk_obj_list[0].t2 = []
 
 index = motion.get_ff_index()
-motion.link_context_list[0].t1 = [UChar(1)]
-motion.link_context_list[0].t2 = [UChar(1)]
+motion.link_context_list[0].start_viabilities = [UChar(1)]
+motion.link_context_list[0].end_viabilities = [UChar(1)]
 
 for i, layer in enumerate(motion):
     for j, sublayer in enumerate(layer):
         for k, area in enumerate(sublayer):
             for l, cp in enumerate(area):
                 for m, pl in enumerate(cp):
-                    pl.global_unk_obj_index_list[0] = UShort(0)
+                    pl.global_link_viability_index_list[0] = UShort(0)
 
 #
 # exit()

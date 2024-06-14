@@ -1,6 +1,23 @@
+from functools import reduce
+
 from PyQt6.QtCore import QRectF, Qt, QPointF
 from PyQt6.QtGui import QPolygonF, QPen, QBrush, QPainterPath, QPainter
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsView, QApplication
+
+
+def area_of(path: QPainterPath, precision: int = 1000) -> float:
+    """
+    QPainterPath area calculation
+    https://stackoverflow.com/questions/20282579/calculating-the-fill-area-of-qpainterpath
+    """
+    points = [(point.x(), point.y()) for point in (path.pointAtPercent(i/precision) for i in range (precision))]
+    points.append(points[0])
+
+    return 0.5 * abs(reduce(
+        lambda sum, i: sum + (points[i][0] * points[i + 1][1] - points[i + 1][0] * points[i][1]),
+        range (len (points) - 1),
+        0
+    ))
 
 
 def rect_to_polygon(rect):

@@ -87,11 +87,11 @@ class QViewPathLink(View, QGraphicsItem):
         painter.setPen(pen_color)
 
         pl = self.control.path_link
-        t1 = " ".join([str(e) for e in pl.unk_obj[0].t1])
-        t2 = " ".join([str(e) for e in pl.unk_obj[0].t2])
+        t1 = " ".join([str(e) for e in pl.link_viability[0].start_viabilities])
+        t2 = " ".join([str(e) for e in pl.link_viability[0].end_viabilities])
 
-        p1 = QPointF(pl.point1.point.x, pl.point1.point.y)
-        p2 = QPointF(pl.point2.point.x, pl.point2.point.y)
+        p1 = QPointF(pl.start_position.position.x, pl.start_position.position.y)
+        p2 = QPointF(pl.end_position.position.x, pl.end_position.position.y)
         p2, p1 = 0.9*p1 + 0.1*p2, 0.1*p1 + 0.9*p2  # swap p1 and p2
 
         painter.drawText(QRectF(p1.x() - font_size, p1.y() - font_size, 2*font_size, 2*font_size),
@@ -112,7 +112,7 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
             self.view_list.append(QViewPathLink(scene, self.control[m]))
 
         self.size = 3
-        self.nb_pathfinder = len(self.control.crossing_point.unk_char)
+        self.nb_pathfinder = len(self.control.crossing_point.accesses)
 
         self.setVisible(False)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
@@ -149,7 +149,7 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
         access_pens = (disallow_pen, allow_pen)
 
         for path_index in range(self.nb_pathfinder):
-            accesses = self.control.crossing_point.unk_char[path_index]
+            accesses = self.control.crossing_point.accesses[path_index]
             access_NE = bool(accesses & 0b0001)
             access_NW = bool(accesses & 0b0010)
             access_SW = bool(accesses & 0b0100)
