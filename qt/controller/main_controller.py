@@ -59,9 +59,6 @@ class QControl(QTabWidget):
 
         # ...
 
-    def mousse_event(self, scene_position: QPointF, event: QEvent):
-        self.control_motion.mousse_event(scene_position, event)
-
 
     def update(self):
         pass

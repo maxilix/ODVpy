@@ -1,11 +1,10 @@
-from PyQt6.QtCore import Qt, QPointF, QEvent, QRectF
-from PyQt6.QtGui import QColor, QPen, QBrush, QPolygonF, QPainter, QPainterPath
+from PyQt6.QtCore import Qt, QRectF
+from PyQt6.QtGui import QColor, QPen, QBrush, QPainter, QPainterPath
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QVBoxLayout, QCheckBox, QWidget, \
-    QScrollArea, QTreeWidgetItemIterator, QPushButton, QHBoxLayout, QSpinBox, QGraphicsPolygonItem, QGraphicsScene, \
+    QScrollArea, QPushButton, QHBoxLayout, QSpinBox, QGraphicsScene, \
     QGraphicsItem
 
 from dvd.move import MoveArea
-from .abstract_controller import Control, HierarchicalControl
 
 
 class QGraphicsMainArea(QGraphicsItem):
@@ -24,7 +23,7 @@ class QGraphicsObstacle(QGraphicsItem):
         self.main_color = QColor(255, 0, 0)
 
         self.poly_pen_color = self.main_color
-        self.poly_pen_color.setAlpha(128)
+        self.poly_pen_color.setAlpha(255)
         self.poly_pen = QPen(self.poly_pen_color)
         self.poly_pen.setWidthF(0.5)
         self.poly_pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
@@ -33,20 +32,12 @@ class QGraphicsObstacle(QGraphicsItem):
         self.poly_brush_color.setAlpha(32)
         self.poly_brush = QBrush(self.poly_brush_color)
 
-        self.size = 3
         self._highlight_visibility = True
         self._highlight = False
         self._normal_visibility = True
         self._editable = False
 
-
-        # self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-        # self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-
-        # poly: QPolygonF = area.QPolygonF()
-        # self.setPos(poly[0])
         scene.addItem(self)
-        self.setVisible(False)
         self.setAcceptHoverEvents(True)
 
     def setVisible(self, normal_visibility: bool) -> None:
@@ -61,25 +52,26 @@ class QGraphicsObstacle(QGraphicsItem):
 
     def boundingRect(self) -> QRectF:
         r = self.area.QPolygonF().boundingRect()
-        r.setX(r.x() - self.poly_pen.widthF()/2)
-        r.setY(r.y() - self.poly_pen.widthF()/2)
+        r.setX(r.x() - self.poly_pen.widthF() / 2)
+        r.setY(r.y() - self.poly_pen.widthF() / 2)
         r.setWidth(r.width() + self.poly_pen.widthF())
         r.setHeight(r.height() + self.poly_pen.widthF())
         return r
 
     def paint(self, painter: QPainter, option, widget=None):
-        if self._highlight is True:
-            assert self._highlight_visibility is True
+        if self._highlight and self._highlight_visibility:
             self.poly_brush_color.setAlpha(64)
         else:
             if self._normal_visibility is True:
                 self.poly_brush_color.setAlpha(32)
             else:
+                # no drawing
                 return
 
         self.poly_brush = QBrush(self.poly_brush_color)
 
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
         painter.setPen(self.poly_pen)
         painter.setBrush(self.poly_brush)
 
@@ -90,28 +82,17 @@ class QGraphicsObstacle(QGraphicsItem):
         path.addPolygon(self.area.QPolygonF())
         return path
 
-    def mouseDoubleClickEvent(self, event):
-        print("double")
-
-    def mouseMoveEvent(self, event):
-        print("mouse", event.type())
-
-    def hoverMoveEvent(self, event):
-        print("hover")
-
     def hoverEnterEvent(self, event):
-        print("enter")
-        if self._highlight_visibility is True:
-            self._highlight = True
-            self.control.setSelected(True)
-            self.update()
+        # print("enter")
+        self._highlight = True
+        self.control.setSelected(True)
+        self.update()
 
     def hoverLeaveEvent(self, event):
-        print("leave")
-        if self._highlight_visibility is True:
-            self._highlight = False
-            self.control.setSelected(False)
-            self.update()
+        # print("leave")
+        self._highlight = False
+        self.control.setSelected(False)
+        self.update()
 
 
 class QControlArea(QTreeWidgetItem):
@@ -120,8 +101,6 @@ class QControlArea(QTreeWidgetItem):
         self.scene = scene
         self.area = area
         self.index = index
-
-        # self.scene.addItem(self.graphic_area_item)
 
         if area.main is True:
             self.graphic_item = QGraphicsMainArea(area, scene, self)
@@ -135,8 +114,6 @@ class QControlArea(QTreeWidgetItem):
 
     def update(self):
         self.graphic_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
-
-
 
 
 class QControlSublayer(QTreeWidgetItem):
@@ -181,44 +158,6 @@ class QControlLayer(QTreeWidgetItem):
 
     def __getitem__(self, index):
         return self.sublayer_item[index]
-
-
-class QHighlightWidget(QWidget):
-    def __init__(self, parent, nb_layer):
-        super().__init__(parent)
-        layout = QHBoxLayout(self)
-
-        self.check_box = QCheckBox()
-        self.check_box.setCheckState(Qt.CheckState.Checked)
-        self.check_box.clicked.connect(self.update)
-        layout.addWidget(self.check_box)
-
-        self.label = QLabel("Highlight on layer")
-        self.label.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
-        layout.addWidget(self.label)
-
-        layout.addStretch(255)
-
-        self.spin = QSpinBox()
-        self.spin.setMinimum(0)
-        self.spin.setMaximum(nb_layer)
-        self.spin.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
-        layout.addWidget(self.spin)
-        self.update()
-
-    def update(self):
-        if self.check_box.isChecked() is True:
-            self.label.setEnabled(True)
-            self.spin.setEnabled(True)
-        else:
-            self.label.setEnabled(False)
-            self.spin.setEnabled(False)
-
-    def value(self):
-        if self.check_box.isChecked() is False:
-            return -1
-        else:
-            return self.spin.value()
 
 
 class QAreaTreeWidget(QTreeWidget):
@@ -275,17 +214,45 @@ class QControlAreas(QScrollArea):
             label = QLabel("No loaded areas")
             layout.addWidget(label)
         else:
-            self.highlight_widget = QHighlightWidget(self, len(self.motion))
-            layout.addWidget(self.highlight_widget)
+            ####
+            sub_content = QWidget()
+            sub_layout = QHBoxLayout(sub_content)
+            self.check_box = QCheckBox()
+            self.check_box.setCheckState(Qt.CheckState.Checked)
+            self.check_box.clicked.connect(self.set_highlight_mode)
+            sub_layout.addWidget(self.check_box)
+            self.label = QLabel("Highlight on layer")
+            self.label.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
+            sub_layout.addWidget(self.label)
+            sub_layout.addStretch(255)
+            self.spin = QSpinBox()
+            self.spin.setMinimum(0)
+            self.spin.setMaximum(len(self.motion))
+            self.spin.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
+            self.spin.valueChanged.connect(self.set_highlight_mode)
+            sub_layout.addWidget(self.spin)
+            ###
+
+            layout.addWidget(sub_content)
             tree_widget = QAreaTreeWidget(self)
             self.layer_item = [QControlLayer(tree_widget, self.scene, layer, i) for i, layer in enumerate(self.motion)]
 
             tree_widget.update_height()
+            self.set_highlight_mode()
             layout.addWidget(tree_widget)
 
         layout.addStretch(255)
         self.setWidgetResizable(True)
         self.setWidget(content)
+
+    def set_highlight_mode(self):
+        state = self.check_box.isChecked()
+        self.label.setEnabled(state)
+        self.spin.setEnabled(state)
+        for i, layer_item in enumerate(self):
+            for sublayer_item in layer_item:
+                for area_item in sublayer_item[1:]:
+                    area_item.graphic_item.setHighlight(state and self.spin.value() == i)
 
     def __iter__(self):
         return iter(self.layer_item)
@@ -295,10 +262,6 @@ class QControlAreas(QScrollArea):
 
     def __getitem__(self, index):
         return self.layer_item[index]
-
-    def mousse_event(self, scene_position: QPointF, event: QEvent):
-        if self.highlight_widget is not None and (i := self.highlight_widget.value()) != -1:
-            self[i].mousse_event(scene_position, event)
 
 
 class QControlMotion(QWidget):
@@ -338,6 +301,3 @@ class QControlMotion(QWidget):
         self.motion.load(only_areas=False)
         self.control_areas.init_ui()
         # self.control_pathfinder.init_ui()
-
-    def mousse_event(self, scene_position: QPointF, event: QEvent):
-        self.control_areas.mousse_event(scene_position, event)
