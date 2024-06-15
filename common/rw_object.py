@@ -68,7 +68,13 @@ class Point(RWStreamable):
         stream.write(self.y)
 
     def distance(self, other):
-        return ((self.x - other.x)**2 + (self.y - other.y)**2)**0.5
+        if other is None:
+            return (self.x**2 + self.y**2)**0.5
+        else:
+            return ((self.x - other.x)**2 + (self.y - other.y)**2)**0.5
+
+    def length(self):
+        return self.distance(other=None)
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
@@ -78,6 +84,9 @@ class Point(RWStreamable):
 
     def __sub__(self, other):
         return Point(self.x - other.x, self.y - other.y)
+
+    def __neg__(self):
+        return Point(-self.x, -self.y)
 
     def __repr__(self):
         return f"<{type(self).__name__} {str(self)}>"
@@ -116,28 +125,31 @@ class Segment(RWStreamable):
         return f"{self.coor1} -> {self.coor2}"
 
 
-class Area(RWStreamable):
+class Polygon(RWStreamable):
     def __init__(self, point_list):
         if not (isinstance(point_list, list) and all(isinstance(c, UPoint) for c in point_list)):
-            raise TypeError("Area must be a list of Coordinate")
-        self.point_list = point_list
+            raise TypeError("Area must be a list of UPoint")
+        self._point_list = point_list
 
     def __iter__(self):
-        return iter(self.point_list)
+        return iter(self._point_list)
 
-    def __getitem__(self, item):
-        return self.point_list[item]
+    def __getitem__(self, index: int):
+        return self._point_list[index % len(self)]
 
     def __len__(self):
-        return len(self.point_list)
+        return len(self._point_list)
+
+    def reverse(self):
+        self._point_list.reverse()
 
     def index(self, point):
-        return self.point_list.index(point)
+        return self._point_list.index(point)
 
     def to_stream(self, stream):
-        nb_point = UShort(len(self.point_list))
+        nb_point = UShort(len(self._point_list))
         stream.write(nb_point)
-        for point in self.point_list:
+        for point in self._point_list:
             stream.write(point)
 
     @classmethod

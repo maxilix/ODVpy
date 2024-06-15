@@ -4,23 +4,16 @@ from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QV
     QScrollArea, QPushButton, QHBoxLayout, QSpinBox, QGraphicsScene, \
     QGraphicsItem
 
-from dvd.move import MoveArea
-
-
-class QGraphicsMainArea(QGraphicsItem):
-    def __init__(self, area: MoveArea, scene: QGraphicsScene, control):
-        super().__init__()
-        self.area = area
-        self.control = control
+from dvd.move import Obstacle, MainArea
 
 
 class QGraphicsObstacle(QGraphicsItem):
-    def __init__(self, area: MoveArea, scene: QGraphicsScene, control):
+    main_color = QColor(255, 0, 0)
+
+    def __init__(self, area: Obstacle, scene: QGraphicsScene, control):
         super().__init__()
         self.area = area
         self.control = control
-
-        self.main_color = QColor(255, 0, 0)
 
         self.poly_pen_color = self.main_color
         self.poly_pen_color.setAlpha(255)
@@ -95,19 +88,35 @@ class QGraphicsObstacle(QGraphicsItem):
         self.update()
 
 
-class QControlArea(QTreeWidgetItem):
+class QGraphicsMainArea(QGraphicsObstacle):
+    main_color = QColor(160, 200, 40)
+
+
+class QControlMainArea(QTreeWidgetItem):
+    def __init__(self, parent, scene: QGraphicsScene, area):
+        super().__init__(parent)
+        self.scene = scene
+        self.area = area
+
+        self.graphic_item = QGraphicsMainArea(area, scene, self)
+        self.setText(0, f"Main Area")
+
+        self.setCheckState(0, Qt.CheckState.Unchecked)
+        self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate)
+
+    def update(self):
+        self.graphic_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
+
+
+class QControlObstacle(QTreeWidgetItem):
     def __init__(self, parent, scene: QGraphicsScene, area, index):
         super().__init__(parent)
         self.scene = scene
         self.area = area
         self.index = index
 
-        if area.main is True:
-            self.graphic_item = QGraphicsMainArea(area, scene, self)
-            self.setText(0, f"Main Area")
-        else:
-            self.graphic_item = QGraphicsObstacle(area, scene, self)
-            self.setText(0, f"Obstacle {self.index}")
+        self.graphic_item = QGraphicsObstacle(area, scene, self)
+        self.setText(0, f"Obstacle {self.index}")
 
         self.setCheckState(0, Qt.CheckState.Unchecked)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate)
@@ -126,16 +135,17 @@ class QControlSublayer(QTreeWidgetItem):
         self.setCheckState(0, Qt.CheckState.Unchecked)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate)
 
-        self.area_item = [QControlArea(self, self.scene, area, k) for k, area in enumerate(sublayer)]
+        self.main_area_item = QControlMainArea(self, self.scene, sublayer.main)
+        self.obstacle_item = [QControlObstacle(self, self.scene, area, k) for k, area in enumerate(sublayer)]
 
     def __iter__(self):
-        return iter(self.area_item)
+        return iter(self.obstacle_item)
 
     def __len__(self):
-        return len(self.area_item)
+        return len(self.obstacle_item)
 
     def __getitem__(self, index):
-        return self.area_item[index]
+        return self.obstacle_item[index]
 
 
 class QControlLayer(QTreeWidgetItem):
@@ -175,7 +185,7 @@ class QAreaTreeWidget(QTreeWidget):
         self.itemCollapsed.connect(self.update_height)
 
     def item_changed(self, item, column):
-        if column == 0 and isinstance(item, QControlArea):
+        if column == 0 and isinstance(item, QControlObstacle):
             item.update()
 
     def item_double_clicked(self, item, column):

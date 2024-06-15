@@ -1,14 +1,15 @@
 import hashlib
 
 from PyQt6.QtCore import QBuffer, QByteArray
-from PyQt6.QtGui import QColor, QPen, QBrush, QImage, qRgb, qRed, qGreen, qBlue
+from PyQt6.QtGui import QColor, QPen, QBrush, QImage, qRgb, qRed, qGreen, qBlue, QPolygonF, QVector2D
 
 from common import *
 from config import CONFIG
 from dvd import DvdParser
+from dvd.move import Obstacle
 from odv.level import Level, BackupedLevel, InstalledLevel
+from odv.pathfinder import PathFinders
 from settings import *
-
 
 CONFIG.load()
 
@@ -51,109 +52,75 @@ L25   [6.0, 3.0]  [11.0, 6.0]
 """
 
 
-# for i in range(26):
-#     level = BackupedLevel(i)
-#     # motion = level.dvd.move
-#     # print(f"L{i:02}   ", end="")
-#     # l = [pl.link_length for pl in motion.global_path_link_list]
-#     # print(f"{min(l):6.3f} {max(l):8.3f}")
-#     misc = level.dvd.misc
-#     print(hex(misc.c))
-#
-# exit()
+def draw_obstacle_on_dvm(level, layer_index=0):
+    if level.dvd.move.loaded_areas is False:
+        level.dvd.move.load(only_areas=True)
+    pen = QPen(QColor(255, 0, 0, 128))
+    pen.setWidthF(0.5)
+    brush = QBrush(QColor(255, 0, 0, 32))
+    for sublayer in level.dvd.move[layer_index]:
+        for obstacle in sublayer:
+            level.dvm.draw(obstacle.QPolygonF(), pen, brush)
 
 
+def signed_area(polygon: QPolygonF):
+    area = 0.0
+    num_points = polygon.size()
+
+    for i in range(num_points):
+        current_point = QVector2D(polygon[i])
+        next_point = QVector2D(polygon[(i + 1) % num_points])
+        area += (next_point.x() - current_point.x()) * (next_point.y() + current_point.y())
+
+    print(area)
+    return area <= 0.0
 
 
-
-
-
-level = Level("./dev/empty_level/empty_level_02")
+# level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/DemoMod_L00/level_00")
 # level = InstalledLevel(2)
-# level = BackupedLevel(5)
+# for level_index in range(1):
 
+level = BackupedLevel(6)
+level.dvd.move.load()
 motion = level.dvd.move
-# t = [pl.unk_int - motion.w_list[1] for pl in motion.global_path_link_list]
-# print(motion.w_list)
-# print(sum(t)/len(t))
-# print(max(t))
-
-
-# for v in motion.w:
-#     print(v)
-# exit()
-
-# motion[0][0][103][2][5].unk_obj_list[0].t1 = []
-# motion[0][0][103][2][5].unk_obj_list[0].t1 = []
-# motion[0][0][103][2][5].unk_obj_list[0].t2 = []
-# motion[0][0][103][10][11].unk_obj_list[0].t1 = []
-# motion[0][0][103][10][11].unk_obj_list[0].t2 = []
-# motion[0][0][103][10][12].unk_obj_list[0].t1 = []
-# motion[0][0][103][10][12].unk_obj_list[0].t2 = []
-# motion[0][0][41][4][6].unk_obj_list[0].t1 = []
-# motion[0][0][41][4][6].unk_obj_list[0].t2 = []
-
-index = motion.get_ff_index()
-motion.link_context_list[0].start_viabilities = [UChar(1)]
-motion.link_context_list[0].end_viabilities = [UChar(1)]
-
-for i, layer in enumerate(motion):
-    for j, sublayer in enumerate(layer):
-        for k, area in enumerate(sublayer):
-            for l, cp in enumerate(area):
-                for m, pl in enumerate(cp):
-                    pl.global_link_viability_index_list[0] = UShort(0)
-
-#
-# exit()
-
-# motion.w = [[UFloat(6.0),  UFloat(3.0)],
-#             [UFloat(11.0), UFloat(6.0)],
-#             [UFloat(3.0),  UFloat(2.0)],
-#             [UFloat(19.0), UFloat(11.0)]]
-
-
-# motion.w[0] = [UFloat(1.0), UFloat(1.0)]
-# motion.w[1] = [UFloat(25.0), UFloat(25.0)]
-# motion.w[2] = [UFloat(11.0), UFloat(6.0)]
-# motion.w[2] = [UFloat(40.0), UFloat(30.0)]
-# motion.w[3] = [UFloat(40.0), UFloat(30.0)]
-
-for sublayer in motion[0]:
-    for area in sublayer[1:]:
-        poly = area.QPolygonF()
-        level.dvm.draw(poly, QPen(QColor(255, 0, 0)), QBrush(QColor(255, 0, 0, 64)))
-
-# for layer in motion[1:-1]:
-#     for sublayer in layer:
-#         poly = sublayer[0].QPolygonF()
-#         level.dvm.draw(poly, QPen(QColor(160, 200, 40)), QBrush(QColor(160, 200, 40, 64)))
-
+# print(len(motion))
 
 # for layer in motion:
 #     for sublayer in layer:
-#         for area in sublayer:
-#             for cp in area:
-#                 cp.unk_char = [cp.unk_char[0],
-#                                cp.unk_char[1],
-#                                cp.unk_char[0],
-#                                cp.unk_char[2]]
+#         assert sublayer.main.clockwise
+#         for obstacle in sublayer:
+#             assert obstacle.clockwise
+
+# o = motion[0][0].main
+# o = Obstacle([UPoint(0, 0),
+#               UPoint(1, 0),
+#               UPoint(1, 1),
+#               UPoint(0, 1), ])
+# o.clockwise = False
+# for i in range(len(o)):
+#     print(o[i], o.angle_at(i))
 
 
-# for pl in motion.global_path_link_list:
-#     pl.global_unk_obj_index_list = pl.global_unk_obj_index_list
+pf1 = motion.pathfinders
+pf2 = PathFinders.build_from_motion(motion, [])
 
-# for unk_obj in motion.global_unk_obj_list:
-#     n = len(unk_obj.unk_tab1)
-#     unk_obj.unk_tab1 = [UChar(4)]*n
-#     unk_obj.unk_tab2 = [UChar(4)]*n
+for i in range(len(pf1.crossing_point_list)):
+    for j in range(len(pf1.crossing_point_list[i])):
+        for k in range(len(pf1.crossing_point_list[i][j])):
+            # assert len(pf1.crossing_point_list[i][j][k]) == len(pf2.crossing_point_list[i][j][k])
+            for cp1_index in range(len(pf1.crossing_point_list[i][j][k])):
+                cp2_index = [c.position for c in pf2.crossing_point_list[i][j][k]].index(pf1.crossing_point_list[i][j][k][cp1_index].position)
+                cp1 = pf1.crossing_point_list[i][j][k][cp1_index]
+                cp2 = pf2.crossing_point_list[i][j][k][cp2_index]
+                assert cp1.position == cp2.position
+                assert cp1.vector_to_next == cp2.vector_to_next
+                assert cp1.vector_from_previous == cp2.vector_from_previous
 
 
-# cp = motion[0][0][102][1]
-# cp.unk_char = [UChar(9), UChar(6), UChar(6)]
-# for w0, w1 in motion.w:
-#     print(f"{bin(w0)[2:].zfill(32)}   {bin(w1)[2:].zfill(32)}")
+                # cp1 = pf1.crossing_point_list[i][j][k][cp_index]
+                # cp2 = pf2.crossing_point_list[i][j][k][cp_index]
+                # if cp1.position != cp2.position:
 
-level.insert_in_game()
 
+# level.insert_in_game()
