@@ -50,11 +50,11 @@ class QViewPathLink(View, QGraphicsItem):
 
         p1 = QPointF(pl.point1.point.x, pl.point1.point.y)
         p2 = QPointF(pl.point2.point.x, pl.point2.point.y)
-        p2, p1 = 0.9*p1 + 0.1*p2, 0.1*p1 + 0.9*p2  # swap p1 and p2
+        p2, p1 = 0.9 * p1 + 0.1 * p2, 0.1 * p1 + 0.9 * p2  # swap p1 and p2
 
-        painter.drawText(QRectF(p1.x() - font_size, p1.y() - font_size, 2*font_size, 2*font_size),
+        painter.drawText(QRectF(p1.x() - font_size, p1.y() - font_size, 2 * font_size, 2 * font_size),
                          Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter, t1)
-        painter.drawText(QRectF(p2.x() - font_size, p2.y() - font_size, 2*font_size, 2*font_size),
+        painter.drawText(QRectF(p2.x() - font_size, p2.y() - font_size, 2 * font_size, 2 * font_size),
                          Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter, t2)
 
     def shape(self):
@@ -80,9 +80,9 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
         scene.addItem(self)
 
     def boundingRect(self) -> QRectF:
-        return QRectF(1 - 1.5*self.nb_pathfinder - self.size/2,
-                      -2 - self.size/2,
-                      self.size + 3*self.nb_pathfinder - 2,
+        return QRectF(1 - 1.5 * self.nb_pathfinder - self.size / 2,
+                      -2 - self.size / 2,
+                      self.size + 3 * self.nb_pathfinder - 2,
                       self.size + 4)
 
     def paint(self, painter: QPainter, option, widget=None):
@@ -94,8 +94,8 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
         cross_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         painter.setPen(cross_pen)
 
-        painter.drawLine(QPointF(-self.size/2, -self.size/2), QPointF(self.size/2, self.size/2))
-        painter.drawLine(QPointF(-self.size/2, self.size/2), QPointF(self.size/2, -self.size/2))
+        painter.drawLine(QPointF(-self.size / 2, -self.size / 2), QPointF(self.size / 2, self.size / 2))
+        painter.drawLine(QPointF(-self.size / 2, self.size / 2), QPointF(self.size / 2, -self.size / 2))
 
         # draw accesses
         allow_pen = QPen(QColor(0, 255, 0, 255))
@@ -114,31 +114,36 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
             access_SE = bool(accesses & 0b1000)
 
             painter.setPen(access_pens[access_NE])
-            painter.drawPoint(QPointF(1.5 + 1.5*path_index - 1.5*self.nb_pathfinder - self.size/2, -1.5 - self.size/2))
+            painter.drawPoint(
+                QPointF(1.5 + 1.5 * path_index - 1.5 * self.nb_pathfinder - self.size / 2, -1.5 - self.size / 2))
 
             painter.setPen(access_pens[access_NW])
-            painter.drawPoint(QPointF(self.size/2 + 1.5*path_index, -1.5 - self.size/2))
+            painter.drawPoint(QPointF(self.size / 2 + 1.5 * path_index, -1.5 - self.size / 2))
 
             painter.setPen(access_pens[access_SW])
-            painter.drawPoint(QPointF(self.size/2 + 1.5*path_index, 1.5 + self.size/2))
+            painter.drawPoint(QPointF(self.size / 2 + 1.5 * path_index, 1.5 + self.size / 2))
 
             painter.setPen(access_pens[access_SE])
-            painter.drawPoint(QPointF(1.5 + 1.5*path_index - 1.5*self.nb_pathfinder - self.size/2, 1.5 + self.size/2))
+            painter.drawPoint(
+                QPointF(1.5 + 1.5 * path_index - 1.5 * self.nb_pathfinder - self.size / 2, 1.5 + self.size / 2))
 
-        # draw W rect:
-        # w_rect_pen = QPen(QColor(255, 255, 255, 255))
-        # w_rect_pen.setWidthF(0.1)
-        # w_rect_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-        # w_rect_brush = QBrush(QColor(255, 255, 255, 64))
-        # painter.setPen(w_rect_pen)
-        # painter.setBrush(w_rect_brush)
-        # w = ([6.0, 3.0], [11.0, 6.0], [19.0, 11.0])
-        # for e in w:
-        #     painter.drawRect(QRectF(-2*e[0], -2*e[1], 4*e[0], 4*e[1]))
+        # draw W rect
+        w_rect_pen = QPen(QColor(255, 255, 255, 255))
+        w_rect_pen.setWidthF(0.1)
+        w_rect_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        w_rect_brush = QBrush(QColor(255, 255, 255, 64))
+        painter.setPen(w_rect_pen)
+        painter.setBrush(w_rect_brush)
+        w = ([6.0, 3.0], [11.0, 6.0], [19.0, 11.0])
+        for e in w:
+            painter.drawRect(QRectF(-2 * e[0], -2 * e[1], 2 * e[0], 2 * e[1]))  # NE 0b0001
+            painter.drawRect(QRectF(0, -2 * e[1], 2 * e[0], 2 * e[1]))
+            painter.drawRect(QRectF(0, 0, 2 * e[0], 2 * e[1]))
+            painter.drawRect(QRectF(-2 * e[0], 0, 2 * e[0], 2 * e[1]))
 
     def shape(self):
         path = QPainterPath()
-        path.addRect(QRectF(-self.size/2, -self.size/2, self.size, self.size))
+        path.addRect(QRectF(-self.size / 2, -self.size / 2, self.size, self.size))
         # path.addRect(self.boundingRect())
         return path
 
@@ -149,6 +154,7 @@ class QViewCrossingPoint(HierarchicalView, QGraphicsItem):
         super().mouseDoubleClickEvent(event)
         self.size *= 1.5
         self.update(self.boundingRect())
+
 
 class QViewArea(HierarchicalView, QGraphicsPolygonItem):
     def __init__(self, scene, control):
@@ -258,7 +264,6 @@ class QViewMotion(HierarchicalView):
 
         for i, _ in enumerate(self.control):
             self.view_list.append(QViewLayer(scene, self.control[i]))
-
 
     def refresh(self, mousse_position):
         for view in self.view_list:
