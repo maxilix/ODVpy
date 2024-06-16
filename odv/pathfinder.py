@@ -242,10 +242,6 @@ class PathFinders(RWStreamable):
 
     @classmethod
     def build_from_motion(cls, motion, element_size_list):
-        element_size_list = [[UFloat(6.0), UFloat(3.0)],
-                             [UFloat(11.0), UFloat(6.0)],
-                             [UFloat(19.0), UFloat(11.0)]]
-
         crossing_point_list = []
 
         for i, layer in enumerate(motion):
@@ -258,12 +254,13 @@ class PathFinders(RWStreamable):
 
         for i, layer in enumerate(motion):
             for j, sublayer in enumerate(layer):
-                sublayer_QPainterPath = sublayer.allow_QPainterPath()
+                main_poly = sublayer.main.QPolygonF()
+                obstacle_poly = [obstacle.QPolygonF() for obstacle in sublayer]
                 for k in range(len(sublayer) + 1):
                     # t = time.time()
                     # print(f"{i}, {j}, {k} : {len(crossing_point_list[i][j][k])}cps ", end="")
                     for cp in crossing_point_list[i][j][k]:
-                        cls.accesses_definition(cp, element_size_list, sublayer_QPainterPath)
+                        cls.accesses_definition(cp, element_size_list, main_poly, obstacle_poly)
                     # print(f"{time.time() - t:.2f}s")
 
 
@@ -271,9 +268,11 @@ class PathFinders(RWStreamable):
 
     @staticmethod
     def cp_list_from_move_area(move_area):
-        # assure que les point sont parcouru dans le bon ordre
-        # cad si l'on marche sur la frontiere, la zone inaxessible est a droite
-        move_area.clockwise = not move_area.main  # renverse l'ordre des points si necessaire
+        # TODO second implementation based on QLineF and the angle() method
+
+        # Ensures that points are covered in the right order
+        # i.e. if you walk on the border, the restricted area is on the right.
+        move_area.clockwise = not move_area.main  # reverse the order of points if necessary
 
         cp_list = []
         for point_index in range(len(move_area)):
@@ -292,20 +291,6 @@ class PathFinders(RWStreamable):
         move_area.clockwise = True  # engine need clockwise definition  TODO really needed ?
         return cp_list
 
-    # @staticmethod
-    # def area_of_QPainterPath(path: QPainterPath, precision: int = 10000) -> float:
-    #     """
-    #     QPainterPath area calculation
-    #     https://stackoverflow.com/questions/20282579/calculating-the-fill-area-of-qpainterpath
-    #     """
-    #     points = [(point.x(), point.y()) for point in (path.pointAtPercent(i / precision) for i in range(precision))]
-    #     points.append(points[0])
-    #
-    #     return 0.5 * abs(reduce(
-    #         lambda sum, i: sum + (points[i][0] * points[i + 1][1] - points[i + 1][0] * points[i][1]),
-    #         range(len(points) - 1),
-    #         0
-    #     ))
 
     @staticmethod
     def area(polygon: QPolygon | QPolygonF) -> float:
@@ -323,31 +308,38 @@ class PathFinders(RWStreamable):
     def rect_at(point: UPoint, w: (float, float), direction: int) -> QRectF:
         assert direction in [1, 2, 4, 8]
         if direction & 0b1001:
-            x = point.x - w[0]
+            x = point.x - 2*w[0]
         else:
             x = point.x
         if direction & 0b0011:
-            y = point.y - w[1]
+            y = point.y - 2*w[1]
         else:
             y = point.y
-        return QRectF(x, y, w[0], w[1])
+        return QRectF(x, y, 2*w[0], 2*w[1])
 
     @classmethod
-    def accesses_definition(cls, cp, element_size_list, sublayer_QPainterPath):
+    def accesses_definition(cls, cp, element_size_list, main_poly: QPolygonF, obstacle_poly: [QPolygonF]):
 
         for element_size in element_size_list:
             access = 0
             for direction in [1, 2, 4, 8]:
-                r = QPainterPath()
-                r.addRect(cls.rect_at(cp.position, element_size, direction))
+                r = QPolygonF(cls.rect_at(cp.position, element_size, direction))
 
-                inter = sublayer_QPainterPath.intersected(r)
-                polygons = inter.toFillPolygons()
-                if len(polygons) == 1:
-                    a = element_size[0]*element_size[1] - cls.area(polygons[0])
-                    if cp.position == UPoint(2022,368):
-                        print(cp.position, direction, element_size, a)
-                    if a <= 0.05:
-                        access += direction
+                inter = main_poly.intersected(r)
+                a = 4 * element_size[0] * element_size[1] - cls.area(inter)
+                if a <= 0.05:
+                    # r in main_poly
+                    break_flag = False
+                    for poly in obstacle_poly:
+                        inter = poly.intersected(r)
+                        if (a:=cls.area(inter)) > 0.1:
+                            # obstacle in r
+                            break_flag = True
+                            break
+                    # if cp.position == UPoint(2228, 698) and (direction & 0b1000):
+                    #     print(cp.position, break_flag, direction, element_size, a)
+                    if break_flag:
+                        continue
+                    access += direction
             cp.accesses.append(access)
 

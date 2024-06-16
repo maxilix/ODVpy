@@ -1,24 +1,28 @@
+from typing import Iterator, Self
+from math import acos, pi
+
 from PyQt6.QtCore import QPointF, QLineF, QRectF
 from PyQt6.QtGui import QPolygonF, QPainterPath
 
 from common import *
 from odv.pathfinder import PathFinders
 from .section import Section
-from math import acos, pi
 
 
 class MovePolygon(Polygon):
     _main: bool
 
     @property
-    def main(self):
+    def main(self) -> bool:
         return self._main
 
-    def signed_area(self):
+    def signed_area(self) -> float:
         """
         Return the signed area of the polygon.
         A negative value indicates a clockwise points definition.
         A positive value indicates a counter-clockwise points definition.
+        It's the mathematical opposite because the y-axis is inverted.
+        WARNING, does not work with self-intersecting polygons, unexpected behavior.
         """
         area = 0.0
 
@@ -30,30 +34,31 @@ class MovePolygon(Polygon):
         return area / 2
 
     @property
-    def clockwise(self):
+    def clockwise(self) -> bool:
+        """
+        Return True if polygon points are defined in clockwise order.
+        """
         area = self.signed_area()
         assert area != 0.0
         return self.signed_area() < 0
 
     @clockwise.setter
-    def clockwise(self, value: bool):
+    def clockwise(self, value: bool) -> None:
         if self.clockwise == value:
             return
         else:
             self.reverse()
 
-    def angle_at(self, point_index):
-        u = self[point_index - 1] - self[point_index]
-        v = self[point_index + 1] - self[point_index]
-        theta = acos((u.x*v.x + u.y*v.y) / (u.length() * v.length()))
-        if u.x * v.y - u.y * v.x > 0:
-            theta = 2*pi - theta
-        return theta * 180 / pi
-
+    # def angle_at(self, point_index):
+    #     u = self[point_index - 1] - self[point_index]
+    #     v = self[point_index + 1] - self[point_index]
+    #     theta = acos((u.x*v.x + u.y*v.y) / (u.length() * v.length()))
+    #     if u.x * v.y - u.y * v.x > 0:
+    #         theta = 2*pi - theta
+    #     return theta * 180 / pi
 
     def QPolygonF(self) -> QPolygonF:
         return QPolygonF([QPointF(p.x, p.y) for p in self])
-
 
 
 class MainArea(MovePolygon):
@@ -63,60 +68,27 @@ class MainArea(MovePolygon):
 class Obstacle(MovePolygon):
     _main = False
 
-    # def __init__(self, area: Polygon):
-    #     self.area = area
-
-    # def check(self):
-    #     # check if previous vector (resp. next vector) of each crossing point
-    #     # really refer to the previous (resp. next) point of the area.
-    #     for cp in self.crossing_point_list:
-    #         if cp.previous_point not in self.previous_of(cp.point):
-    #             print(f"{cp.point=}")
-    #             print(f"{self.area.point_list=}")
-    #             print(f"previous failed: {cp.previous_point} {self.previous_of(cp.point)}")
-    #             print()
-    #         if cp.next_point not in self.next_of(cp.point):
-    #             print(f"{cp.point=}")
-    #             print(f"{self.area.point_list=}")
-    #             print(f"next failed: {cp.next_point} {self.next_of(cp.point)}")
-    #             print()
-    #
-    # def next_of(self, point, incr=1):
-    #     n = len(self.area)
-    #     if self._main:
-    #         incr = -incr
-    #     return [self.area[(i + incr) % n] for i in range(n) if self.area[i] == point]
-    #
-    # def previous_of(self, point):
-    #     return self.next_of(point, incr=-1)
-
-    # @classmethod
-    # def from_stream(cls, stream):
-    #     move_area = stream.read(Polygon)
-    #     return cls(move_area)
-    #
-    # def to_stream(self, stream):
-    #     stream.write(self.area)
-
 
 class Sublayer(RWStreamable):
 
-    def __init__(self, main, obstacle_list):
+    def __init__(self, main: MainArea, obstacle_list: [Obstacle]) -> None:
         self.main = main
         self.obstacle_list = obstacle_list
+        # Segments seem to be an optimization for the pathfinder, probably no longer necessary today
+        # The pathfinder works well without segments
         # self.segment_list = segment_list
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Obstacle]:
         return iter(self.obstacle_list)
 
-    def __getitem__(self, item: int) -> Obstacle:
-        return self.obstacle_list[item]
+    def __getitem__(self, index: int) -> Obstacle:
+        return self.obstacle_list[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.obstacle_list)
 
     @classmethod
-    def from_stream(cls, stream: ReadStream):
+    def from_stream(cls, stream: ReadStream) -> Self:
         main = stream.read(MainArea)
         nb_segment = stream.read(UShort)
         segment_list = [stream.read(Segment) for _ in range(nb_segment)]
@@ -125,7 +97,7 @@ class Sublayer(RWStreamable):
 
         return cls(main, obstacle_list)
 
-    def to_stream(self, substream: WriteStream):
+    def to_stream(self, substream: WriteStream) -> None:
         substream.write(self.main)
 
         substream.write(UShort(0))  # always write zero segments
@@ -150,27 +122,9 @@ class Sublayer(RWStreamable):
             positive -= negative
         return positive
 
-    def disallow_QPainterPath(self):
-        ar:QRectF = self.main.QPolygonF().boundingRect()
-        p = QPainterPath()
-        p.addRect(ar)
-        p -= self.allow_QPainterPath()
-        # m = 10
-        # margin = QPainterPath()
-        # margin.addRect(QRectF(ar.left()-m, ar.top()-m, ar.width()+2*m, m))
-        # margin.addRect(QRectF(ar.right(), ar.top()-m, m, ar.height()+2*m))
-        # margin.addRect(QRectF(ar.left()-m, ar.bottom()+m, ar.width()+2*m, m))
-        # margin.addRect(QRectF(ar.left()-m, ar.top()-m, m, ar.height()+2*m))
-        # p -= margin
-
-        return p
-
 
 class Layer(RWStreamable):
-    def __init__(self,
-                 total_area,
-                 sublayer_list):
-        self.total_area = total_area  # is not yet dynamic TODO
+    def __init__(self, sublayer_list):
         self.sublayer_list = sublayer_list
 
     def __iter__(self):
@@ -182,15 +136,24 @@ class Layer(RWStreamable):
     def __len__(self):
         return len(self.sublayer_list)
 
+    @property
+    def total_area(self) -> int:
+        rop = 0
+        for sublayer in self:
+            rop += 1  # main area
+            rop += len(sublayer)  # obstacles
+        return rop
+
     @classmethod
-    def from_stream(cls, stream: ReadStream):
+    def from_stream(cls, stream: ReadStream) -> Self:
+        # total_area is not used by the constructor and it's rebuilt on demand
         total_area = stream.read(UShort)
         nb_sublayer = stream.read(UShort)
         sublayer_list = [stream.read(Sublayer) for _ in range(nb_sublayer)]
-        return cls(total_area, sublayer_list)
+        return cls(sublayer_list)
 
-    def to_stream(self, stream: WriteStream):
-        stream.write(self.total_area)
+    def to_stream(self, stream: WriteStream) -> None:
+        stream.write(UShort(self.total_area))
         nb_sublayer = UShort(len(self.sublayer_list))
         stream.write(nb_sublayer)
         for sublayer in self.sublayer_list:
@@ -200,7 +163,7 @@ class Layer(RWStreamable):
 class Motion(Section):
     section_index = 2  # MOVE
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.loaded_areas = False
         self.layer_list = []
@@ -208,21 +171,21 @@ class Motion(Section):
         self.loaded_pathfinder = False
         self.pathfinders = None
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Layer]:
         return iter(self.layer_list)
 
-    def __getitem__(self, item: int) -> Layer:
-        return self.layer_list[item]
+    def __getitem__(self, index: int) -> Layer:
+        return self.layer_list[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.layer_list)
 
-    def _load(self, stream: ReadStream, only_areas: bool = False):
+    def _load(self, stream: ReadStream, only_areas: bool = False) -> None:
         self.load_areas(stream)
         if only_areas is False:
             self.load_pathfinder(stream)
 
-    def load_areas(self, stream: ReadStream):
+    def load_areas(self, stream: ReadStream) -> None:
         version = stream.read(Version)
         assert version == 1
 
@@ -230,11 +193,11 @@ class Motion(Section):
         self.layer_list = [stream.read(Layer) for _ in range(nb_layer)]
         self.loaded_areas = True
 
-    def load_pathfinder(self, stream: ReadStream):
+    def load_pathfinder(self, stream: ReadStream) -> None:
         self.pathfinders = stream.read(PathFinders)
         self.loaded_pathfinder = True
 
-    def _save(self, substream: WriteStream):
+    def _save(self, substream: WriteStream) -> None:
         if self.loaded_areas is False or self.loaded_pathfinder is False:
             return
         substream.write(Version(1))

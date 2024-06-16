@@ -81,7 +81,7 @@ def signed_area(polygon: QPolygonF):
 # level = InstalledLevel(2)
 # for level_index in range(1):
 
-level = BackupedLevel(6)
+level = BackupedLevel(15)
 level.dvd.move.load()
 w, h = level.dvm.size
 dvm_rect = QRectF(0, 0, w, h)
@@ -105,7 +105,15 @@ motion = level.dvd.move
 
 
 pf1 = motion.pathfinders
-pf2 = PathFinders.build_from_motion(motion, [])
+# element_size_list = [[UFloat(6.0), UFloat(3.0)],
+#                      [UFloat(11.0), UFloat(6.0)],
+#                      [UFloat(19.0), UFloat(11.0)]]
+element_size_list = pf1.element_size_list
+pf2 = PathFinders.build_from_motion(motion, element_size_list)
+
+
+
+print()
 
 for i in range(len(pf1.crossing_point_list)):
     for j in range(len(pf1.crossing_point_list[i])):
