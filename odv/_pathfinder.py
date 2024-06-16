@@ -1,39 +1,26 @@
 from functools import reduce
 
-from PyQt6.QtCore import QRectF, Qt, QPointF
-from PyQt6.QtGui import QPolygonF, QPen, QBrush, QPainterPath, QPainter
+from PyQt6.QtCore import QRectF, Qt, QPointF, QMarginsF
+from PyQt6.QtGui import QPolygonF, QPen, QBrush, QPainterPath, QPainter, QPolygon
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsView, QApplication
 
 
-def area_of(path: QPainterPath, precision: int = 1000) -> float:
-    """
-    QPainterPath area calculation
-    https://stackoverflow.com/questions/20282579/calculating-the-fill-area-of-qpainterpath
-    """
-    points = [(point.x(), point.y()) for point in (path.pointAtPercent(i/precision) for i in range (precision))]
-    points.append(points[0])
+def area(polygon: QPolygon | QPolygonF) -> float:
+    rop = 0.0
+    n = len(polygon)
 
-    return 0.5 * abs(reduce(
-        lambda sum, i: sum + (points[i][0] * points[i + 1][1] - points[i + 1][0] * points[i][1]),
-        range (len (points) - 1),
-        0
-    ))
+    for i in range(n):
+        current_point = polygon[i]
+        next_point = polygon[(i + 1) % n]
+        rop += (next_point.x() - current_point.x()) * (next_point.y() + current_point.y())
+
+    return abs(rop / 2)
 
 
-def rect_to_polygon(rect):
-    # Get the corner points of the rectangle
-    top_left = rect.topLeft()
-    top_right = rect.topRight()
-    bottom_right = rect.bottomRight()
-    bottom_left = rect.bottomLeft()
-
-    # Create a QPolygonF from the corner points
-    polygon = QPolygonF([top_left, top_right, bottom_right, bottom_left])
-
-    return polygon
 
 
-def rect_at(point: QPointF, w: (float, float), direction: int) -> QRectF:
+def rect_at(point: QPointF, w: (float, float), direction: int) -> QPolygonF:
+    assert direction in [1, 2, 4, 8]
     if direction & 0b1001:
         x = point.x() - w[0]
     else:
@@ -42,7 +29,7 @@ def rect_at(point: QPointF, w: (float, float), direction: int) -> QRectF:
         y = point.y() - w[1]
     else:
         y = point.y()
-    return QRectF(x, y, w[0], w[1])
+    return QPolygonF(QRectF(x, y, w[0], w[1]))
 
 
 p1 = []
@@ -52,7 +39,7 @@ p1.append(QPointF(200, 150))
 p1.append(QPointF(150, 150))  #
 p1.append(QPointF(150, 200))
 p1.append(QPointF(100, 200))
-triangle1 = QPolygonF(p1 + p1[:1])
+poly1 = QPolygonF(p1 + p1[:1])
 
 p2 = []
 p2.append(QPointF(300, 300))
@@ -65,24 +52,35 @@ p2.append(QPointF(550, 350))
 p2.append(QPointF(350, 350))
 p2.append(QPointF(350, 600))  #
 p2.append(QPointF(300, 600))
-triangle2 = QPolygonF(p2 + p2[:1])
+poly2 = QPolygonF(p2 + p2[:1])
 
-path = QPainterPath()
-path.addPolygon(triangle1)
-path.addPolygon(triangle2)
-path.closeSubpath()
+# path = QPainterPath()
+# path.addPolygon(triangle1)
+# path.addPolygon(triangle2)
+# path.closeSubpath()
+#
+# rectangle = QPainterPath()
+# rectangle.addRect(rect_at(p1[0], (400, 400), 4))
+#
+# i = path.intersected(rectangle)
+# polys = i.toFillPolygons()
+# print(polys)
+# for poly in polys:
+#     for point in poly:
+#         print(point)
+#     print()
+main = poly1
+main_bb_marge = QPolygonF(poly1.boundingRect().marginsAdded(QMarginsF(10, 10, 10, 10)))
+main_obstacle = main_bb_marge.subtracted(poly1)
 
-rectangle = QPainterPath()
-rectangle.addRect(rect_at(p1[0], (400, 400), 4))
+rectangle = rect_at(p1[0], (50, 50), 4)
+i = main.united(rectangle)
+print(area(i), area(poly1))
 
-i = path.intersected(rectangle)
-polys = i.toFillPolygons()
-print(polys)
-for poly in polys:
-    for point in poly:
-        print(point)
-    print()
-
+# i = main_obstacle.intersected(rectangle)
+# for p in i:
+#
+# print(area(i))
 
 
 
@@ -94,13 +92,13 @@ if __name__ == '__main__':
     scene = QGraphicsScene()
     scene.setSceneRect(0, 0, 800, 800)
 
-    scene.addPath(path, Qt.GlobalColor.black, Qt.GlobalColor.gray)
-    scene.addPath(rectangle, Qt.GlobalColor.black, Qt.GlobalColor.darkRed)
+    scene.addPolygon(main, Qt.GlobalColor.black, Qt.GlobalColor.gray,)
+    scene.addPolygon(rectangle, Qt.GlobalColor.black, Qt.GlobalColor.darkRed)
+    scene.addPolygon(i, Qt.GlobalColor.green, Qt.GlobalColor.green)
 
     for item in scene.items():
         item.setOpacity(0.15)
 
-    scene.addPath(i, Qt.GlobalColor.green, Qt.GlobalColor.green)
 
     view = QGraphicsView(scene)
     view.setGeometry(0, 0, 800, 800)

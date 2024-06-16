@@ -241,7 +241,7 @@ class PathFinders(RWStreamable):
             substream.write(link_viability)
 
     @classmethod
-    def build_from_motion(cls, motion, element_size_list, dvm_rect: QRectF):
+    def build_from_motion(cls, motion, element_size_list):
         element_size_list = [[UFloat(6.0), UFloat(3.0)],
                              [UFloat(11.0), UFloat(6.0)],
                              [UFloat(19.0), UFloat(11.0)]]
@@ -258,12 +258,12 @@ class PathFinders(RWStreamable):
 
         for i, layer in enumerate(motion):
             for j, sublayer in enumerate(layer):
-                sublayer_QPainterPath = sublayer.disallow_QPainterPath()
+                sublayer_QPainterPath = sublayer.allow_QPainterPath()
                 for k in range(len(sublayer) + 1):
                     # t = time.time()
                     # print(f"{i}, {j}, {k} : {len(crossing_point_list[i][j][k])}cps ", end="")
                     for cp in crossing_point_list[i][j][k]:
-                        cls.accesses_definition(cp, element_size_list, sublayer_QPainterPath, dvm_rect)
+                        cls.accesses_definition(cp, element_size_list, sublayer_QPainterPath)
                     # print(f"{time.time() - t:.2f}s")
 
 
@@ -320,36 +320,34 @@ class PathFinders(RWStreamable):
         return abs(area / 2)
 
     @staticmethod
-    def rect_at(point: Point, w: (float, float), direction: int) -> QRectF:
+    def rect_at(point: UPoint, w: (float, float), direction: int) -> QRectF:
+        assert direction in [1, 2, 4, 8]
         if direction & 0b1001:
-            x = point.x - 2*w[0]
+            x = point.x - w[0]
         else:
             x = point.x
         if direction & 0b0011:
-            y = point.y - 2*w[1]
+            y = point.y - w[1]
         else:
             y = point.y
-        return QRectF(x, y, 2*w[0], 2*w[1])
+        return QRectF(x, y, w[0], w[1])
 
     @classmethod
-    def accesses_definition(cls, cp, element_size_list, sublayer_QPainterPath, dvm_rect: QRectF):
+    def accesses_definition(cls, cp, element_size_list, sublayer_QPainterPath):
+
         for element_size in element_size_list:
             access = 0
             for direction in [1, 2, 4, 8]:
-                rectangle = QPainterPath()
-                r = cls.rect_at(cp.position, element_size, direction)
+                r = QPainterPath()
+                r.addRect(cls.rect_at(cp.position, element_size, direction))
 
-                # TODO remplacer dvm_rect, par sublayer_bounding_rect
-                #  erreur sur level 6, 3.0.0, ladder qui monte au bateau
-
-                if not dvm_rect.contains(r):
-                    continue
-                rectangle.addRect(r)
-                inter = sublayer_QPainterPath.intersected(rectangle)
-                area = round(sum([cls.area(poly) for poly in inter.toFillPolygons()]), 2)
-                if cp.position == UPoint(2228,698):
-                    print(cp.position, r, area)
-                if area <= 0.05:
-                    access += direction
+                inter = sublayer_QPainterPath.intersected(r)
+                polygons = inter.toFillPolygons()
+                if len(polygons) == 1:
+                    a = element_size[0]*element_size[1] - cls.area(polygons[0])
+                    if cp.position == UPoint(2022,368):
+                        print(cp.position, direction, element_size, a)
+                    if a <= 0.05:
+                        access += direction
             cp.accesses.append(access)
 

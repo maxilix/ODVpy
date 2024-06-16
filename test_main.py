@@ -105,7 +105,7 @@ motion = level.dvd.move
 
 
 pf1 = motion.pathfinders
-pf2 = PathFinders.build_from_motion(motion, [], dvm_rect)
+pf2 = PathFinders.build_from_motion(motion, [])
 
 for i in range(len(pf1.crossing_point_list)):
     for j in range(len(pf1.crossing_point_list[i])):
