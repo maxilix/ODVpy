@@ -1,7 +1,9 @@
+import time
 from functools import reduce
 from math import acos, pi
 
-from PyQt6.QtCore import QLineF, QPointF
+from PyQt6.QtCore import QLineF, QPointF, QRectF, QSize
+from PyQt6.QtGui import QPainterPath, QPolygonF, QPolygon
 
 from common import *
 
@@ -239,7 +241,10 @@ class PathFinders(RWStreamable):
             substream.write(link_viability)
 
     @classmethod
-    def build_from_motion(cls, motion, element_size_list):
+    def build_from_motion(cls, motion, element_size_list, dvm_rect: QRectF):
+        element_size_list = [[UFloat(6.0), UFloat(3.0)],
+                             [UFloat(11.0), UFloat(6.0)],
+                             [UFloat(19.0), UFloat(11.0)]]
 
         crossing_point_list = []
 
@@ -248,8 +253,19 @@ class PathFinders(RWStreamable):
             for j, sublayer in enumerate(layer):
                 crossing_point_list[i].append([])
                 crossing_point_list[i][j].append(cls.cp_list_from_move_area(sublayer.main))
-                for area in sublayer:
+                for k, area in enumerate(sublayer):
                     crossing_point_list[i][j].append(cls.cp_list_from_move_area(area))
+
+        for i, layer in enumerate(motion):
+            for j, sublayer in enumerate(layer):
+                sublayer_QPainterPath = sublayer.disallow_QPainterPath()
+                for k in range(len(sublayer) + 1):
+                    # t = time.time()
+                    # print(f"{i}, {j}, {k} : {len(crossing_point_list[i][j][k])}cps ", end="")
+                    for cp in crossing_point_list[i][j][k]:
+                        cls.accesses_definition(cp, element_size_list, sublayer_QPainterPath, dvm_rect)
+                    # print(f"{time.time() - t:.2f}s")
+
 
         return cls(element_size_list, crossing_point_list, [], [])
 
@@ -268,10 +284,72 @@ class PathFinders(RWStreamable):
                 theta = 2 * pi - theta
             if theta < pi:
                 # this point is a crossing point
-                cp_list.append(CrossingPoint(None,
+                cp_list.append(CrossingPoint([],
                                              move_area[point_index],
                                              v,
                                              -u,
                                              []))
         move_area.clockwise = True  # engine need clockwise definition  TODO really needed ?
         return cp_list
+
+    # @staticmethod
+    # def area_of_QPainterPath(path: QPainterPath, precision: int = 10000) -> float:
+    #     """
+    #     QPainterPath area calculation
+    #     https://stackoverflow.com/questions/20282579/calculating-the-fill-area-of-qpainterpath
+    #     """
+    #     points = [(point.x(), point.y()) for point in (path.pointAtPercent(i / precision) for i in range(precision))]
+    #     points.append(points[0])
+    #
+    #     return 0.5 * abs(reduce(
+    #         lambda sum, i: sum + (points[i][0] * points[i + 1][1] - points[i + 1][0] * points[i][1]),
+    #         range(len(points) - 1),
+    #         0
+    #     ))
+
+    @staticmethod
+    def area(polygon: QPolygon | QPolygonF) -> float:
+        area = 0.0
+        n = len(polygon)
+
+        for i in range(n):
+            current_point = polygon[i]
+            next_point = polygon[(i + 1) % n]
+            area += (next_point.x() - current_point.x()) * (next_point.y() + current_point.y())
+
+        return abs(area / 2)
+
+    @staticmethod
+    def rect_at(point: Point, w: (float, float), direction: int) -> QRectF:
+        if direction & 0b1001:
+            x = point.x - 2*w[0]
+        else:
+            x = point.x
+        if direction & 0b0011:
+            y = point.y - 2*w[1]
+        else:
+            y = point.y
+        return QRectF(x, y, 2*w[0], 2*w[1])
+
+    @classmethod
+    def accesses_definition(cls, cp, element_size_list, sublayer_QPainterPath, dvm_rect: QRectF):
+        for element_size in element_size_list:
+            access = 0
+            for direction in [1, 2, 4, 8]:
+                rectangle = QPainterPath()
+                r = cls.rect_at(cp.position, element_size, direction)
+
+                # TODO remplacer dvm_rect, par sublayer_bounding_rect
+                #  erreur sur level 6, 3.0.0, ladder qui monte au bateau
+
+                if not dvm_rect.contains(r):
+                    continue
+                rectangle.addRect(r)
+                inter = sublayer_QPainterPath.intersected(rectangle)
+                area = round(sum([cls.area(poly) for poly in inter.toFillPolygons()]), 2)
+                if cp.position == UPoint(2228,698):
+                    print(cp.position, r, area)
+                if area <= 0.05:
+                    access += direction
+            cp.accesses.append(access)
+

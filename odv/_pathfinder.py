@@ -73,11 +73,16 @@ path.addPolygon(triangle2)
 path.closeSubpath()
 
 rectangle = QPainterPath()
-rectangle.addRect(rect_at(p1[3], (80, 80), 4))
+rectangle.addRect(rect_at(p1[0], (400, 400), 4))
 
 i = path.intersected(rectangle)
-# i = i.toFillPolygon()
-print(i.isEmpty(), i.length())
+polys = i.toFillPolygons()
+print(polys)
+for poly in polys:
+    for point in poly:
+        print(point)
+    print()
+
 
 
 

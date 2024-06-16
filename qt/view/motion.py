@@ -54,7 +54,7 @@ class QViewArea(View, QGraphicsPolygonItem):
 
 class QViewSublayer(HierarchicalView, QGraphicsPathItem):
     def __init__(self, scene, control):
-        super().__init__(scene, control, control.sublayer.QPainterPath())
+        super().__init__(scene, control, control.sublayer.allow_QPainterPath())
         # self.scene = scene
         for k, _ in enumerate(self.control):
             self.view_list.append(QViewArea(scene, self.control[k]))

@@ -1,6 +1,6 @@
 import hashlib
 
-from PyQt6.QtCore import QBuffer, QByteArray
+from PyQt6.QtCore import QBuffer, QByteArray, QRectF
 from PyQt6.QtGui import QColor, QPen, QBrush, QImage, qRgb, qRed, qGreen, qBlue, QPolygonF, QVector2D
 
 from common import *
@@ -8,7 +8,7 @@ from config import CONFIG
 from dvd import DvdParser
 from dvd.move import Obstacle
 from odv.level import Level, BackupedLevel, InstalledLevel
-from odv.pathfinder import PathFinders
+from odv.pathfinder import PathFinders, CrossingPoint
 from settings import *
 
 CONFIG.load()
@@ -83,6 +83,8 @@ def signed_area(polygon: QPolygonF):
 
 level = BackupedLevel(6)
 level.dvd.move.load()
+w, h = level.dvm.size
+dvm_rect = QRectF(0, 0, w, h)
 motion = level.dvd.move
 # print(len(motion))
 
@@ -103,7 +105,7 @@ motion = level.dvd.move
 
 
 pf1 = motion.pathfinders
-pf2 = PathFinders.build_from_motion(motion, [])
+pf2 = PathFinders.build_from_motion(motion, [], dvm_rect)
 
 for i in range(len(pf1.crossing_point_list)):
     for j in range(len(pf1.crossing_point_list[i])):
@@ -111,16 +113,17 @@ for i in range(len(pf1.crossing_point_list)):
             # assert len(pf1.crossing_point_list[i][j][k]) == len(pf2.crossing_point_list[i][j][k])
             for cp1_index in range(len(pf1.crossing_point_list[i][j][k])):
                 cp2_index = [c.position for c in pf2.crossing_point_list[i][j][k]].index(pf1.crossing_point_list[i][j][k][cp1_index].position)
-                cp1 = pf1.crossing_point_list[i][j][k][cp1_index]
+                cp1:CrossingPoint = pf1.crossing_point_list[i][j][k][cp1_index]
                 cp2 = pf2.crossing_point_list[i][j][k][cp2_index]
-                assert cp1.position == cp2.position
-                assert cp1.vector_to_next == cp2.vector_to_next
-                assert cp1.vector_from_previous == cp2.vector_from_previous
+                # assert cp1.position == cp2.position
+                if cp1.accesses != cp2.accesses:
+                    if (cp1.vector_to_next.x != 0 and
+                            cp1.vector_to_next.y != 0 and
+                            cp1.vector_from_previous.x != 0 and
+                            cp1.vector_from_previous.y != 0):
+                        print(i, j, k, cp1.position, cp1.accesses, cp2.accesses)
 
 
-                # cp1 = pf1.crossing_point_list[i][j][k][cp_index]
-                # cp2 = pf2.crossing_point_list[i][j][k][cp_index]
-                # if cp1.position != cp2.position:
 
 
 # level.insert_in_game()

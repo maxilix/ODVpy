@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QPointF, QLineF
+from PyQt6.QtCore import QPointF, QLineF, QRectF
 from PyQt6.QtGui import QPolygonF, QPainterPath
 
 from common import *
@@ -52,10 +52,8 @@ class MovePolygon(Polygon):
 
 
     def QPolygonF(self) -> QPolygonF:
-        return QPolygonF([QPointF(p.x + 0.5, p.y + 0.5) for p in self])
+        return QPolygonF([QPointF(p.x, p.y) for p in self])
 
-    def reversed_QPolygonF(self) -> QPolygonF:
-        return QPolygonF([QPointF(p.x + 0.5, p.y + 0.5) for p in reversed(self)])
 
 
 class MainArea(MovePolygon):
@@ -141,7 +139,7 @@ class Sublayer(RWStreamable):
         for obstacle in self.obstacle_list:
             substream.write(obstacle)
 
-    def QPainterPath(self):
+    def allow_QPainterPath(self):
         positive = QPainterPath()
         positive.addPolygon(self.main.QPolygonF())
         positive.closeSubpath()
@@ -151,6 +149,21 @@ class Sublayer(RWStreamable):
             negative.closeSubpath()
             positive -= negative
         return positive
+
+    def disallow_QPainterPath(self):
+        ar:QRectF = self.main.QPolygonF().boundingRect()
+        p = QPainterPath()
+        p.addRect(ar)
+        p -= self.allow_QPainterPath()
+        # m = 10
+        # margin = QPainterPath()
+        # margin.addRect(QRectF(ar.left()-m, ar.top()-m, ar.width()+2*m, m))
+        # margin.addRect(QRectF(ar.right(), ar.top()-m, m, ar.height()+2*m))
+        # margin.addRect(QRectF(ar.left()-m, ar.bottom()+m, ar.width()+2*m, m))
+        # margin.addRect(QRectF(ar.left()-m, ar.top()-m, m, ar.height()+2*m))
+        # p -= margin
+
+        return p
 
 
 class Layer(RWStreamable):
