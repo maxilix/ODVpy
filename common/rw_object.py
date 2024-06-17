@@ -129,6 +129,7 @@ class Polygon(RWStreamable):
     def __init__(self, point_list):
         if not (isinstance(point_list, list) and all(isinstance(c, UPoint) for c in point_list)):
             raise TypeError("Area must be a list of UPoint")
+        assert point_list[0] != point_list[-1]
         self._point_list = point_list
 
     def __iter__(self):

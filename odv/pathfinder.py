@@ -124,6 +124,22 @@ class CrossingPoint(RWStreamable):
     #     # assert (len(self.path_link_list) == len(self.global_path_link_index_list))
     #     return len(self.path_link_list)
 
+    def real_point(self, pathfinder_index, element_size) -> [QPointF]:
+        rop = []
+        for d in [1, 2, 4, 8]:
+            if d & self.accesses[pathfinder_index]:
+                if d & 0b1001:
+                    x = self.position.x - element_size[0]
+                else:
+                    x = self.position.x + element_size[0]
+                if d & 0b0011:
+                    y = self.position.y - element_size[1]
+                else:
+                    y = self.position.y + element_size[1]
+                rop.append(QPointF(x, y))
+        return rop
+
+
     @classmethod
     def from_stream(cls, stream):
         nb_pathfinder = stream.read(UShort)
@@ -218,16 +234,16 @@ class PathFinders(RWStreamable):
 
         nb_layer = UShort(len(self.crossing_point_list))
         substream.write(nb_layer)
-        for layer in self.crossing_point_list:
-            nb_sublayer = UShort(len(layer))
-            substream.write(nb_sublayer)
-            for sublayer in layer:
-                nb_area = UShort(len(sublayer))
-                substream.write(nb_area)
-                for area in sublayer:
-                    nb_crossing_point = UShort(len(area))
+        for cp_layer in self.crossing_point_list:
+            nb_cp_sublayer = UShort(len(cp_layer))
+            substream.write(nb_cp_sublayer)
+            for cp_sublayer in cp_layer:
+                nb_cp_area = UShort(len(cp_sublayer))
+                substream.write(nb_cp_area)
+                for cp_area in cp_sublayer:
+                    nb_crossing_point = UShort(len(cp_area))
                     substream.write(nb_crossing_point)
-                    for crossing_point in area:
+                    for crossing_point in cp_area:
                         substream.write(crossing_point)
 
         nb_path_link = UShort(len(self.path_link_list))
@@ -244,24 +260,30 @@ class PathFinders(RWStreamable):
     def build_from_motion(cls, motion, element_size_list):
         crossing_point_list = []
 
+        # define crossing point list
         for i, layer in enumerate(motion):
             crossing_point_list.append([])
             for j, sublayer in enumerate(layer):
                 crossing_point_list[i].append([])
-                crossing_point_list[i][j].append(cls.cp_list_from_move_area(sublayer.main))
                 for k, area in enumerate(sublayer):
                     crossing_point_list[i][j].append(cls.cp_list_from_move_area(area))
 
+        # define accesses for each crossing point
         for i, layer in enumerate(motion):
             for j, sublayer in enumerate(layer):
                 main_poly = sublayer.main.QPolygonF()
-                obstacle_poly = [obstacle.QPolygonF() for obstacle in sublayer]
-                for k in range(len(sublayer) + 1):
-                    # t = time.time()
-                    # print(f"{i}, {j}, {k} : {len(crossing_point_list[i][j][k])}cps ", end="")
+                obstacle_poly = [obstacle.QPolygonF() for obstacle in sublayer.obstacles]
+                for k in range(len(sublayer)):
                     for cp in crossing_point_list[i][j][k]:
                         cls.accesses_definition(cp, element_size_list, main_poly, obstacle_poly)
-                    # print(f"{time.time() - t:.2f}s")
+
+        # remove crossing point without access
+        # for i, layer in enumerate(motion):
+        #     for j, sublayer in enumerate(layer):
+        #         for k in range(len(sublayer)):
+        #             crossing_point_list[i][j][k] = [cp for cp in crossing_point_list[i][j][k] if sum(cp.accesses) > 0]
+
+        path_link_list = cls.generate_path_link_list(motion, element_size_list, crossing_point_list)
 
 
         return cls(element_size_list, crossing_point_list, [], [])
@@ -343,3 +365,20 @@ class PathFinders(RWStreamable):
                     access += direction
             cp.accesses.append(access)
 
+    @classmethod
+    def generate_path_link_list(cls, motion, element_size_list, crossing_point_list):
+        for i, layer in enumerate(motion):
+            for j, sublayer in enumerate(layer):
+                sublayer_boundaries = sublayer.boundaries()
+                for k1, area1 in enumerate(sublayer):
+                    for cp1 in crossing_point_list[i][j][k1]:
+                        for k2, area2 in enumerate(sublayer):
+                            for cp2 in crossing_point_list[i][j][k2]:
+                                if cp1.position == cp2.position:
+                                    continue
+                                for pathfinder_index, element_size in enumerate(element_size_list):
+                                    for rp1 in cp1.real_point(pathfinder_index, element_size):
+                                        for rp2 in cp2.real_point(pathfinder_index, element_size):
+                                            pass
+                                            # TODO
+                                pl_candidate = QLineF(cp1.position.x, cp1.position.y, cp2.position.x, cp2.position.y)

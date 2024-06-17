@@ -81,12 +81,14 @@ def signed_area(polygon: QPolygonF):
 # level = InstalledLevel(2)
 # for level_index in range(1):
 
-level = BackupedLevel(15)
+level = BackupedLevel(0)
 level.dvd.move.load()
-w, h = level.dvm.size
-dvm_rect = QRectF(0, 0, w, h)
 motion = level.dvd.move
-# print(len(motion))
+
+
+# for l in motion[0][0].boundaries():
+#     print(l)
+# exit()
 
 # for layer in motion:
 #     for sublayer in layer:
@@ -111,27 +113,23 @@ pf1 = motion.pathfinders
 element_size_list = pf1.element_size_list
 pf2 = PathFinders.build_from_motion(motion, element_size_list)
 
-
-
-print()
+print("\nDone")
 
 for i in range(len(pf1.crossing_point_list)):
     for j in range(len(pf1.crossing_point_list[i])):
         for k in range(len(pf1.crossing_point_list[i][j])):
             # assert len(pf1.crossing_point_list[i][j][k]) == len(pf2.crossing_point_list[i][j][k])
             for cp1_index in range(len(pf1.crossing_point_list[i][j][k])):
-                cp2_index = [c.position for c in pf2.crossing_point_list[i][j][k]].index(pf1.crossing_point_list[i][j][k][cp1_index].position)
-                cp1:CrossingPoint = pf1.crossing_point_list[i][j][k][cp1_index]
+                cp2_index = [c.position for c in pf2.crossing_point_list[i][j][k]].index(
+                    pf1.crossing_point_list[i][j][k][cp1_index].position)
+                cp1: CrossingPoint = pf1.crossing_point_list[i][j][k][cp1_index]
                 cp2 = pf2.crossing_point_list[i][j][k][cp2_index]
-                # assert cp1.position == cp2.position
-                if cp1.accesses != cp2.accesses:
+                assert cp1.position == cp2.position
+                if cp1. accesses != cp2.accesses:
                     if (cp1.vector_to_next.x != 0 and
                             cp1.vector_to_next.y != 0 and
                             cp1.vector_from_previous.x != 0 and
                             cp1.vector_from_previous.y != 0):
                         print(i, j, k, cp1.position, cp1.accesses, cp2.accesses)
-
-
-
 
 # level.insert_in_game()
