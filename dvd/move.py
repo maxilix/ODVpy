@@ -60,6 +60,15 @@ class MovePolygon(Polygon):
     def QPolygonF(self) -> QPolygonF:
         return QPolygonF([QPointF(p.x, p.y) for p in self])
 
+    def boundaries(self):
+        n = len(self)
+        rop = []
+        for i in range(n):
+            current_point = self[i]
+            next_point = self[(i + 1) % n]
+            rop.append(QLineF(current_point.x, current_point.y, next_point.x, next_point.y))
+        return rop
+
 
 class MainArea(MovePolygon):
     _main = True
@@ -71,21 +80,30 @@ class Obstacle(MovePolygon):
 
 class Sublayer(RWStreamable):
 
-    def __init__(self, main: MainArea, obstacle_list: [Obstacle]) -> None:
+    def __init__(self, main: MainArea, obstacles: [Obstacle]) -> None:
         self.main = main
-        self.obstacle_list = obstacle_list
+        self.obstacles = obstacles
         # Segments seem to be an optimization for the pathfinder, probably no longer necessary today
         # The pathfinder works well without segments
         # self.segment_list = segment_list
 
-    def __iter__(self) -> Iterator[Obstacle]:
-        return iter(self.obstacle_list)
+    def __iter__(self) -> Iterator[MovePolygon]:
+        return iter([self.main] + self.obstacles)
 
-    def __getitem__(self, index: int) -> Obstacle:
-        return self.obstacle_list[index]
+    def __getitem__(self, index: int) -> MovePolygon:
+        if index == 0:
+            return self.main
+        else:
+            return self.obstacles[index - 1]
 
     def __len__(self) -> int:
-        return len(self.obstacle_list)
+        return 1 + len(self.obstacles)
+
+    def boundaries(self):
+        rop = []
+        for area in self:
+            rop += area.boundaries()
+        return rop
 
     @classmethod
     def from_stream(cls, stream: ReadStream) -> Self:
@@ -93,9 +111,9 @@ class Sublayer(RWStreamable):
         nb_segment = stream.read(UShort)
         segment_list = [stream.read(Segment) for _ in range(nb_segment)]
         nb_obstacle = stream.read(UShort)
-        obstacle_list = [stream.read(Obstacle) for _ in range(nb_obstacle)]
+        obstacles = [stream.read(Obstacle) for _ in range(nb_obstacle)]
 
-        return cls(main, obstacle_list)
+        return cls(main, obstacles)
 
     def to_stream(self, substream: WriteStream) -> None:
         substream.write(self.main)
@@ -106,16 +124,16 @@ class Sublayer(RWStreamable):
         # for segment in self.segment_list:
         #     substream.write(segment)
 
-        nb_obstacle = UShort(len(self.obstacle_list))
+        nb_obstacle = UShort(len(self.obstacles))
         substream.write(nb_obstacle)
-        for obstacle in self.obstacle_list:
+        for obstacle in self.obstacles:
             substream.write(obstacle)
 
     def allow_QPainterPath(self):
         positive = QPainterPath()
         positive.addPolygon(self.main.QPolygonF())
         positive.closeSubpath()
-        for obstacle in self.obstacle_list:
+        for obstacle in self.obstacles:
             negative = QPainterPath()
             negative.addPolygon(obstacle.QPolygonF())
             negative.closeSubpath()
@@ -138,11 +156,7 @@ class Layer(RWStreamable):
 
     @property
     def total_area(self) -> int:
-        rop = 0
-        for sublayer in self:
-            rop += 1  # main area
-            rop += len(sublayer)  # obstacles
-        return rop
+        return sum([len(sublayer) for sublayer in self])
 
     @classmethod
     def from_stream(cls, stream: ReadStream) -> Self:
@@ -199,6 +213,7 @@ class Motion(Section):
 
     def _save(self, substream: WriteStream) -> None:
         if self.loaded_areas is False or self.loaded_pathfinder is False:
+            print("# NDPT")
             return
         substream.write(Version(1))
         nb_layer = UShort(len(self))
