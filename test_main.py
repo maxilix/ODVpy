@@ -1,12 +1,12 @@
 import hashlib
 
-from PyQt6.QtCore import QBuffer, QByteArray, QRectF
+from PyQt6.QtCore import QBuffer, QByteArray, QRectF, QLineF, QPointF
 from PyQt6.QtGui import QColor, QPen, QBrush, QImage, qRgb, qRed, qGreen, qBlue, QPolygonF, QVector2D
 
 from common import *
 from config import CONFIG
 from dvd import DvdParser
-from dvd.move import Obstacle
+from dvd.move import Obstacle, Sublayer
 from odv.level import Level, BackupedLevel, InstalledLevel
 from odv.pathfinder import PathFinders, CrossingPoint
 from settings import *
@@ -76,60 +76,102 @@ def signed_area(polygon: QPolygonF):
     return area <= 0.0
 
 
-# level = Level("./dev/empty_level/empty_level_02")
+# def is_path_in_sublayer(cp1: CrossingPoint, cp2: CrossingPoint, sublayer: Sublayer, pathfinder_index, element_size) -> bool:
+def is_line_strictly_in_sublayer(line: QLineF, sublayer: Sublayer) -> bool:
+
+    center = line.center()
+    if not sublayer.allow_path.contains(center):
+        print(f"c {center.x():8.3f} {center.y():8.3f}   ", end="")
+        return False
+
+    for bound in sublayer.boundaries:
+        # if line == bound or line.p1() == bound.p2() and line.p2() == bound.p1():
+        #     return True
+        if (i := bound.intersects(line))[0] == QLineF.IntersectionType.BoundedIntersection:
+            if i[1] != line.p1() and i[1] != line.p2():
+                print(f"i {i[1].x():8.3f} {i[1].y():8.3f}   ", end="")
+                return False
+        # else:
+        #     print(i[0])
+    return True
+
+
+level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/DemoMod_L00/level_00")
 # level = InstalledLevel(2)
 # for level_index in range(1):
 
-level = BackupedLevel(0)
+# level = BackupedLevel(3)
 level.dvd.move.load()
 motion = level.dvd.move
 
 
-# for l in motion[0][0].boundaries():
-#     print(l)
+# p = motion[0][0][0]._point_list[2]
+#
+# print(type(p.x))
+#
+#
 # exit()
 
-# for layer in motion:
-#     for sublayer in layer:
-#         assert sublayer.main.clockwise
-#         for obstacle in sublayer:
-#             assert obstacle.clockwise
-
-# o = motion[0][0].main
-# o = Obstacle([UPoint(0, 0),
-#               UPoint(1, 0),
-#               UPoint(1, 1),
-#               UPoint(0, 1), ])
-# o.clockwise = False
-# for i in range(len(o)):
-#     print(o[i], o.angle_at(i))
-
-
 pf1 = motion.pathfinders
+# print(f"nb link : {len(pf1.path_link_list)}")
+#
+# pf_index = 0
+#
+# paths = 0
+# for index, pl in enumerate(pf1.path_link_list):
+#     assert pl.start_cp_indexes[0] == pl.end_cp_indexes[0]
+#     i = pl.start_cp_indexes[0]
+#     assert pl.start_cp_indexes[1] == pl.end_cp_indexes[1]
+#     j = pl.end_cp_indexes[1]
+#     cp1 = pf1.get_cp(pl.start_cp_indexes)
+#     cp2 = pf1.get_cp(pl.end_cp_indexes)
+#     v = pf1.get_viability(pl.viability_index_list[pf_index])
+#
+#     for v_start, v_end in zip(v.start_viabilities, v.end_viabilities):
+#         p1 = cp1.real_point(pf_index, pf1.element_size_list[pf_index], v_start)
+#         p2 = cp2.real_point(pf_index, pf1.element_size_list[pf_index], v_end)
+#         paths += 1
+#
+#         l = QLineF(p1, p2)
+#         # l = QLineF(cp1.position.x, cp1.position.y, cp2.position.x, cp2.position.y)
+#         if is_line_strictly_in_sublayer(l, motion[i][j]) is False:
+#             print(f"{index:4} {pl.start_cp_indexes} {pl.end_cp_indexes}")
+# print(f"real links : {paths}")
+#
+# exit()
+
 # element_size_list = [[UFloat(6.0), UFloat(3.0)],
 #                      [UFloat(11.0), UFloat(6.0)],
 #                      [UFloat(19.0), UFloat(11.0)]]
 element_size_list = pf1.element_size_list
-pf2 = PathFinders.build_from_motion(motion, element_size_list)
+pf2 = PathFinders.build_from_motion(motion, element_size_list[:1])
 
 print("\nDone")
 
-for i in range(len(pf1.crossing_point_list)):
-    for j in range(len(pf1.crossing_point_list[i])):
-        for k in range(len(pf1.crossing_point_list[i][j])):
-            # assert len(pf1.crossing_point_list[i][j][k]) == len(pf2.crossing_point_list[i][j][k])
-            for cp1_index in range(len(pf1.crossing_point_list[i][j][k])):
-                cp2_index = [c.position for c in pf2.crossing_point_list[i][j][k]].index(
-                    pf1.crossing_point_list[i][j][k][cp1_index].position)
-                cp1: CrossingPoint = pf1.crossing_point_list[i][j][k][cp1_index]
-                cp2 = pf2.crossing_point_list[i][j][k][cp2_index]
-                assert cp1.position == cp2.position
-                if cp1. accesses != cp2.accesses:
-                    if (cp1.vector_to_next.x != 0 and
-                            cp1.vector_to_next.y != 0 and
-                            cp1.vector_from_previous.x != 0 and
-                            cp1.vector_from_previous.y != 0):
-                        print(i, j, k, cp1.position, cp1.accesses, cp2.accesses)
+# for i in range(len(pf1.crossing_point_list)):
+#     for j in range(len(pf1.crossing_point_list[i])):
+#         for k in range(len(pf1.crossing_point_list[i][j])):
+#             # assert len(pf1.crossing_point_list[i][j][k]) == len(pf2.crossing_point_list[i][j][k])
+#             for cp1_index in range(len(pf1.crossing_point_list[i][j][k])):
+#                 cp2_index = [c.position for c in pf2.crossing_point_list[i][j][k]].index(
+#                     pf1.crossing_point_list[i][j][k][cp1_index].position)
+#                 cp1: CrossingPoint = pf1.crossing_point_list[i][j][k][cp1_index]
+#                 cp2 = pf2.crossing_point_list[i][j][k][cp2_index]
+#                 assert cp1.position == cp2.position
+#                 if cp1.accesses != cp2.accesses:
+#                     if (cp1.vector_to_next.x != 0 and
+#                             cp1.vector_to_next.y != 0 and
+#                             cp1.vector_from_previous.x != 0 and
+#                             cp1.vector_from_previous.y != 0):
+#                         print(i, j, k, cp1.position, cp1.accesses, cp2.accesses)
 
-# level.insert_in_game()
+
+for sublayer in motion[0]:
+    for area in sublayer.obstacles:
+        poly = area.QPolygonF()
+        level.dvm.draw(poly, QPen(QColor(255, 0, 0)), QBrush(QColor(255, 0, 0, 64)))
+
+motion.pathfinders = pf2
+
+level.insert_in_game()

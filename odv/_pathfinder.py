@@ -50,17 +50,13 @@ p1.append(QPointF(150, 200))
 p1.append(QPointF(100, 200))
 poly1 = QPolygonF(p1)# + p1[:1])
 b = boundaries(poly1)
-line = QLineF(QPointF(100, 100), QPointF(110, 120))
+
+line1 = QLineF(QPointF(100, 400), QPointF(100, 100))
+line2 = QLineF(QPointF(200, 100), QPointF(500, 100))
 
 
-for b_line in b:
-    if (v:=line.intersects(b_line))[0] == QLineF.IntersectionType.BoundedIntersection:
-        print(v)
+print(line1)
 
-p = QPointF()
-
-if not p:
-    print("ah")
 
 if __name__ == '__main__':
     app = QApplication([])
@@ -70,9 +66,10 @@ if __name__ == '__main__':
     scene = QGraphicsScene()
     scene.setSceneRect(0, 0, 800, 800)
 
-    for b_line in b:
-        scene.addLine(b_line, Qt.GlobalColor.green)
-    scene.addLine(line, pen)
+    # for b_line in b:
+    #     scene.addLine(b_line, Qt.GlobalColor.green)
+    scene.addLine(line1, pen)
+    scene.addLine(line2, pen)
     # for item in scene.items():
     #     item.setOpacity(0.15)
     # scene.addPath(line_path, Qt.GlobalColor.green, Qt.GlobalColor.green)

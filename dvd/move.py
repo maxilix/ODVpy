@@ -86,6 +86,8 @@ class Sublayer(RWStreamable):
         # Segments seem to be an optimization for the pathfinder, probably no longer necessary today
         # The pathfinder works well without segments
         # self.segment_list = segment_list
+        self._allow_path = None
+        self._boundaries = None
 
     def __iter__(self) -> Iterator[MovePolygon]:
         return iter([self.main] + self.obstacles)
@@ -99,11 +101,13 @@ class Sublayer(RWStreamable):
     def __len__(self) -> int:
         return 1 + len(self.obstacles)
 
+    @property
     def boundaries(self):
-        rop = []
-        for area in self:
-            rop += area.boundaries()
-        return rop
+        if self._boundaries is None:
+            self._boundaries = []
+            for area in self:
+                self._boundaries += area.boundaries()
+        return self._boundaries
 
     @classmethod
     def from_stream(cls, stream: ReadStream) -> Self:
@@ -129,16 +133,18 @@ class Sublayer(RWStreamable):
         for obstacle in self.obstacles:
             substream.write(obstacle)
 
-    def allow_QPainterPath(self):
-        positive = QPainterPath()
-        positive.addPolygon(self.main.QPolygonF())
-        positive.closeSubpath()
-        for obstacle in self.obstacles:
-            negative = QPainterPath()
-            negative.addPolygon(obstacle.QPolygonF())
-            negative.closeSubpath()
-            positive -= negative
-        return positive
+    @property
+    def allow_path(self):
+        if self._allow_path is None:
+            self._allow_path = QPainterPath()
+            self._allow_path.addPolygon(self.main.QPolygonF())
+            self._allow_path.closeSubpath()
+            for obstacle in self.obstacles:
+                negative = QPainterPath()
+                negative.addPolygon(obstacle.QPolygonF())
+                negative.closeSubpath()
+                self._allow_path -= negative
+        return self._allow_path
 
 
 class Layer(RWStreamable):
@@ -221,4 +227,5 @@ class Motion(Section):
         for layer in self:
             substream.write(layer)
 
+        print(f"write {len(self.pathfinders.element_size_list)} pfs with {len(self.pathfinders.path_link_list)} links")
         substream.write(self.pathfinders)

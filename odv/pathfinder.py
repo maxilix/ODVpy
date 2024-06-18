@@ -8,6 +8,7 @@ from PyQt6.QtGui import QPainterPath, QPolygonF, QPolygon
 from common import *
 
 
+
 class LinkViability(RWStreamable):
 
     def __init__(self,
@@ -16,103 +17,107 @@ class LinkViability(RWStreamable):
         self.start_viabilities = start_viabilities
         self.end_viabilities = end_viabilities
 
+    def is_empty(self) -> bool:
+        assert len(self.start_viabilities) == len(self.end_viabilities)
+        return self.start_viabilities == []
+
     @classmethod
     def from_stream(cls, stream: ReadStream):
-        start_reduce = stream.read(UChar)
-        if start_reduce == 255:
+        end_reduced = stream.read(UChar)
+        if end_reduced == 255:
             # 0xff is read
             # the corresponding link is totally unavailable
             return cls([], [])
         else:
-            end_reduce = stream.read(UChar)
+            start_reduced = stream.read(UChar)
 
             n1 = stream.read(UShort)
-            start_viabilities = [stream.read(UChar) for _ in range(n1)]
-            # assert all([u in [1, 2, 4, 8] for u in start_viabilities])
-            # assert start_reduce == reduce(lambda x, y: x | y, start_viabilities)
+            end_viabilities = [stream.read(UChar) for _ in range(n1)]
+            # assert all([u in [1, 2, 4, 8] for u in end_viabilities])
+            # assert start_reduce == reduce(lambda x, y: x | y, end_viabilities)
 
             n2 = stream.read(UShort)
             # assert n1 == n2
-            end_viabilities = [stream.read(UChar) for _ in range(n2)]
-            # assert all([u in [1, 2, 4, 8] for u in end_viabilities])
-            # assert end_reduce == reduce(lambda x, y: x | y, end_viabilities)
+            start_viabilities = [stream.read(UChar) for _ in range(n2)]
+            # assert all([u in [1, 2, 4, 8] for u in start_viabilities])
+            # assert end_reduce == reduce(lambda x, y: x | y, start_viabilities)
             return cls(start_viabilities, end_viabilities)
 
     def to_stream(self, stream: WriteStream) -> None:
         if self.start_viabilities == [] and self.end_viabilities == []:
             stream.write(UChar(255))
         else:
-            start_reduce = UChar(reduce(lambda x, y: x | y, self.start_viabilities))
-            stream.write(start_reduce)
-            end_reduce = UChar(reduce(lambda x, y: x | y, self.end_viabilities))
-            stream.write(end_reduce)
-            n1 = UShort(len(self.start_viabilities))
+            end_reduced = UChar(reduce(lambda x, y: x | y, self.end_viabilities))
+            stream.write(end_reduced)
+
+            start_reduced = UChar(reduce(lambda x, y: x | y, self.start_viabilities))
+            stream.write(start_reduced)
+            n1 = UShort(len(self.end_viabilities))
             stream.write(n1)
-            for u in self.start_viabilities:
-                stream.write(u)
-            n2 = UShort(len(self.end_viabilities))
-            stream.write(n2)
             for u in self.end_viabilities:
-                stream.write(u)
+                stream.write(UChar(u))
+            n2 = UShort(len(self.start_viabilities))
+            stream.write(n2)
+            for u in self.start_viabilities:
+                stream.write(UChar(u))
 
 
 class PathLink(RWStreamable):
 
     def __init__(self,
+                 pathfinders,
                  start_cp_indexes,
-                 start_position,
                  end_cp_indexes,
-                 end_position,
                  length,
-                 global_link_viability_index_list,
-                 link_viability):
+                 viability_index_list):
+        self._pathfinders = pathfinders
         self.start_cp_indexes = start_cp_indexes
-        self.start_position = start_position
         self.end_cp_indexes = end_cp_indexes
-        self.end_position = end_position
         self.length = length
-        self.global_link_viability_index_list = global_link_viability_index_list
-        self.link_viability = link_viability
+        self.viability_index_list = viability_index_list
 
     @classmethod
-    def from_stream(cls, stream):
+    def from_stream(cls, stream, *, pathfinders):
         indexes1 = tuple(stream.read(UShort) for _ in range(4))
         indexes2 = tuple(stream.read(UShort) for _ in range(4))
         length = stream.read(UFloat)
         nb_pathfinder = stream.read(UShort)
-        global_link_viability_index_list = [stream.read(UShort) for _ in range(nb_pathfinder)]
-        return cls(indexes1, None, indexes2, None, length, global_link_viability_index_list, [])
+        viability_index_list = [stream.read(UShort) for _ in range(nb_pathfinder)]
+        return cls(pathfinders, indexes1,indexes2, length, viability_index_list)
 
     def to_stream(self, stream):
         for index1 in self.start_cp_indexes:
-            stream.write(index1)
+            stream.write(UShort(index1))
         for index2 in self.end_cp_indexes:
-            stream.write(index2)
-        stream.write(self.length)
-        unk_obj_index_list_length = UShort(len(self.global_link_viability_index_list))
-        stream.write(unk_obj_index_list_length)
-        for link_viability_index in self.global_link_viability_index_list:
-            stream.write(link_viability_index)
+            stream.write(UShort(index2))
+        stream.write(UFloat(self.length))
+        nb_pathfinder = UShort(len(self.viability_index_list))
+        stream.write(nb_pathfinder)
+        for link_viability_index in self.viability_index_list:
+            stream.write(UShort(link_viability_index))
 
-    def QLineF(self):
-        p1 = self.start_position.QPointF()
-        p2 = self.end_position.QPointF()
-        return QLineF(p1, p2)
+    # def QLineF(self):
+    #     p1 = self.start_position.QPointF()
+    #     p2 = self.end_position.QPointF()
+    #     return QLineF(p1, p2)
 
 
 class CrossingPoint(RWStreamable):
 
     def __init__(self,
+                 pathfinders,
                  accesses,
                  position,
                  vector_to_next,
                  vector_from_previous,
                  link_path_index_list):
+        self._pathfinders = pathfinders
         self.accesses = accesses
         self.position = position
         self.vector_to_next = vector_to_next
         self.vector_from_previous = vector_from_previous
         self.path_link_index_list = link_path_index_list
+
 
     # def __iter__(self):
     #     return iter(self.path_link_list)
@@ -123,8 +128,17 @@ class CrossingPoint(RWStreamable):
     # def __len__(self):
     #     # assert (len(self.path_link_list) == len(self.global_path_link_index_list))
     #     return len(self.path_link_list)
+    def line_to_previous(self):
+        point = QPointF(self.position.x, self.position.y)
+        previous_point = QPointF(self.position.x - self.vector_from_previous.x, self.position.y - self.vector_from_previous.y)
+        return QLineF(point, previous_point)
 
-    def real_point(self, pathfinder_index, element_size) -> [QPointF]:
+    def line_to_next(self):
+        point = QPointF(self.position.x, self.position.y)
+        next_point = QPointF(self.position.x + self.vector_to_next.x, self.position.y + self.vector_to_next.y)
+        return QLineF(point, next_point)
+
+    def real_points(self, pathfinder_index, element_size) -> [QPointF]:
         rop = []
         for d in [1, 2, 4, 8]:
             if d & self.accesses[pathfinder_index]:
@@ -139,9 +153,23 @@ class CrossingPoint(RWStreamable):
                 rop.append(QPointF(x, y))
         return rop
 
+    def real_point(self, pathfinder_index, element_size, direction) -> QPointF:
+        if direction & self.accesses[pathfinder_index]:
+            if direction & 0b1001:
+                x = self.position.x - element_size[0]
+            else:
+                x = self.position.x + element_size[0]
+            if direction & 0b0011:
+                y = self.position.y - element_size[1]
+            else:
+                y = self.position.y + element_size[1]
+            return QPointF(x, y)
+        else:
+            return QPointF()
+
 
     @classmethod
-    def from_stream(cls, stream):
+    def from_stream(cls, stream, *, pathfinders):
         nb_pathfinder = stream.read(UShort)
         accesses = [stream.read(UChar) for _ in range(nb_pathfinder)]
         # each access (in accesses) define if obstacles are present around the point
@@ -155,24 +183,24 @@ class CrossingPoint(RWStreamable):
         #      X___  |  _X__
         #    SW      |      SE
         #
-        # note:
-        # 4 msb are always zero
-        # 0x0f = 0b00001111 cannot be possible
+        # notes:
+        #   4 msb are always zero
+        #   0x0f = 0b00001111 cannot be possible
 
-        position = stream.read(UPoint)
+        position = stream.read(Point)
 
         vector_to_next = stream.read(Point)
         vector_from_previous = stream.read(Point)
 
         nb_path_link = stream.read(UShort)
         path_link_index_list = [stream.read(UShort) for _ in range(nb_path_link)]
-        return cls(accesses, position, vector_to_next, vector_from_previous, path_link_index_list)
+        return cls(pathfinders, accesses, position, vector_to_next, vector_from_previous, path_link_index_list)
 
     def to_stream(self, stream):
         nb_pathfinder = UShort(len(self.accesses))  # w
         stream.write(nb_pathfinder)
         for access in self.accesses:
-            stream.write(access)
+            stream.write(UChar(access))
         stream.write(self.position)
         stream.write(self.vector_to_next)
         stream.write(self.vector_from_previous)
@@ -180,10 +208,10 @@ class CrossingPoint(RWStreamable):
         nb_path_link = UShort(len(self.path_link_index_list))
         stream.write(nb_path_link)
         for path_link_index in self.path_link_index_list:
-            stream.write(path_link_index)
+            stream.write(UShort(path_link_index))
 
-    def QPointF(self):
-        return QPointF(self.position.x + 0.5, self.position.y + 0.5)
+    # def QPointF(self):
+    #     return QPointF(self.position.x + 0.5, self.position.y + 0.5)
 
 
 class PathFinders(RWStreamable):
@@ -194,36 +222,49 @@ class PathFinders(RWStreamable):
         self.path_link_list = path_link_list
         self.link_viability_list = link_viability_list
 
+    def get_cp(self, indexes):
+        assert len(indexes) == 4
+        return self.crossing_point_list[indexes[0]][indexes[1]][indexes[2]][indexes[3]]
+
+    def get_pl(self, index):
+        return self.path_link_list[index]
+
+    def get_viability(self, index):
+        return self.link_viability_list[index]
+
     @classmethod
     def from_stream(cls, stream: ReadStream):
+        rop = cls([],[],[],[])
         nb_pathfinder = stream.read(UShort)
-        element_size_list = [[stream.read(UFloat), stream.read(UFloat)] for _ in range(nb_pathfinder)]
+        rop.element_size_list = [[stream.read(UFloat), stream.read(UFloat)] for _ in range(nb_pathfinder)]
 
         # part 1 : crossing points
         nb_layer = stream.read(UShort)
-        crossing_point_list = []
+        rop.crossing_point_list = []
 
         for layer_index in range(nb_layer):
-            crossing_point_list.append([])
+            rop.crossing_point_list.append([])
             nb_sublayer = stream.read(UShort)
             for sublayer_index in range(nb_sublayer):
-                crossing_point_list[layer_index].append([])
+                rop.crossing_point_list[layer_index].append([])
                 nb_area = stream.read(UShort)
                 for area_index in range(nb_area):
-                    crossing_point_list[layer_index][sublayer_index].append([])
+                    rop.crossing_point_list[layer_index][sublayer_index].append([])
                     nb_crossing_point = stream.read(UShort)
                     for crossing_point_index in range(nb_crossing_point):
-                        crossing_point_list[layer_index][sublayer_index][area_index].append(stream.read(CrossingPoint))
+                        rop.crossing_point_list[layer_index][sublayer_index][area_index].append(
+                            stream.read(CrossingPoint, pathfinders=rop))
 
         # part 2 : path links
         nb_path_link = stream.read(UShort)
-        path_link_list = [stream.read(PathLink) for _ in range(nb_path_link)]
+        rop.path_link_list = [stream.read(PathLink, pathfinders=rop) for _ in range(nb_path_link)]
 
         # part 3 : link viability
         nb_link_viability = stream.read(UShort)
-        link_viability_list = [stream.read(LinkViability) for _ in range(nb_link_viability)]
+        rop.link_viability_list = [stream.read(LinkViability) for _ in range(nb_link_viability)]
 
-        return cls(element_size_list, crossing_point_list, path_link_list, link_viability_list)
+        # return cls(element_size_list, crossing_point_list, path_link_list, link_viability_list)
+        return rop
 
     def to_stream(self, substream: WriteStream):
         nb_pathfinder = UShort(len(self.element_size_list))
@@ -283,14 +324,14 @@ class PathFinders(RWStreamable):
         #         for k in range(len(sublayer)):
         #             crossing_point_list[i][j][k] = [cp for cp in crossing_point_list[i][j][k] if sum(cp.accesses) > 0]
 
-        path_link_list = cls.generate_path_link_list(motion, element_size_list, crossing_point_list)
+        path_link_list, viability_list = cls.generate_path_link_and_viability_lists(motion, element_size_list, crossing_point_list)
 
-
-        return cls(element_size_list, crossing_point_list, [], [])
+        return cls(element_size_list, crossing_point_list, path_link_list, viability_list)
 
     @staticmethod
     def cp_list_from_move_area(move_area):
         # TODO second implementation based on QLineF and the angle() method
+        # probably more effective
 
         # Ensures that points are covered in the right order
         # i.e. if you walk on the border, the restricted area is on the right.
@@ -298,6 +339,7 @@ class PathFinders(RWStreamable):
 
         cp_list = []
         for point_index in range(len(move_area)):
+            # TODO do not add point at the limit of the DVM (or limit of sublayer maybe ?)
             u = move_area[point_index - 1] - move_area[point_index]  # vector to previous
             v = move_area[point_index + 1] - move_area[point_index]  # vector to next
             theta = acos((u.x * v.x + u.y * v.y) / (u.length() * v.length()))
@@ -305,7 +347,8 @@ class PathFinders(RWStreamable):
                 theta = 2 * pi - theta
             if theta < pi:
                 # this point is a crossing point
-                cp_list.append(CrossingPoint([],
+                cp_list.append(CrossingPoint(None,
+                                             [],
                                              move_area[point_index],
                                              v,
                                              -u,
@@ -327,7 +370,7 @@ class PathFinders(RWStreamable):
         return abs(area / 2)
 
     @staticmethod
-    def rect_at(point: UPoint, w: (float, float), direction: int) -> QRectF:
+    def rect_at(point: Point, w: (float, float), direction: int) -> QRectF:
         assert direction in [1, 2, 4, 8]
         if direction & 0b1001:
             x = point.x - 2*w[0]
@@ -366,19 +409,110 @@ class PathFinders(RWStreamable):
             cp.accesses.append(access)
 
     @classmethod
-    def generate_path_link_list(cls, motion, element_size_list, crossing_point_list):
+    def generate_path_link_and_viability_lists(cls, motion, element_size_list, crossing_point_list):
+        path_link_list = []
+        viability_list = [LinkViability([], [])]  # 0xff at index 0
+
+        print("start pl generation")
         for i, layer in enumerate(motion):
+            print(f"{i}")
             for j, sublayer in enumerate(layer):
-                sublayer_boundaries = sublayer.boundaries()
+                print(f"{i} {j}")
                 for k1, area1 in enumerate(sublayer):
-                    for cp1 in crossing_point_list[i][j][k1]:
+                    print(f"{i} {j} {k1}")
+                    for l1, cp1 in enumerate(crossing_point_list[i][j][k1]):
                         for k2, area2 in enumerate(sublayer):
-                            for cp2 in crossing_point_list[i][j][k2]:
-                                if cp1.position == cp2.position:
-                                    continue
-                                for pathfinder_index, element_size in enumerate(element_size_list):
-                                    for rp1 in cp1.real_point(pathfinder_index, element_size):
-                                        for rp2 in cp2.real_point(pathfinder_index, element_size):
-                                            pass
-                                            # TODO
-                                pl_candidate = QLineF(cp1.position.x, cp1.position.y, cp2.position.x, cp2.position.y)
+                            for l2, cp2 in enumerate(crossing_point_list[i][j][k2]):
+                                pl = PathLink(None, (i,j,k2,l2), (i,j,k1,l1), cp1.position.distance(cp2.position), [])
+                                for pf_index, element_size in enumerate(element_size_list):
+                                    combine_quarts = cls.quarts_definition(pf_index, cp1, cp2)
+                                    v = LinkViability([],[])
+                                    for sq, eq in combine_quarts:
+                                        line = cls.line_construction(cp1, sq, cp2, eq, pf_index, element_size)
+                                        if cls.is_line_strictly_in_sublayer(line, sublayer):
+                                            angle1_with_previous = line.angleTo(cp1.line_to_previous())
+                                            angle1_with_next = cp1.line_to_next().angleTo(line)
+                                            angle2_with_previous = line.angleTo(cp2.line_to_previous())
+                                            angle2_with_next = cp2.line_to_next().angleTo(line)
+                                            if (angle1_with_previous > 180 or angle1_with_next > 180) and (angle2_with_previous < 180 or angle2_with_next < 180):
+                                                v.start_viabilities.append(eq)
+                                                v.end_viabilities.append(sq)
+
+                                    if v.is_empty() is False:
+                                        viability_list.append(v)
+                                        pl.viability_index_list.append(len(viability_list)-1)
+                                    else:
+                                        pl.viability_index_list.append(0)
+
+                                if sum(pl.viability_index_list) > 0:
+                                    path_link_list.append(pl)
+                                    cp1.path_link_index_list.append(len(path_link_list)-1)
+                                    pl_reverse = PathLink(None, pl.end_cp_indexes, pl.start_cp_indexes, pl.length, [])
+                                    for v in pl.viability_index_list:
+                                        v_reverse = LinkViability(viability_list[v].end_viabilities, viability_list[v].start_viabilities)
+                                        viability_list.append(v_reverse)
+                                        pl_reverse.viability_index_list.append(len(viability_list) - 1)
+                                    path_link_list.append(pl_reverse)
+                                    cp2.path_link_index_list.append(len(path_link_list) - 1)
+
+        return path_link_list, viability_list
+
+
+
+
+
+
+
+
+
+
+
+    @staticmethod
+    def is_line_strictly_in_sublayer(line: QLineF, sublayer) -> bool:
+        center = line.center()
+        if not sublayer.allow_path.contains(center):
+            # print(f"c {center.x():8.3f} {center.y():8.3f}   ", end="")
+            return False
+
+        for bound in sublayer.boundaries:
+            # if line == bound or line.p1() == bound.p2() and line.p2() == bound.p1():
+            #     return True
+            if (i := bound.intersects(line))[0] == QLineF.IntersectionType.BoundedIntersection:
+                if i[1] != line.p1() and i[1] != line.p2():
+                    # print(f"i {i[1].x():8.3f} {i[1].y():8.3f}   ", end="")
+                    return False
+            # else:
+            #     print(i[0])
+        return True
+
+    @staticmethod
+    def quarts_definition(pf_index, cp1, cp2):
+        if cp2.position.x == cp1.position.x and cp2.position.y > cp1.position.y:
+            # case 1
+            start_quarts = [4, 8]
+            end_quarts = [1, 2]
+        elif cp2.position.y == cp1.position.y and cp2.position.x > cp1.position.x:
+            # case 2
+            start_quarts = [2, 4]
+            end_quarts = [1, 8]
+        elif cp2.position.x > cp1.position.x and cp2.position.y > cp1.position.y:
+            # case 3
+            start_quarts = [2, 8]
+            end_quarts = [2, 8]
+        elif cp2.position.x > cp1.position.x and cp2.position.y < cp1.position.y:
+            # case 4
+            start_quarts = [1, 4]
+            end_quarts = [1, 4]
+        else:
+            return []
+        start_quarts = [q for q in start_quarts if cp1.accesses[pf_index] & q]
+        end_quarts = [q for q in end_quarts if cp2.accesses[pf_index] & q]
+        return [(s, e) for s in start_quarts for e in end_quarts]
+
+    @staticmethod
+    def line_construction(cp1, sq, cp2, eq, pf_index, element_size):
+        p1 = cp1.real_point(pf_index, element_size, sq)
+        assert p1
+        p2 = cp2.real_point(pf_index, element_size, eq)
+        assert p2
+        return QLineF(p1, p2)
