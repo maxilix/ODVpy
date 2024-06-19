@@ -1,12 +1,38 @@
-from typing import Iterator, Self
+from typing import Iterator, Self, Type
 from math import acos, pi
 
-from PyQt6.QtCore import QPointF, QLineF, QRectF
-from PyQt6.QtGui import QPolygonF, QPainterPath
+from PyQt6.QtCore import QPointF, QLineF, QRectF, QPoint
+from PyQt6.QtGui import QPainterPath
 
 from common import *
 from odv.pathfinder import PathFinders
 from .section import Section
+
+
+# def QPolygonF_signed_area(self: QPolygonF) -> float:
+#     """
+#     Return the signed area of the polygon.
+#     A negative value indicates a clockwise points definition.
+#     A positive value indicates a counter-clockwise points definition.
+#     It's the mathematical opposite because the y-axis is inverted.
+#     WARNING, does not work with self-intersecting polygons, unexpected behavior.
+#     """
+#     area = 0.0
+#     n = self.count()
+#     for i in range(n):
+#         current_point = self[i]
+#         next_point = self[(i + 1) % n]
+#         area += (next_point.x() - current_point.x()) * (next_point.y() + current_point.y())
+#
+#     return area / 2
+#
+#
+# def QPolygonF_area(self: QPolygonF) -> float:
+#     return abs(QPolygonF_signed_area(self))
+#
+#
+# QPolygonF.signed_area = QPolygonF_signed_area
+# QPolygonF.area = QPolygonF_area
 
 
 class MovePolygon(Polygon):
@@ -33,14 +59,15 @@ class MovePolygon(Polygon):
 
         return area / 2
 
+
     @property
     def clockwise(self) -> bool:
         """
         Return True if polygon points are defined in clockwise order.
         """
-        area = self.signed_area()
-        assert area != 0.0
-        return self.signed_area() < 0
+        # area = self.signed_area()
+        # assert area != 0.0
+        return self.signed_area() <= 0
 
     @clockwise.setter
     def clockwise(self, value: bool) -> None:
@@ -145,6 +172,24 @@ class Sublayer(RWStreamable):
                 negative.closeSubpath()
                 self._allow_path -= negative
         return self._allow_path
+
+    def contains_poly(self, poly: QPolygonF | QRectF) -> bool:
+        if isinstance(poly, QRectF):
+            poly = QPolygonF(poly)
+        poly_area = poly.area()
+        inter = self.main.QPolygonF().intersected(poly)
+        inter_area = inter.area()
+        if (poly_area - inter_area) <= 0.1:
+            # poly is in main
+            for obstacle in self.obstacles:
+                inter = obstacle.QPolygonF().intersected(poly)
+                inter_area = inter.area()
+                if inter_area > 0.1:
+                    # obstacle intersects poly
+                    return False
+            return True
+        else:
+            return False
 
 
 class Layer(RWStreamable):

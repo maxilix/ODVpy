@@ -312,11 +312,11 @@ class PathFinders(RWStreamable):
         # define accesses for each crossing point
         for i, layer in enumerate(motion):
             for j, sublayer in enumerate(layer):
-                main_poly = sublayer.main.QPolygonF()
-                obstacle_poly = [obstacle.QPolygonF() for obstacle in sublayer.obstacles]
+                # main_poly = sublayer.main.QPolygonF()
+                # obstacle_poly = [obstacle.QPolygonF() for obstacle in sublayer.obstacles]
                 for k in range(len(sublayer)):
                     for cp in crossing_point_list[i][j][k]:
-                        cls.accesses_definition(cp, element_size_list, main_poly, obstacle_poly)
+                        cls.accesses_definition(cp, element_size_list, sublayer)
 
         # remove crossing point without access
         # for i, layer in enumerate(motion):
@@ -383,28 +383,12 @@ class PathFinders(RWStreamable):
         return QRectF(x, y, 2*w[0], 2*w[1])
 
     @classmethod
-    def accesses_definition(cls, cp, element_size_list, main_poly: QPolygonF, obstacle_poly: [QPolygonF]):
-
+    def accesses_definition(cls, cp, element_size_list, sublayer):
         for element_size in element_size_list:
             access = 0
             for direction in [1, 2, 4, 8]:
-                r = QPolygonF(cls.rect_at(cp.position, element_size, direction))
-
-                inter = main_poly.intersected(r)
-                a = 4 * element_size[0] * element_size[1] - cls.area(inter)
-                if a <= 0.05:
-                    # r in main_poly
-                    break_flag = False
-                    for poly in obstacle_poly:
-                        inter = poly.intersected(r)
-                        if (a:=cls.area(inter)) > 0.1:
-                            # obstacle in r
-                            break_flag = True
-                            break
-                    # if cp.position == UPoint(2228, 698) and (direction & 0b1000):
-                    #     print(cp.position, break_flag, direction, element_size, a)
-                    if break_flag:
-                        continue
+                r = cls.rect_at(cp.position, element_size, direction)
+                if sublayer.contains_poly(r):
                     access += direction
             cp.accesses.append(access)
 
@@ -425,11 +409,11 @@ class PathFinders(RWStreamable):
                             for l2, cp2 in enumerate(crossing_point_list[i][j][k2]):
                                 pl = PathLink(None, (i,j,k2,l2), (i,j,k1,l1), cp1.position.distance(cp2.position), [])
                                 for pf_index, element_size in enumerate(element_size_list):
-                                    combine_quarts = cls.quarts_definition(pf_index, cp1, cp2)
                                     v = LinkViability([],[])
+                                    combine_quarts = cls.quarts_definition(pf_index, cp1, cp2)
                                     for sq, eq in combine_quarts:
-                                        line = cls.line_construction(cp1, sq, cp2, eq, pf_index, element_size)
-                                        if cls.is_line_strictly_in_sublayer(line, sublayer):
+                                        line, trace_poly = cls.line_and_trace_construction_v0(cp1, sq, cp2, eq, pf_index, element_size)
+                                        if sublayer.contains_poly(trace_poly):
                                             angle1_with_previous = line.angleTo(cp1.line_to_previous())
                                             angle1_with_next = cp1.line_to_next().angleTo(line)
                                             angle2_with_previous = line.angleTo(cp2.line_to_previous())
@@ -456,14 +440,6 @@ class PathFinders(RWStreamable):
                                     cp2.path_link_index_list.append(len(path_link_list) - 1)
 
         return path_link_list, viability_list
-
-
-
-
-
-
-
-
 
 
 
@@ -510,9 +486,36 @@ class PathFinders(RWStreamable):
         return [(s, e) for s in start_quarts for e in end_quarts]
 
     @staticmethod
-    def line_construction(cp1, sq, cp2, eq, pf_index, element_size):
-        p1 = cp1.real_point(pf_index, element_size, sq)
-        assert p1
-        p2 = cp2.real_point(pf_index, element_size, eq)
-        assert p2
-        return QLineF(p1, p2)
+    def line_and_trace_construction_v0(cp1: CrossingPoint, sq, cp2:CrossingPoint, eq, pf_index, element_size):
+        lp1 = cp1.real_point(pf_index, element_size, sq)
+        lp2 = cp2.real_point(pf_index, element_size, eq)
+
+        tp1 = QPointF(cp1.position.x, cp1.position.y)
+        width_vector = 2*(lp1-tp1)
+        tp2 = tp1 + width_vector
+        tp3 = tp2 + lp2 - lp1
+        tp4 = tp3 - width_vector
+
+        return QLineF(lp1, lp2), QPolygonF([tp1, tp2, tp3, tp4])
+
+    @classmethod
+    def line_and_trace_construction(cls, cp1: CrossingPoint, sq, cp2:CrossingPoint, eq, pf_index, element_size):
+        rs = cls.rect_at(cp1.position, element_size, sq)
+        re = cls.rect_at(cp2.position, element_size, eq)
+        rop_line = QLineF(rs.center(), re.center())
+
+        rop_trace = QPolygonF([rs.bottomLeft(), rs.bottomRight(), re.bottomRight(), re.bottomLeft()])
+        rop_trace = rop_trace.united(QPolygonF([rs.topLeft(), rs.topRight(), re.topRight(), re.topLeft()]))
+        rop_trace = rop_trace.united(QPolygonF([rs.bottomLeft(), re.bottomLeft(), re.topLeft(), rs.topLeft()]))
+        rop_trace = rop_trace.united(QPolygonF([rs.bottomRight(), re.bottomRight(), re.topRight(), rs.topRight()]))
+
+        # lp1 = cp1.real_point(pf_index, element_size, sq)
+        # lp2 = cp2.real_point(pf_index, element_size, eq)
+        #
+        # tp1 = QPointF(cp1.position.x, cp1.position.y)
+        # width_vector = 2*(lp1-tp1)
+        # tp2 = tp1 + width_vector
+        # tp3 = tp2 + lp2 - lp1
+        # tp4 = tp3 - width_vector
+
+        return rop_line, rop_trace

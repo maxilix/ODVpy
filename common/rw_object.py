@@ -126,11 +126,14 @@ class Segment(RWStreamable):
 
 
 class Polygon(RWStreamable):
-    def __init__(self, point_list):
-        if not (isinstance(point_list, list) and all(isinstance(c, UPoint) for c in point_list)):
-            raise TypeError("Area must be a list of UPoint")
-        assert point_list[0] != point_list[-1]
-        self._point_list = point_list
+    def __init__(self, point_list=None):
+        # if not (isinstance(point_list, list) and all(isinstance(c, UPoint) for c in point_list)):
+        #     raise TypeError("Area must be a list of UPoint")
+        # assert point_list[0] != point_list[-1]
+        if point_list is None:
+            self._point_list = []
+        else:
+            self._point_list = point_list
 
     def __iter__(self):
         return iter(self._point_list)

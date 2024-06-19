@@ -41,21 +41,31 @@ def boundaries(poly: QPolygon | QPolygonF) -> [QLineF]:
         rop.append(QLineF(current_point, next_point))
     return rop
 
-p1 = []
-p1.append(QPointF(100, 100))
-p1.append(QPointF(200, 100))
-p1.append(QPointF(200, 150))
-p1.append(QPointF(150, 150))  #
-p1.append(QPointF(150, 200))
-p1.append(QPointF(100, 200))
-poly1 = QPolygonF(p1)# + p1[:1])
-b = boundaries(poly1)
-
-line1 = QLineF(QPointF(100, 400), QPointF(100, 100))
-line2 = QLineF(QPointF(200, 100), QPointF(500, 100))
 
 
-print(line1)
+p1 = QPointF(150, 150)
+p2 = QPointF(200, 100)
+p3 = QPointF(200, 150)
+
+p4 = QPointF(150, 400)
+p5 = QPointF(150, 500)
+p6 = QPointF(200, 300)
+
+poly1 = QPolygonF([p1, p2, p3])
+poly2 = QPolygonF([p4, p5, p6])
+poly3 = poly1.united(poly2)
+
+# r = QRectF()
+# print(isinstance(r, QPolygonF))
+# exit()
+
+# b = boundaries(poly1)
+#
+# line1 = QLineF(QPointF(100, 400), QPointF(100, 100))
+# line2 = QLineF(QPointF(200, 100), QPointF(500, 100))
+#
+#
+# print(line1)
 
 
 if __name__ == '__main__':
@@ -66,10 +76,13 @@ if __name__ == '__main__':
     scene = QGraphicsScene()
     scene.setSceneRect(0, 0, 800, 800)
 
+    scene.addPolygon(poly1)
+    scene.addPolygon(poly2)
+    scene.addPolygon(poly3)
     # for b_line in b:
     #     scene.addLine(b_line, Qt.GlobalColor.green)
-    scene.addLine(line1, pen)
-    scene.addLine(line2, pen)
+    # scene.addLine(line1, pen)
+    # scene.addLine(line2, pen)
     # for item in scene.items():
     #     item.setOpacity(0.15)
     # scene.addPath(line_path, Qt.GlobalColor.green, Qt.GlobalColor.green)

@@ -76,7 +76,6 @@ def signed_area(polygon: QPolygonF):
     return area <= 0.0
 
 
-# def is_path_in_sublayer(cp1: CrossingPoint, cp2: CrossingPoint, sublayer: Sublayer, pathfinder_index, element_size) -> bool:
 def is_line_strictly_in_sublayer(line: QLineF, sublayer: Sublayer) -> bool:
 
     center = line.center()
@@ -106,14 +105,17 @@ level.dvd.move.load()
 motion = level.dvd.move
 
 
-# p = motion[0][0][0]._point_list[2]
-#
-# print(type(p.x))
-#
-#
+# s = motion[0][0]
+# p1 = QPointF(650, 1630)
+# p2 = QPointF(650, 1680)
+# p3 = QPointF(660, 1670)
+# poly = QPolygonF([p1, p2, p3])
+# print(s.contains_poly(poly))
 # exit()
 
+# motion[0][0].obstacles[27] = Obstacle([Point(793,1541), Point(798,1541), Point(796,1545)])
 pf1 = motion.pathfinders
+
 # print(f"nb link : {len(pf1.path_link_list)}")
 #
 # pf_index = 0
@@ -170,7 +172,7 @@ print("\nDone")
 for sublayer in motion[0]:
     for area in sublayer.obstacles:
         poly = area.QPolygonF()
-        level.dvm.draw(poly, QPen(QColor(255, 0, 0)), QBrush(QColor(255, 0, 0, 64)))
+        level.dvm.draw(poly, QPen(QColor(255, 0, 0, 150)), QBrush(QColor(255, 0, 0, 40)))
 
 motion.pathfinders = pf2
 
