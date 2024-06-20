@@ -119,7 +119,8 @@ class Level(object):
             self.dvd.save_to_file(destination + ".dvd")
 
         if self._dvm is None:
-            copy(f"{source}.dvm", f"{destination}.dvm")
+            # copy(f"{source}.dvm", f"{destination}.dvm")
+            pass
         else:
             self.dvm.save_to_file(destination + ".dvm")
 

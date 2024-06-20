@@ -11,7 +11,7 @@ class QControlPathLink(Control, QTreeWidgetItem):
         self.path_link = path_link
         self.index = index
 
-        i_o, j_o, k_o, l_o = self.path_link.start_cp_indexes
+        i_o, j_o, k_o, l_o = self.path_link.cp1_indexes
         self.setText(2, f"{self.path_link.start_position.position} on {i_o} {j_o} {k_o}")
         self.setCheckState(2, Qt.CheckState.Unchecked)
 

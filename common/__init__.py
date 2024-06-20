@@ -1,14 +1,17 @@
 from PyQt6.QtGui import QPolygonF
 
+from debug import timeit
 from .exception import *
 from .rw_stream import RStreamable, WStreamable, RWStreamable, ReadStream, WriteStream
-from .rw_base import Bytes, Char, UChar, Short, UShort, Int, UInt, UFloat, String
+from .rw_base import Bytes, Char, UChar, Short, UShort, Int, UInt, Float, String
 from .rw_object import Version, Padding
 from .rw_object import UPoint, Point, Segment, Polygon
 from .image import Pixmap, Pixel
 from .parser import Parser
 from .utils import *
 
+
+@timeit
 def QPolygonF_signed_area(self: QPolygonF) -> float:
     """
     Return the signed area of the polygon.

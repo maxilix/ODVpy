@@ -30,7 +30,7 @@ class Miscellaneous(Section):
 
         self.b1 = substream.read(Bytes, 1)
         self.muwStandardViewPolygonRadius = substream.read(UShort)
-        self.hearing_factor = substream.read(UFloat)
+        self.hearing_factor = substream.read(Float)
         self.night = substream.read(UChar)  # length of the vision cone, sprite darkening
         self.b2 = substream.read(Bytes, 1)
 

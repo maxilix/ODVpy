@@ -1,6 +1,6 @@
 import hashlib
 
-from PyQt6.QtCore import QBuffer, QByteArray, QRectF, QLineF, QPointF
+from PyQt6.QtCore import QBuffer, QByteArray, QRectF, QLineF, QPointF, QSizeF
 from PyQt6.QtGui import QColor, QPen, QBrush, QImage, qRgb, qRed, qGreen, qBlue, QPolygonF, QVector2D
 
 from common import *
@@ -95,61 +95,36 @@ def is_line_strictly_in_sublayer(line: QLineF, sublayer: Sublayer) -> bool:
     return True
 
 
-level = Level("./dev/empty_level/empty_level_02")
+# level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/DemoMod_L00/level_00")
-# level = InstalledLevel(2)
+# level = Level("../Missions/Desperados_-_Red_River/level_03")
+# level = InstalledLevel(0)
 # for level_index in range(1):
 
-# level = BackupedLevel(3)
+level = BackupedLevel(0)
 level.dvd.move.load()
 motion = level.dvd.move
+# print(len(motion.pathfinders.link_list))
+# exit()
 
+motion.pathfinders.rebuild()
 
 # s = motion[0][0]
 # p1 = QPointF(650, 1630)
+# s = QSizeF(50, 50).to
+#
+# print(p1 + s)
 # p2 = QPointF(650, 1680)
 # p3 = QPointF(660, 1670)
 # poly = QPolygonF([p1, p2, p3])
 # print(s.contains_poly(poly))
 # exit()
 
+
+
 # motion[0][0].obstacles[27] = Obstacle([Point(793,1541), Point(798,1541), Point(796,1545)])
-pf1 = motion.pathfinders
 
-# print(f"nb link : {len(pf1.path_link_list)}")
-#
-# pf_index = 0
-#
-# paths = 0
-# for index, pl in enumerate(pf1.path_link_list):
-#     assert pl.start_cp_indexes[0] == pl.end_cp_indexes[0]
-#     i = pl.start_cp_indexes[0]
-#     assert pl.start_cp_indexes[1] == pl.end_cp_indexes[1]
-#     j = pl.end_cp_indexes[1]
-#     cp1 = pf1.get_cp(pl.start_cp_indexes)
-#     cp2 = pf1.get_cp(pl.end_cp_indexes)
-#     v = pf1.get_viability(pl.viability_index_list[pf_index])
-#
-#     for v_start, v_end in zip(v.start_viabilities, v.end_viabilities):
-#         p1 = cp1.real_point(pf_index, pf1.element_size_list[pf_index], v_start)
-#         p2 = cp2.real_point(pf_index, pf1.element_size_list[pf_index], v_end)
-#         paths += 1
-#
-#         l = QLineF(p1, p2)
-#         # l = QLineF(cp1.position.x, cp1.position.y, cp2.position.x, cp2.position.y)
-#         if is_line_strictly_in_sublayer(l, motion[i][j]) is False:
-#             print(f"{index:4} {pl.start_cp_indexes} {pl.end_cp_indexes}")
-# print(f"real links : {paths}")
-#
-# exit()
-
-# element_size_list = [[UFloat(6.0), UFloat(3.0)],
-#                      [UFloat(11.0), UFloat(6.0)],
-#                      [UFloat(19.0), UFloat(11.0)]]
-element_size_list = pf1.element_size_list
-pf2 = PathFinders.build_from_motion(motion, element_size_list[:1])
-
-print("\nDone")
+# print("\nDone")
 
 # for i in range(len(pf1.crossing_point_list)):
 #     for j in range(len(pf1.crossing_point_list[i])):
@@ -169,11 +144,11 @@ print("\nDone")
 #                         print(i, j, k, cp1.position, cp1.accesses, cp2.accesses)
 
 
-for sublayer in motion[0]:
-    for area in sublayer.obstacles:
-        poly = area.QPolygonF()
-        level.dvm.draw(poly, QPen(QColor(255, 0, 0, 150)), QBrush(QColor(255, 0, 0, 40)))
+# for sublayer in motion[0]:
+#     for area in sublayer.obstacles:
+#         poly = area.QPolygonF()
+#         level.dvm.draw(poly, QPen(QColor(255, 0, 0, 150)), QBrush(QColor(255, 0, 0, 40)))
 
-motion.pathfinders = pf2
 
-level.insert_in_game()
+
+# level.insert_in_game()

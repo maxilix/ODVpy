@@ -51,9 +51,23 @@ p4 = QPointF(150, 400)
 p5 = QPointF(150, 500)
 p6 = QPointF(200, 300)
 
-poly1 = QPolygonF([p1, p2, p3])
-poly2 = QPolygonF([p4, p5, p6])
-poly3 = poly1.united(poly2)
+r1 = rect_at(QPointF(100,100), (200,100),4)
+r1_p = [r1.topLeft(), r1.topRight(), r1.bottomRight(), r1.bottomLeft()]
+
+r2 = rect_at(QPointF(200,400), (200,100),4)
+r2_p = [r2.topLeft(), r2.topRight(), r2.bottomRight(), r2.bottomLeft()]
+
+c1 = r1.center()
+c2 = r2.center()
+match QLineF(c1, c2).angle():
+    case 0:
+        return
+
+bb = r1.united(r2)
+if bb.topLeft() == r1.topLeft():
+    p = QPolygonF([r1.topLeft(), r1.topRight()])
+
+
 
 # r = QRectF()
 # print(isinstance(r, QPolygonF))

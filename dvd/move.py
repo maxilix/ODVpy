@@ -5,7 +5,7 @@ from PyQt6.QtCore import QPointF, QLineF, QRectF, QPoint
 from PyQt6.QtGui import QPainterPath
 
 from common import *
-from odv.pathfinder import PathFinders
+from odv.pathfinder import PathFinders, timeit
 from .section import Section
 
 
@@ -173,6 +173,8 @@ class Sublayer(RWStreamable):
                 self._allow_path -= negative
         return self._allow_path
 
+
+    @timeit
     def contains_poly(self, poly: QPolygonF | QRectF) -> bool:
         if isinstance(poly, QRectF):
             poly = QPolygonF(poly)
@@ -259,7 +261,7 @@ class Motion(Section):
         self.loaded_areas = True
 
     def load_pathfinder(self, stream: ReadStream) -> None:
-        self.pathfinders = stream.read(PathFinders)
+        self.pathfinders = stream.read(PathFinders, motion=self)
         self.loaded_pathfinder = True
 
     def _save(self, substream: WriteStream) -> None:
@@ -272,5 +274,5 @@ class Motion(Section):
         for layer in self:
             substream.write(layer)
 
-        print(f"write {len(self.pathfinders.element_size_list)} pfs with {len(self.pathfinders.path_link_list)} links")
+        print(f"write {len(self.pathfinders.size_list)} pfs with {len(self.pathfinders.link_list)} links")
         substream.write(self.pathfinders)

@@ -1,3 +1,4 @@
+import time
 
 from common import *
 
@@ -16,6 +17,25 @@ Y_MAX = 2368
 BLACKLIST = type, ModuleType, FunctionType
 
 
+T = dict()
+
+def timeit(func):
+    """
+    Decorator for measuring function's running time.
+    """
+
+    def measure_time(*args, **kw):
+        start_time = time.time()
+        result = func(*args, **kw)
+        t = time.time() - start_time
+        name = func.__name__
+        try:
+            T[name] += t
+        except KeyError:
+            T[name] = t
+        return result
+
+    return measure_time
 
 
 def size_of(obj):
