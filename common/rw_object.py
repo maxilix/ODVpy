@@ -1,6 +1,12 @@
+from PyQt6.QtCore import QPointF
+from PyQt6.QtGui import QPolygonF
+
 from .rw_base import Bytes, Short, UShort, UInt
 from .rw_stream import RWStreamable, ReadStream
 from .exception import PaddingError
+
+from shapely.geometry import Polygon as SPolygon
+
 
 X_MAX_OFFICIAL = 2944
 Y_MAX_OFFICIAL = 2368
@@ -134,6 +140,8 @@ class Polygon(RWStreamable):
             self._point_list = []
         else:
             self._point_list = point_list
+        self.qpf = QPolygonF([QPointF(p.x, p.y) for p in self._point_list])
+        # self.spf = SPolygon([(p.x, p.y) for p in self._point_list])
 
     def __iter__(self):
         return iter(self._point_list)

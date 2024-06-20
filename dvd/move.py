@@ -4,6 +4,9 @@ from math import acos, pi
 from PyQt6.QtCore import QPointF, QLineF, QRectF, QPoint
 from PyQt6.QtGui import QPainterPath
 
+from shapely.geometry import Polygon as SPolygon
+from shapely.geometry import MultiPolygon as SMultiPolygon
+
 from common import *
 from odv.pathfinder import PathFinders, timeit
 from .section import Section
@@ -84,8 +87,12 @@ class MovePolygon(Polygon):
     #         theta = 2*pi - theta
     #     return theta * 180 / pi
 
-    def QPolygonF(self) -> QPolygonF:
-        return QPolygonF([QPointF(p.x, p.y) for p in self])
+    # @timeit
+    # def QPolygonF(self) -> QPolygonF:
+    #     return QPolygonF([QPointF(p.x, p.y) for p in self])
+
+    def SPolygon(self) -> SPolygon:
+        return SPolygon([QPointF(p.x, p.y) for p in self])
 
     def boundaries(self):
         n = len(self)
@@ -113,8 +120,11 @@ class Sublayer(RWStreamable):
         # Segments seem to be an optimization for the pathfinder, probably no longer necessary today
         # The pathfinder works well without segments
         # self.segment_list = segment_list
-        self._allow_path = None
-        self._boundaries = None
+        # self.boundaries = None
+        # self.build_boundaries()
+        # self.allow_path = None
+        # self.build_allow_path()
+        # self.multi_poly = SMultiPolygon([o.spf for o in obstacles])
 
     def __iter__(self) -> Iterator[MovePolygon]:
         return iter([self.main] + self.obstacles)
@@ -128,13 +138,19 @@ class Sublayer(RWStreamable):
     def __len__(self) -> int:
         return 1 + len(self.obstacles)
 
-    @property
-    def boundaries(self):
-        if self._boundaries is None:
-            self._boundaries = []
-            for area in self:
-                self._boundaries += area.boundaries()
-        return self._boundaries
+    # @property
+    # def boundaries(self):
+    #     if self._boundaries is None:
+    #         self._boundaries = []
+    #         for area in self:
+    #             self._boundaries += area.boundaries()
+    #     return self._boundaries
+
+    # def build_boundaries(self):
+    #     self.boundaries = []
+    #     for area in self:
+    #         self.boundaries += area.boundaries()
+
 
     @classmethod
     def from_stream(cls, stream: ReadStream) -> Self:
@@ -160,31 +176,40 @@ class Sublayer(RWStreamable):
         for obstacle in self.obstacles:
             substream.write(obstacle)
 
-    @property
-    def allow_path(self):
-        if self._allow_path is None:
-            self._allow_path = QPainterPath()
-            self._allow_path.addPolygon(self.main.QPolygonF())
-            self._allow_path.closeSubpath()
-            for obstacle in self.obstacles:
-                negative = QPainterPath()
-                negative.addPolygon(obstacle.QPolygonF())
-                negative.closeSubpath()
-                self._allow_path -= negative
-        return self._allow_path
+    # @property
+    # def allow_path(self):
+    #     if self._allow_path is None:
+    #         self._allow_path = QPainterPath()
+    #         self._allow_path.addPolygon(self.main.QPolygonF())
+    #         self._allow_path.closeSubpath()
+    #         for obstacle in self.obstacles:
+    #             negative = QPainterPath()
+    #             negative.addPolygon(obstacle.QPolygonF())
+    #             negative.closeSubpath()
+    #             self._allow_path -= negative
+    #     return self._allow_path
 
+    # def build_allow_path(self):
+    #     self.allow_path = QPainterPath()
+    #     self.allow_path.addPolygon(self.main.qpf)
+    #     self.allow_path.closeSubpath()
+    #     for obstacle in self.obstacles:
+    #         negative = QPainterPath()
+    #         negative.addPolygon(obstacle.qpf)
+    #         negative.closeSubpath()
+    #         self.allow_path -= negative
 
     @timeit
-    def contains_poly(self, poly: QPolygonF | QRectF) -> bool:
-        if isinstance(poly, QRectF):
-            poly = QPolygonF(poly)
+    def contains(self, poly: QPolygonF) -> bool:
         poly_area = poly.area()
-        inter = self.main.QPolygonF().intersected(poly)
+        inter = self.main.qpf.intersected(poly)
         inter_area = inter.area()
         if (poly_area - inter_area) <= 0.1:
             # poly is in main
             for obstacle in self.obstacles:
-                inter = obstacle.QPolygonF().intersected(poly)
+                inter = obstacle.qpf.intersected(poly)
+                if inter.isEmpty():
+                    continue
                 inter_area = inter.area()
                 if inter_area > 0.1:
                     # obstacle intersects poly

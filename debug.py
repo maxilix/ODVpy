@@ -23,7 +23,6 @@ def timeit(func):
     """
     Decorator for measuring function's running time.
     """
-
     def measure_time(*args, **kw):
         start_time = time.time()
         result = func(*args, **kw)

@@ -215,23 +215,23 @@ class CrossingPoint(RWStreamable):
             size = self._pathfinders.size_list[pf_index]
 
             # direction 1: NW
-            r = QRectF(self.x - 2 * size[0], self.y - 2 * size[1], 2 * size[0], 2 * size[1])
-            if sublayer.contains_poly(r):
+            r = QPolygonF(QRectF(self.x - 2 * size[0], self.y - 2 * size[1], 2 * size[0], 2 * size[1]))
+            if sublayer.contains(r):
                 access += 1
 
             # direction 2: NE
-            r = QRectF(self.x              , self.y - 2 * size[1], 2 * size[0], 2 * size[1])
-            if sublayer.contains_poly(r):
+            r = QPolygonF(QRectF(self.x              , self.y - 2 * size[1], 2 * size[0], 2 * size[1]))
+            if sublayer.contains(r):
                 access += 2
 
             # direction 4: SE
-            r = QRectF(self.x              , self.y              , 2 * size[0], 2 * size[1])
-            if sublayer.contains_poly(r):
+            r = QPolygonF(QRectF(self.x              , self.y              , 2 * size[0], 2 * size[1]))
+            if sublayer.contains(r):
                 access += 4
 
             # direction 8: SW
-            r = QRectF(self.x - 2 * size[0], self.y              , 2 * size[0], 2 * size[1])
-            if sublayer.contains_poly(r):
+            r = QPolygonF(QRectF(self.x - 2 * size[0], self.y              , 2 * size[0], 2 * size[1]))
+            if sublayer.contains(r):
                 access += 8
 
             self.accesses.append(access)
@@ -396,10 +396,27 @@ class PathFinders(RWStreamable):
 
     @timeit
     def rebuild(self):
+        """
+          1.08 rebuild_crossing_point_list
+         54.41 rebuild_link_list
+
+         48.68 contains_v1
+         16.13 QPolygonF_signed_area
+          3.23 line_and_trace
+          1.07 rebuild_accesses
+          1.04 potential_direction_combination
+        """
+
         self.rebuild_crossing_point_list()
+        print(f"nb_cb = {sum([sum([sum([len(cp_l) for cp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in self.crossing_point_list])}")
+
         self.rebuild_link_list()
+        print(f"nb_link = {len(self.link_list)}")
+
+        print("\n  times:")
         for k in T:
             print(f"{T[k]:6.2f} {k}")
+
 
     @timeit
     def rebuild_crossing_point_list(self):
@@ -502,7 +519,7 @@ class PathFinders(RWStreamable):
                                         #     print(sublayer.contains_poly(trace))
 
 
-                                        if sublayer.contains_poly(trace):
+                                        if sublayer.contains(trace):
                                             angle1_with_previous = line.angleTo(cp1.line_to_previous())
                                             angle1_with_next = cp1.line_to_next().angleTo(line)
                                             angle2_with_previous = line.angleTo(cp2.line_to_previous())

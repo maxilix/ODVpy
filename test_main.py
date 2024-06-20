@@ -51,6 +51,12 @@ L24   [6.0, 3.0]  [11.0, 6.0]  [3.0, 2.0]
 L25   [6.0, 3.0]  [11.0, 6.0] 
 """
 
+"""
+L00 
+nb_cb = 781
+nb_link = 7676
+"""
+
 
 def draw_obstacle_on_dvm(level, layer_index=0):
     if level.dvd.move.loaded_areas is False:
