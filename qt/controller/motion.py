@@ -44,7 +44,7 @@ class QGraphicsObstacle(QGraphicsItem):
         self.update()
 
     def boundingRect(self) -> QRectF:
-        r = self.area.QPolygonF().boundingRect()
+        r = self.area.qpf.boundingRect()
         r.setX(r.x() - self.poly_pen.widthF() / 2)
         r.setY(r.y() - self.poly_pen.widthF() / 2)
         r.setWidth(r.width() + self.poly_pen.widthF())
@@ -68,11 +68,11 @@ class QGraphicsObstacle(QGraphicsItem):
         painter.setPen(self.poly_pen)
         painter.setBrush(self.poly_brush)
 
-        painter.drawPolygon(self.area.QPolygonF(), Qt.FillRule.OddEvenFill)
+        painter.drawPolygon(self.area.qpf, Qt.FillRule.OddEvenFill)
 
     def shape(self):
         path = QPainterPath()
-        path.addPolygon(self.area.QPolygonF())
+        path.addPolygon(self.area.qpf)
         return path
 
     def hoverEnterEvent(self, event):

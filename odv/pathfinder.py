@@ -236,7 +236,6 @@ class CrossingPoint(RWStreamable):
 
             self.accesses.append(access)
 
-
     @timeit
     def as_access(self, pf_index=None) -> bool:
         if pf_index is None:
@@ -246,9 +245,6 @@ class CrossingPoint(RWStreamable):
 
     @timeit
     def point_at(self, pf_index, direction) -> QPointF:
-        # if real and not direction & self.accesses[pf_index]:
-        #     return QPointF()
-        # else:
         size = self._pathfinders.size_list[pf_index]
         if direction & 0b1001:
             x = self.x - size[0]
@@ -475,18 +471,6 @@ class PathFinders(RWStreamable):
                                                                        []))
         move_area.clockwise = True  # engine need clockwise definition  TODO really needed ?
 
-    # @staticmethod
-    # def area(polygon: QPolygon | QPolygonF) -> float:
-    #     area = 0.0
-    #     n = len(polygon)
-    # 
-    #     for i in range(n):
-    #         current_point = polygon[i]
-    #         next_point = polygon[(i + 1) % n]
-    #         area += (next_point.x() - current_point.x()) * (next_point.y() + current_point.y())
-    # 
-    #     return abs(area / 2)
-
     @timeit
     def rebuild_link_list(self):
         print("rebuilding link list - 00.0%", end="")
@@ -551,78 +535,3 @@ class PathFinders(RWStreamable):
                                     self.link_list.append(reversed_link)
                                     cp2.link_index_list.append(len(self.link_list) - 1)
         print("\b\b\b\b\bDone")
-
-
-    # @staticmethod
-    # def is_line_strictly_in_sublayer(line: QLineF, sublayer) -> bool:
-    #     center = line.center()
-    #     if not sublayer.allow_path.contains(center):
-    #         # print(f"c {center.x():8.3f} {center.y():8.3f}   ", end="")
-    #         return False
-    # 
-    #     for bound in sublayer.boundaries:
-    #         # if line == bound or line.p1() == bound.p2() and line.p2() == bound.p1():
-    #         #     return True
-    #         if (i := bound.intersects(line))[0] == QLineF.IntersectionType.BoundedIntersection:
-    #             if i[1] != line.p1() and i[1] != line.p2():
-    #                 # print(f"i {i[1].x():8.3f} {i[1].y():8.3f}   ", end="")
-    #                 return False
-    #         # else:
-    #         #     print(i[0])
-    #     return True
-
-    # @staticmethod
-    # def quarts_definition(pf_index, cp1, cp2):
-    #     if cp2.position.x == cp1.position.x and cp2.position.y > cp1.position.y:
-    #         # case 1
-    #         start_quarts = [4, 8]
-    #         end_quarts = [1, 2]
-    #     elif cp2.position.y == cp1.position.y and cp2.position.x > cp1.position.x:
-    #         # case 2
-    #         start_quarts = [2, 4]
-    #         end_quarts = [1, 8]
-    #     elif cp2.position.x > cp1.position.x and cp2.position.y > cp1.position.y:
-    #         # case 3
-    #         start_quarts = [2, 8]
-    #         end_quarts = [2, 8]
-    #     elif cp2.position.x > cp1.position.x and cp2.position.y < cp1.position.y:
-    #         # case 4
-    #         start_quarts = [1, 4]
-    #         end_quarts = [1, 4]
-    #     else:
-    #         return []
-    #     start_quarts = [q for q in start_quarts if cp1.accesses[pf_index] & q]
-    #     end_quarts = [q for q in end_quarts if cp2.accesses[pf_index] & q]
-    #     return [(s, e) for s in start_quarts for e in end_quarts]
-
-    # @staticmethod
-    # def line_and_trace_construction(cp1: CrossingPoint, sq, cp2: CrossingPoint, eq, pf_index, element_size):
-    #     c1 = cp1.real_point(pf_index, element_size, sq)
-    #     c2 = cp2.real_point(pf_index, element_size, eq)
-    #     line = QLineF(c1, c2)
-    #
-    #     # define 4 vectors to direction
-    #     v1 = QPointF(-element_size[0], -element_size[1])
-    #     v2 = QPointF(element_size[0], -element_size[1])
-    #     v4 = QPointF(element_size[0], element_size[1])
-    #     v8 = QPointF(-element_size[0], element_size[1])
-    #
-    #     a = line.angle()
-    #     if a == 0:
-    #         return line, QPolygonF([c1 + v4, c1 + v2, c2 + v1, c2 + v8])
-    #     if 0 < a < 90:
-    #         return line, QPolygonF([c1 + v4, c1 + v1, c2 + v1, c2 + v4])
-    #     if a == 90:
-    #         return line, QPolygonF([c1 + v2, c1 + v1, c2 + v8, c2 + v4])
-    #     if 90 < a < 180:
-    #         return line, QPolygonF([c1 + v2, c1 + v8, c2 + v8, c2 + v2])
-    #     if a == 180:
-    #         return line, QPolygonF([c2 + v4, c2 + v2, c1 + v1, c1 + v8])
-    #     if 180 < a < 270:
-    #         return line, QPolygonF([c2 + v4, c2 + v1, c1 + v1, c1 + v4])
-    #     if a == 270:
-    #         return line, QPolygonF([c2 + v2, c2 + v1, c1 + v8, c1 + v4])
-    #     if 270 < a < 360:
-    #         return line, QPolygonF([c2 + v2, c2 + v8, c1 + v8, c1 + v2])
-    #
-    #     raise Exception("code should be inaccessible")
