@@ -5,7 +5,7 @@ from .rw_base import Bytes, Short, UShort, UInt
 from .rw_stream import RWStreamable, ReadStream
 from .exception import PaddingError
 
-from shapely.geometry import Polygon as SPolygon
+# from shapely.geometry import Polygon as SPolygon
 
 
 X_MAX_OFFICIAL = 2944

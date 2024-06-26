@@ -4,8 +4,8 @@ from math import acos, pi
 from PyQt6.QtCore import QPointF, QLineF, QRectF, QPoint
 from PyQt6.QtGui import QPainterPath
 
-from shapely.geometry import Polygon as SPolygon
-from shapely.geometry import MultiPolygon as SMultiPolygon
+# from shapely.geometry import Polygon as SPolygon
+# from shapely.geometry import MultiPolygon as SMultiPolygon
 
 from common import *
 from odv.pathfinder import PathFinders, timeit
@@ -91,8 +91,8 @@ class MovePolygon(Polygon):
     # def QPolygonF(self) -> QPolygonF:
     #     return QPolygonF([QPointF(p.x, p.y) for p in self])
 
-    def SPolygon(self) -> SPolygon:
-        return SPolygon([QPointF(p.x, p.y) for p in self])
+    # def SPolygon(self) -> SPolygon:
+    #     return SPolygon([QPointF(p.x, p.y) for p in self])
 
     def boundaries(self):
         n = len(self)
