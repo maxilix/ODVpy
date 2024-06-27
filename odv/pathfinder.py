@@ -16,7 +16,6 @@ class Viability(RWStreamable):
         self.t1 = t1
         self.t2 = t2
 
-    @timeit
     def is_empty(self) -> bool:
         assert len(self.t1) == len(self.t2)
         return self.t1 == []
@@ -96,29 +95,79 @@ class Link(RWStreamable):
         for viability_index in self.viability_index_list:
             stream.write(UShort(viability_index))
 
-    @timeit
     def potential_direction_combination(self, pf_index):
-        if self.cp2.x == self.cp1.x and self.cp2.y > self.cp1.y:
-            # case 1
-            start_quarts = [4, 8]
-            end_quarts = [1, 2]
-        elif self.cp2.y == self.cp1.y and self.cp2.x > self.cp1.x:
-            # case 2
-            start_quarts = [2, 4]
-            end_quarts = [1, 8]
-        elif self.cp2.x > self.cp1.x and self.cp2.y > self.cp1.y:
-            # case 3
-            start_quarts = [2, 8]
-            end_quarts = [2, 8]
-        elif self.cp2.x > self.cp1.x and self.cp2.y < self.cp1.y:
-            # case 4
-            start_quarts = [1, 4]
-            end_quarts = [1, 4]
-        else:
-            return []
-        start_quarts = [q for q in start_quarts if self.cp1.accesses[pf_index] & q]
-        end_quarts = [q for q in end_quarts if self.cp2.accesses[pf_index] & q]
-        return [(s, e) for s in start_quarts for e in end_quarts]
+        # if self.cp2.x == self.cp1.x and self.cp2.y > self.cp1.y:
+        #     # case 1
+        #     start_quarts = [4, 8]
+        #     end_quarts = [1, 2]
+        # elif self.cp2.y == self.cp1.y and self.cp2.x > self.cp1.x:
+        #     # case 2
+        #     start_quarts = [2, 4]
+        #     end_quarts = [1, 8]
+        # elif self.cp2.x > self.cp1.x and self.cp2.y > self.cp1.y:
+        #     # case 3
+        #     start_quarts = [2, 8]
+        #     end_quarts = [2, 8]
+        # elif self.cp2.x > self.cp1.x and self.cp2.y < self.cp1.y:
+        #     # case 4
+        #     start_quarts = [1, 4]
+        #     end_quarts = [1, 4]
+        # else:
+        #     return []
+        # start_quarts = [q for q in start_quarts if self.cp1.accesses[pf_index] & q]
+        # end_quarts = [q for q in end_quarts if self.cp2.accesses[pf_index] & q]
+        # # if self.cp1.x == 860 and self.cp1.y == 534 and self.cp2.x == 896 and self.cp2.y == 700:
+        # #     print(start_quarts, end_quarts, [(s, e) for s in start_quarts for e in end_quarts])
+        pass
+
+    @timeit
+    def filter_combine_quarts(self, pf_index):
+        combine_quarts = [(sq, eq)
+                          for sq in [1, 2, 4, 8] if self.cp1.accesses[pf_index] & sq
+                          for eq in [1, 2, 4, 8] if self.cp2.accesses[pf_index] & eq]
+        # if pf_index == 0 and self.cp1.x == 827 and self.cp1.y == 712 and self.cp2.x == 860 and self.cp2.y == 534:
+        #     print(f"{list(combine_quarts)}")
+        #     exit()
+        rop = []
+        for sq, eq in combine_quarts:
+            c1 = self.cp1.point_at(pf_index, sq)
+            c2 = self.cp2.point_at(pf_index, eq)
+            line = QLineF(c1, c2)
+
+            a = line.angle()
+            if a == 0:
+                if sq in [1, 8] and eq in [2, 4]:
+                    rop.append((line, sq, eq))
+                continue
+            if 0 < a < 90:
+                if sq in [1, 4] and eq in [1, 4]:
+                    rop.append((line, sq, eq))
+                continue
+            if a == 90:
+                if sq in [8, 4] and eq in [1, 2]:
+                    rop.append((line, sq, eq))
+                continue
+            if 90 < a < 180:
+                if sq in [2, 8] and eq in [2, 8]:
+                    rop.append((line, sq, eq))
+                continue
+            if a == 180:
+                if sq in [2, 4] and eq in [1, 8]:
+                    rop.append((line, sq, eq))
+                continue
+            if 180 < a < 270:
+                if sq in [1, 4] and eq in [1, 4]:
+                    rop.append((line, sq, eq))
+                continue
+            if a == 270:
+                if sq in [1, 2] and eq in [4, 8]:
+                    rop.append((line, sq, eq))
+                continue
+            if 270 < a < 360:
+                if sq in [2, 8] and eq in [2, 8]:
+                    rop.append((line, sq, eq))
+                continue
+        return rop
 
     @timeit
     def line_and_trace(self, pf_index, sq, eq):
@@ -153,6 +202,72 @@ class Link(RWStreamable):
             return line, QPolygonF([c2 + v2, c2 + v8, c1 + v8, c1 + v2])
 
         raise Exception("code should be inaccessible")
+
+    @timeit
+    def is_pertinent_link(self, pf_index, sq, eq) -> bool:
+        c1 = self.cp1.point_at(pf_index, sq)
+        c2 = self.cp2.point_at(pf_index, eq)
+
+        line = QLineF(c1, c2)
+        a = line.angle()
+
+        p = line.angleTo(self.cp1.line_to_previous())
+        n = self.cp1.line_to_next().angleTo(line)
+
+        # if pf_index == 0 and self.cp1.x == 860 and self.cp1.y == 534 and self.cp2.x == 896 and self.cp2.y == 700:
+        #     print("\n", sq, a, p, n)
+
+        if sq == 1:
+            start_condition = (0 <= a < 90 and p > 180 or 180 < a <= 270 and n > 180)
+        elif sq == 2:
+            start_condition = (270 <= a < 360 and p > 180 or 90 < a <= 180 and n > 180)
+        elif sq == 4:
+            start_condition = (180 <= a < 270 and p > 180 or 0 < a <= 90 and n > 180)
+        else:  #sq == 8:
+            start_condition = (90 <= a < 180 and p > 180 or (270 < a < 360 or a == 0) and n > 180)
+
+        if start_condition is False:
+            return False
+
+        p = (line.angleTo(self.cp2.line_to_previous()) + 180) % 360
+        n = (self.cp2.line_to_next().angleTo(line) + 180) % 360
+
+        # if pf_index == 0 and self.cp1.x == 860 and self.cp1.y == 534 and self.cp2.x == 896 and self.cp2.y == 700:
+        #     print("\n", eq, a, p, n)
+
+        if eq == 1:
+            end_condition = (180 <= a < 270 and p > 180 or 0 < a <= 90 and n > 180)
+        elif eq == 2:
+            end_condition = (90 <= a < 180 and p > 180 or (270 < a < 360 or a == 0) and n > 180)
+        elif eq == 4:
+            end_condition = (0 <= a < 90 and p > 180 or 180 < a <= 270 and n > 180)
+        else:  #eq == 8:
+            end_condition = (270 <= a < 360 and p > 180 or 90 < a <= 180 and n > 180)
+
+        return end_condition
+
+        #
+        # a = line.angle()
+        # if a == 0:
+        #     if sq == 2:
+        #         s_condition = self.cp1.line_to_previous.angleTo(line)
+        #     return line, QPolygonF([c1 + v4, c1 + v2, c2 + v1, c2 + v8])
+        # if 0 < a < 90:
+        #     return line, QPolygonF([c1 + v4, c1 + v1, c2 + v1, c2 + v4])
+        # if a == 90:
+        #     return line, QPolygonF([c1 + v2, c1 + v1, c2 + v8, c2 + v4])
+        # if 90 < a < 180:
+        #     return line, QPolygonF([c1 + v2, c1 + v8, c2 + v8, c2 + v2])
+        # if a == 180:
+        #     return line, QPolygonF([c2 + v4, c2 + v2, c1 + v1, c1 + v8])
+        # if 180 < a < 270:
+        #     return line, QPolygonF([c2 + v4, c2 + v1, c1 + v1, c1 + v4])
+        # if a == 270:
+        #     return line, QPolygonF([c2 + v2, c2 + v1, c1 + v8, c1 + v4])
+        # if 270 < a < 360:
+        #     return line, QPolygonF([c2 + v2, c2 + v8, c1 + v8, c1 + v2])
+        #
+        # raise Exception("code should be inaccessible")
 
     # def QLineF(self):
     #     p1 = self.start_position.QPointF()
@@ -220,17 +335,17 @@ class CrossingPoint(RWStreamable):
                 access += 1
 
             # direction 2: NE
-            r = QPolygonF(QRectF(self.x              , self.y - 2 * size[1], 2 * size[0], 2 * size[1]))
+            r = QPolygonF(QRectF(self.x, self.y - 2 * size[1], 2 * size[0], 2 * size[1]))
             if sublayer.contains(r):
                 access += 2
 
             # direction 4: SE
-            r = QPolygonF(QRectF(self.x              , self.y              , 2 * size[0], 2 * size[1]))
+            r = QPolygonF(QRectF(self.x, self.y, 2 * size[0], 2 * size[1]))
             if sublayer.contains(r):
                 access += 4
 
             # direction 8: SW
-            r = QPolygonF(QRectF(self.x - 2 * size[0], self.y              , 2 * size[0], 2 * size[1]))
+            r = QPolygonF(QRectF(self.x - 2 * size[0], self.y, 2 * size[0], 2 * size[1]))
             if sublayer.contains(r):
                 access += 8
 
@@ -363,8 +478,8 @@ class PathFinders(RWStreamable):
         nb_pathfinder = len(self.size_list)
         substream.write(UShort(nb_pathfinder))
         for size in self.size_list:
-            substream.write(size[0])
-            substream.write(size[1])
+            substream.write(Float(size[0]))
+            substream.write(Float(size[1]))
 
         nb_layer = len(self.crossing_point_list)
         substream.write(UShort(nb_layer))
@@ -404,7 +519,8 @@ class PathFinders(RWStreamable):
         """
 
         self.rebuild_crossing_point_list()
-        print(f"nb_cb = {sum([sum([sum([len(cp_l) for cp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in self.crossing_point_list])}")
+        print(
+            f"nb_cb = {sum([sum([sum([len(cp_l) for cp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in self.crossing_point_list])}")
 
         self.rebuild_link_list()
         print(f"nb_link = {len(self.link_list)}")
@@ -412,7 +528,6 @@ class PathFinders(RWStreamable):
         print("\n  times:")
         for k in T:
             print(f"{T[k]:6.2f} {k}")
-
 
     @timeit
     def rebuild_crossing_point_list(self):
@@ -474,7 +589,8 @@ class PathFinders(RWStreamable):
     @timeit
     def rebuild_link_list(self):
         print("rebuilding link list - 00.0%", end="")
-        nb_cp = sum([sum([sum([len(cp_l) for cp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in self.crossing_point_list])
+        nb_cp = sum([sum([sum([len(cp_l) for cp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in
+                     self.crossing_point_list])
         i_cp = 0
 
         self.link_list = []
@@ -484,38 +600,61 @@ class PathFinders(RWStreamable):
             for j, sublayer in enumerate(layer):
                 for k1, area1 in enumerate(sublayer):
                     for l1, cp1 in enumerate(self.crossing_point_list[i][j][k1]):
-                        print(f"\b\b\b\b\b{i_cp/nb_cp*100:4.1f}%", end="")
+                        print(f"\b\b\b\b\b{i_cp / nb_cp * 100:4.1f}%", end="")
                         i_cp += 1
                         for k2, area2 in enumerate(sublayer):
                             for l2, cp2 in enumerate(self.crossing_point_list[i][j][k2]):
+                                if (cp2.x == cp1.x and cp2.y > cp1.y or
+                                    cp2.y == cp1.y and cp2.x > cp1.x or
+                                    cp2.x > cp1.x and cp2.y > cp1.y or
+                                    cp2.x > cp1.x and cp2.y < cp1.y) is False:
+                                    continue
+
                                 link = Link(self, (i, j, k1, l1), (i, j, k2, l2), cp1.position.distance(cp2.position),
                                             [])
                                 for pf_index in range(len(self)):
                                     viability = Viability([], [])
-                                    combine_quarts = link.potential_direction_combination(pf_index)
-                                    # if cp1.x == 860 and cp1.y == 534 and cp2.x == 941 and cp2.y == 513:
+                                    # combine_quarts = link.potential_direction_combination(pf_index)
+                                    # if pf_index == 0 and cp1.x == 860 and cp1.y == 534 and cp2.x == 896 and cp2.y == 700:
                                     #     print(combine_quarts)
+                                    # print(cp1.accesses[0], cp2.accesses[0])
+                                    # exit()
+
+                                    combine_quarts = link.filter_combine_quarts(pf_index)
+                                    # if pf_index == 0 and cp1.x == 827 and cp1.y == 712 and cp2.x == 860 and cp2.y == 534:
+                                    #     print(f"{combine_quarts}")
                                     #     exit()
 
-                                    for sq, eq in combine_quarts:
-                                        line, trace = link.line_and_trace(pf_index, sq, eq)
-                                        # if cp1.x == 860 and cp1.y == 534 and cp2.x == 941 and cp2.y == 513:
-                                        #     print(sublayer.contains_poly(trace))
+                                    for _, sq, eq in combine_quarts:
+                                        # TODO
+                                        # construction de la ligne
+                                        # test de pertinance (agle de le ligne + agnle davec les obstacle
+                                        # construction de la trace
+                                        # test d'appartenance a la sublayer
+                                        #
+                                        # 2 tests : petinance et appartenance
+                                        # a tester dans les deux sens pour l'optimisation
 
+                                        # line, trace = link.line_and_trace(pf_index, sq, eq)
+                                        # if sublayer.contains(trace):
+                                        #     angle1_with_previous = line.angleTo(cp1.line_to_previous())
+                                        #     angle1_with_next = cp1.line_to_next().angleTo(line)
+                                        #     angle2_with_previous = line.angleTo(cp2.line_to_previous())
+                                        #     angle2_with_next = cp2.line_to_next().angleTo(line)
+                                        #     # if pf_index == 0 and cp1.x == 860 and cp1.y == 534 and cp2.x == 896 and cp2.y == 700:
+                                        #     #     print(f"{angle1_with_previous:6.2f}, {angle1_with_next:6.2f}, {angle2_with_previous:6.2f}, {angle2_with_next:6.2f}")
+                                        #     #     exit()
+                                        #
+                                        #     if (angle1_with_previous > 180 or angle1_with_next > 180) and (
+                                        #             angle2_with_previous < 180 or angle2_with_next < 180):
+                                        #         viability.t1.append(sq)
+                                        #         viability.t2.append(eq)
 
-                                        if sublayer.contains(trace):
-                                            angle1_with_previous = line.angleTo(cp1.line_to_previous())
-                                            angle1_with_next = cp1.line_to_next().angleTo(line)
-                                            angle2_with_previous = line.angleTo(cp2.line_to_previous())
-                                            angle2_with_next = cp2.line_to_next().angleTo(line)
-                                            # if cp1.x == 860 and cp1.y == 534 and cp2.x == 941 and cp2.y == 513:
-                                            #     print(f"to {cp2.x} {cp2.y}, {angle1_with_previous}, {angle1_with_next}, {angle2_with_previous}, {angle2_with_next}")
-                                            #     exit()
-
-                                            if (angle1_with_previous > 180 or angle1_with_next > 180) and (
-                                                    angle2_with_previous < 180 or angle2_with_next < 180):
-                                                viability.t1.append(sq)
-                                                viability.t2.append(eq)
+                                        if link.is_pertinent_link(pf_index, sq, eq):
+                                            _, trace = link.line_and_trace(pf_index, sq, eq)
+                                            if sublayer.contains(trace):
+                                                viability.t1.append(eq)
+                                                viability.t2.append(sq)
 
                                     if viability.is_empty() is False:
                                         self.viability_list.append(viability)

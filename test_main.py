@@ -102,18 +102,28 @@ def is_line_strictly_in_sublayer(line: QLineF, sublayer: Sublayer) -> bool:
 
 
 # level = Level("./dev/empty_level/empty_level_02")
-# level = Level("../Missions/DemoMod_L00/level_00")
-# level = Level("../Missions/Desperados_-_Red_River/level_03")
+# level = Level("../Missions/03_Red_River/level_03")
+level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(0)
-# for level_index in range(1):
+# for level_index in range(26):
+#     print(f"Level {level_index}")
 
-level = BackupedLevel(0)
+# level = BackupedLevel(2)
 level.dvd.move.load()
 motion = level.dvd.move
-# print(len(motion.pathfinders.link_list))
-# exit()
+
+
+# motion.pathfinders.size_list = [(6.0, 3.0), (11.0, 6.0)]
+motion.pathfinders.size_list = [(6.0, 3.0), (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
+# motion.pathfinders.size_list = [(5.4, 2.7)] #, (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
 
 motion.pathfinders.rebuild()
+
+# for v in motion.pathfinders.viability_list:
+#     if v.t1 == [1, 4] and v.t2 == [4, 1]:
+#         v.t1 = [2]
+#         v.t2 = [8]
+
 
 # s = motion[0][0]
 # p1 = QPointF(650, 1630)
@@ -152,9 +162,9 @@ motion.pathfinders.rebuild()
 
 # for sublayer in motion[0]:
 #     for area in sublayer.obstacles:
-#         poly = area.QPolygonF()
+#         poly = area.qpf
 #         level.dvm.draw(poly, QPen(QColor(255, 0, 0, 150)), QBrush(QColor(255, 0, 0, 40)))
-
-
-
-# level.insert_in_game()
+#
+#
+#
+level.insert_in_game()
