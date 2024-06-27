@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraph
 
 from .abstract_view import View
 from .motion import QViewMotion
-from ..controller.motion import QGraphicsObstacle
+from ..controller.motion import QGraphicsArea
 
 
 class QViewport(QGraphicsView):
