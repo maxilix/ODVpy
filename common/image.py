@@ -4,11 +4,11 @@ import bz2
 
 from abc import ABC, abstractmethod
 
-from .rw_stream import RWStreamable
+from .rw_stream import RWStreamable, RStreamable
 from .rw_base import UShort
 
 
-class Pixel(RWStreamable):
+class Pixel(RStreamable):
 
 	def __init__(self, r,g,b,a=255):
 		self._r = r
