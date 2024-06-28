@@ -1,10 +1,11 @@
 from PyQt6.QtCore import Qt, QRectF
-from PyQt6.QtGui import QColor, QPen, QBrush, QPainter, QPainterPath
+from PyQt6.QtGui import QColor, QPen, QBrush, QPainter, QPainterPath, QAction, QCursor
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QVBoxLayout, QCheckBox, QWidget, \
     QScrollArea, QPushButton, QHBoxLayout, QSpinBox, QGraphicsScene, \
-    QGraphicsItem
+    QGraphicsItem, QMenu
 
 from dvd.move import Obstacle, MainArea
+from qt.view.main_view import QScene
 
 
 class QGraphicsArea(QGraphicsItem):
@@ -28,7 +29,6 @@ class QGraphicsArea(QGraphicsItem):
         self._highlight_visibility = True
         self._highlight = False
         self._normal_visibility = True
-        self._editable = False
 
         scene.addItem(self)
         self.setAcceptHoverEvents(True)
@@ -87,25 +87,41 @@ class QGraphicsArea(QGraphicsItem):
         self.control.setSelected(False)
         self.update()
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.RightButton:
+            self._highlight = True
+            self.control.setSelected(True)
+            menu = QMenu()
+            # header = QAction(f"{self.control.text(0)}")
+            # f = header.font()
+            # f.setBold(True)
+            # header.setFont(f)
+            # header.setEnabled(False)
+            action_show = QAction("Show")
+            action_hide = QAction("Hide")
+            action_edit = QAction("Edit")
+            action_delete = QAction("Delete")
 
-class QGraphicsMainArea(QGraphicsArea):
-    main_color = QColor(160, 200, 40)
+            # menu.addAction(header)
+            menu.addSection(f"{self.control.text(0)}")
+            menu.addAction(action_show)
+            menu.addAction(action_hide)
+            menu.addSeparator()
+            menu.addAction(action_edit)
+            menu.addAction(action_delete)
+
+            action = menu.exec(QCursor.pos())
+
+            if action == action_show:
+                self.control.setCheckState(0, Qt.CheckState.Checked)
+            elif action == action_hide:
+                self.control.setCheckState(0, Qt.CheckState.Unchecked)
+            elif action == action_edit:
+                print("EDIT")
+            elif action == action_delete:
+                print("DELETE")
 
 
-# class QControlMainArea(QTreeWidgetItem):
-#     def __init__(self, parent, scene: QGraphicsScene, area):
-#         super().__init__(parent)
-#         self.scene = scene
-#         self.area = area
-#
-#         self.graphic_item = QGraphicsMainArea(area, scene, self)
-#         self.setText(0, f"Main Area")
-#
-#         self.setCheckState(0, Qt.CheckState.Unchecked)
-#         # self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate)
-#
-#     def update(self):
-#         self.graphic_item.setVisible(self.checkState(0) == Qt.CheckState.Checked)
 
 
 class QControlArea(QTreeWidgetItem):
@@ -143,6 +159,7 @@ class QControlSublayer(QTreeWidgetItem):
         self.area_item = [QControlArea(self, self.scene, area, k) for k, area in enumerate(sublayer)]
 
 
+
     def __iter__(self):
         return iter(self.area_item)
 
@@ -151,6 +168,7 @@ class QControlSublayer(QTreeWidgetItem):
 
     def __getitem__(self, index):
         return self.area_item[index]
+
 
 
 class QControlLayer(QTreeWidgetItem):
@@ -176,25 +194,29 @@ class QControlLayer(QTreeWidgetItem):
 
 
 class QAreaTreeWidget(QTreeWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, scene: QScene):
         super().__init__(parent)
+        self.scene = scene
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         # self.setHeaderLabels(["Layer", "Sublayer", "Area"])
         self.setHeaderHidden(True)
 
-        self.itemDoubleClicked.connect(self.item_double_clicked)
+        # self.itemDoubleClicked.connect(self.item_double_clicked)
         self.itemChanged.connect(self.item_changed)
         self.itemExpanded.connect(self.update_height)
         self.itemCollapsed.connect(self.update_height)
+        self.customContextMenuRequested.connect(self.context_menu_requested)
 
     def item_changed(self, item, column):
         if column == 0 and isinstance(item, QControlArea):
             item.update()
 
-    def item_double_clicked(self, item, column):
-        pass
+    # def item_double_clicked(self, item, column):
+    #     pass
 
     def update_height(self):
         # h = 18 * self.count_visible_item() + 24  # with header
@@ -211,6 +233,28 @@ class QAreaTreeWidget(QTreeWidget):
             count += 1
             index = self.indexBelow(index)
         return count
+
+    def context_menu_requested(self, pos):
+        item = self.itemAt(pos)
+        if isinstance(item, QControlArea):
+            menu = QMenu(self)
+            menu.setTitle(f"{item.text(0)}")
+            action_localise = QAction("Localise", self)
+            action_edit = QAction("Edit", self)
+            action_delete = QAction("Delete", self)
+
+            menu.addAction(action_localise)
+            menu.addAction(action_edit)
+            menu.addAction(action_delete)
+
+            action = menu.exec(self.mapToGlobal(pos))
+
+            if action == action_localise:
+                self.scene.move_to_item(item.graphic_item)
+                item.setCheckState(0, Qt.CheckState.Checked)
+            elif action == action_delete:
+                print("Delete action triggered")
+                # Implement your delete action here
 
 
 class QControlAreas(QScrollArea):
@@ -249,7 +293,7 @@ class QControlAreas(QScrollArea):
             ###
 
             layout.addWidget(sub_content)
-            tree_widget = QAreaTreeWidget(self)
+            tree_widget = QAreaTreeWidget(self, self.scene)
             self.layer_item = [QControlLayer(tree_widget, self.scene, layer, i) for i, layer in enumerate(self.motion)]
 
             tree_widget.update_height()

@@ -3,9 +3,7 @@ from PyQt6.QtCore import Qt, QPointF, QPropertyAnimation, pyqtProperty, QParalle
 from PyQt6.QtGui import QPixmap, QBrush, QPen, QMouseEvent
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsRectItem, QGraphicsSceneMouseEvent
 
-from .abstract_view import View
-from .motion import QViewMotion
-from ..controller.motion import QGraphicsArea
+
 
 
 class QViewport(QGraphicsView):
@@ -32,7 +30,7 @@ class QViewport(QGraphicsView):
                                  2*self.dvm_size.height()))
 
         # initial view position
-        self.zoom = 0.7  # set zoom first, as it defines the margins around the dvm
+        self.zoom = 1  # set zoom first, as it defines the margins around the dvm
         self.x = dvm_size.width() // 2
         self.y = dvm_size.height() // 2
 
@@ -113,6 +111,10 @@ class QViewport(QGraphicsView):
 
     @zoom.setter
     def zoom(self, new_zoom):
+        if new_zoom < self.zoom_min:
+            new_zoom = self.zoom_min
+        if new_zoom > self.zoom_max:
+            new_zoom = self.zoom_max
         current_zoom = self.zoom
         self.scale(new_zoom/current_zoom, new_zoom/current_zoom)
         x_margin = self.horizontalScrollBar().pageStep()/new_zoom / 2# + 10
@@ -140,40 +142,43 @@ class QViewport(QGraphicsView):
         v = self.verticalScrollBar()
         v.setValue(int(self.zoom * value - v.pageStep() / 2))
 
-    def set_rect_view(self, new_rect_view):
-        self.fitInView(new_rect_view, Qt.AspectRatioMode.KeepAspectRatio)
+    def move_to_item(self, item: QGraphicsItem):
+        r = item.boundingRect()
+        c = r.center()
         r_v = self.viewport().rect()
-        r_s = self.mapToScene(r_v).boundingRect()
-        self._zoom = r_v.width()/r_s.width()
-        # self.centerOn(self._rect_view.center())
+        zoom_w = r_v.width()/(r.width() + 20)
+        zoom_h = r_v.height()/(r.height() + 20)
+        self.move_to(c.x(), c.y(), min(zoom_w, zoom_h))
+
 
     def move_to(self, x, y, zoom=None):
-        duration = 1500
+        duration = 1000
         anims = []
 
         anim_x = QPropertyAnimation(self, b'x')
         anim_x.setDuration(duration)
         anim_x.setStartValue(self.x)
-        anim_x.setKeyValueAt(0.8, x)
+        # anim_x.setKeyValueAt(0.8, x)
         anim_x.setEndValue(x)
-        # anim_x.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        anim_x.setEasingCurve(QEasingCurve.Type.InOutCubic)
         anims.append(anim_x)
 
         anim_y = QPropertyAnimation(self, b'y')
         anim_y.setDuration(duration)
         anim_y.setStartValue(self.y)
-        anim_y.setKeyValueAt(0.8, y)
+        # anim_y.setKeyValueAt(0.8, y)
         anim_y.setEndValue(y)
-        # anim_y.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        anim_y.setEasingCurve(QEasingCurve.Type.InOutCubic)
         anims.append(anim_y)
 
         if zoom is not None:
             anim_zoom = QPropertyAnimation(self, b'zoom')
-            anim_zoom.setDuration(duration)
+            anim_zoom.setDuration(int(1.5*duration))
             anim_zoom.setStartValue(self.zoom)
-            anim_zoom.setKeyValueAt(0.2, self.zoom)
+            # anim_zoom.setKeyValueAt(0.25, self.zoom)
             anim_zoom.setEndValue(zoom)
-            # anim_zoom.setEasingCurve(QEasingCurve.Type.InQuad)
+            anim_zoom.setEasingCurve(QEasingCurve.Type.InOutCubic)
+            # anim_zoom.
             anims.append(anim_zoom)
 
         group = QParallelAnimationGroup(self)
@@ -183,11 +188,24 @@ class QViewport(QGraphicsView):
 
 
 class QScene(QGraphicsScene):
-    def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
-        for i in self.items(event.scenePos()):
-            i.mouseMoveEvent(event)
-        super().mouseMoveEvent(event)
+    # def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
+    #     for i in self.items(event.scenePos()):
+    #         i.mouseMoveEvent(event)
+    #     super().mouseMoveEvent(event)
 
+    # def __init__(self, parent):
+    #     super().__init__(parent)
+    #     self.
+
+    def _main_viewport(self):
+        return self.views()[0]
+
+    def move_to_item(self, item):
+        self._main_viewport().move_to_item(item)
+
+    # def mousePressEvent(self, event):
+    #     if event.button() == Qt.MouseButton.RightButton:
+    #         print("Scene BUTTON")
 
 
 
