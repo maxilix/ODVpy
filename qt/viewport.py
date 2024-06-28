@@ -143,16 +143,18 @@ class QViewport(QGraphicsView):
         v.setValue(int(self.zoom * value - v.pageStep() / 2))
 
     def move_to_item(self, item: QGraphicsItem):
-        r = item.boundingRect()
+        self.move_to_rect(item.boundingRect())
+
+    def move_to_rect(self, r: QRectF, marge_factor: float = 1.2):
         c = r.center()
         r_v = self.viewport().rect()
-        zoom_w = r_v.width()/(r.width() + 20)
-        zoom_h = r_v.height()/(r.height() + 20)
-        self.move_to(c.x(), c.y(), min(zoom_w, zoom_h))
+        zoom_w = r_v.width()/r.width()
+        zoom_h = r_v.height()/r.height()
+        self.move_to(c.x(), c.y(), min(zoom_w, zoom_h)/marge_factor)
 
 
     def move_to(self, x, y, zoom=None):
-        duration = 1000
+        duration = 600
         anims = []
 
         anim_x = QPropertyAnimation(self, b'x')
