@@ -8,7 +8,7 @@ from config import CONFIG
 from dvd import DvdParser
 from dvd.move import Obstacle, Sublayer
 from odv.level import Level, BackupedLevel, InstalledLevel
-from odv.pathfinder import PathFinders, CrossingPoint
+from odv.pathfinder import PathFinder, CrossingPoint
 from settings import *
 
 CONFIG.load()
@@ -114,10 +114,10 @@ motion = level.dvd.move
 
 
 # motion.pathfinders.size_list = [(6.0, 3.0), (11.0, 6.0)]
-motion.pathfinders.size_list = [(6.0, 3.0), (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
+motion.pathfinder.size_list = [(6.0, 3.0), (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
 # motion.pathfinders.size_list = [(5.4, 2.7)] #, (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
 
-motion.pathfinders.rebuild()
+motion.pathfinder.rebuild()
 
 # for v in motion.pathfinders.viability_list:
 #     if v.t1 == [1, 4] and v.t2 == [4, 1]:

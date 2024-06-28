@@ -257,7 +257,7 @@ class QAreaTreeWidget(QTreeWidget):
                 # Implement your delete action here
 
 
-class QControlAreas(QScrollArea):
+class QMotionControl(QScrollArea):
     def __init__(self, parent, scene, motion):
         super().__init__(parent)
         self.highlight_widget = None
@@ -269,38 +269,33 @@ class QControlAreas(QScrollArea):
     def init_ui(self):
         content = QWidget()
         layout = QVBoxLayout(content)
-        if self.motion.loaded_areas is False:
-            label = QLabel("No loaded areas")
-            layout.addWidget(label)
-        else:
-            ####
-            sub_content = QWidget()
-            sub_layout = QHBoxLayout(sub_content)
-            self.check_box = QCheckBox()
-            self.check_box.setCheckState(Qt.CheckState.Checked)
-            self.check_box.clicked.connect(self.set_highlight_mode)
-            sub_layout.addWidget(self.check_box)
-            self.label = QLabel("Highlight on layer")
-            self.label.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
-            sub_layout.addWidget(self.label)
-            sub_layout.addStretch(255)
-            self.spin = QSpinBox()
-            self.spin.setMinimum(0)
-            self.spin.setMaximum(len(self.motion))
-            self.spin.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
-            self.spin.valueChanged.connect(self.set_highlight_mode)
-            sub_layout.addWidget(self.spin)
-            ###
 
-            layout.addWidget(sub_content)
-            tree_widget = QAreaTreeWidget(self, self.scene)
-            self.layer_item = [QControlLayer(tree_widget, self.scene, layer, i) for i, layer in enumerate(self.motion)]
+        sub_content = QWidget()
+        sub_layout = QHBoxLayout(sub_content)
+        self.check_box = QCheckBox()
+        self.check_box.setCheckState(Qt.CheckState.Checked)
+        self.check_box.clicked.connect(self.set_highlight_mode)
+        sub_layout.addWidget(self.check_box)
+        self.label = QLabel("Highlight on layer")
+        self.label.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
+        sub_layout.addWidget(self.label)
+        self.spin = QSpinBox()
+        self.spin.setMinimum(0)
+        self.spin.setMaximum(len(self.motion) - 1)
+        self.spin.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
+        self.spin.valueChanged.connect(self.set_highlight_mode)
+        sub_layout.addWidget(self.spin)
+        sub_layout.addStretch(255)
+        layout.addWidget(sub_content)
 
-            tree_widget.update_height()
-            self.set_highlight_mode()
-            layout.addWidget(tree_widget)
+        tree_widget = QAreaTreeWidget(self, self.scene)
+        self.layer_item = [QControlLayer(tree_widget, self.scene, layer, i) for i, layer in enumerate(self.motion)]
+        tree_widget.update_height()
+        layout.addWidget(tree_widget)
 
         layout.addStretch(255)
+
+        self.set_highlight_mode()
         self.setWidgetResizable(True)
         self.setWidget(content)
 
@@ -322,42 +317,3 @@ class QControlAreas(QScrollArea):
 
     def __getitem__(self, index):
         return self.layer_item[index]
-
-
-class QMotionControl(QWidget):
-    def __init__(self, parent, scene, motion):
-        super().__init__(parent)
-        self.scene = scene
-        self.motion = motion
-
-        self.init_ui()
-
-    def init_ui(self):
-        # content = QWidget()
-        layout = QVBoxLayout(self)
-
-        load_areas_button = QPushButton("(re)Load areas only")
-        load_areas_button.clicked.connect(self.load_areas_click)
-        layout.addWidget(load_areas_button)
-
-        load_all_button = QPushButton("(re)Load areas and pathfinder")
-        load_all_button.clicked.connect(self.load_all_click)
-        layout.addWidget(load_all_button)
-
-        tabs = QTabWidget()
-        tabs.setTabPosition(QTabWidget.TabPosition.North)
-        tabs.setMovable(False)
-        self.control_areas = QControlAreas(self, self.scene, self.motion)
-        tabs.addTab(self.control_areas, f"Areas")
-        self.control_pathfinder = QWidget(self)
-        tabs.addTab(self.control_pathfinder, f"PathFinder")
-        layout.addWidget(tabs)
-
-    def load_areas_click(self):
-        self.motion.load(only_areas=True)
-        self.control_areas.init_ui()
-
-    def load_all_click(self):
-        self.motion.load(only_areas=False)
-        self.control_areas.init_ui()
-        # self.control_pathfinder.init_ui()

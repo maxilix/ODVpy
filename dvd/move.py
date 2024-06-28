@@ -8,7 +8,7 @@ from PyQt6.QtGui import QPainterPath
 # from shapely.geometry import MultiPolygon as SMultiPolygon
 
 from common import *
-from odv.pathfinder import PathFinders, timeit
+from odv.pathfinder import PathFinder, timeit
 from .section import Section
 
 
@@ -252,16 +252,14 @@ class Layer(RWStreamable):
             stream.write(sublayer)
 
 
-class Motion(Section):
-    section_index = 2  # MOVE
+class Move(Section):
+    _name = "MOVE"
+    _version = 1
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.loaded_areas = False
-        self.layer_list = []
-
-        self.loaded_pathfinder = False
-        self.pathfinders = None
+    # def __init__(self, *args, **kwargs) -> None:
+    #     super().__init__(*args, **kwargs)
+    #     self.layer_list = []
+    #     self.pathfinder = None
 
     def __iter__(self) -> Iterator[Layer]:
         return iter(self.layer_list)
@@ -272,32 +270,19 @@ class Motion(Section):
     def __len__(self) -> int:
         return len(self.layer_list)
 
-    def _load(self, stream: ReadStream, only_areas: bool = False) -> None:
-        self.load_areas(stream)
-        if only_areas is False:
-            self.load_pathfinder(stream)
+    def _load(self, substream: ReadStream) -> None:
+        assert substream.read(Version) == self._version
 
-    def load_areas(self, stream: ReadStream) -> None:
-        version = stream.read(Version)
-        assert version == 1
+        nb_layer = substream.read(UShort)
+        self.layer_list = [substream.read(Layer) for _ in range(nb_layer)]
 
-        nb_layer = stream.read(UShort)
-        self.layer_list = [stream.read(Layer) for _ in range(nb_layer)]
-        self.loaded_areas = True
-
-    def load_pathfinder(self, stream: ReadStream) -> None:
-        self.pathfinders = stream.read(PathFinders, motion=self)
-        self.loaded_pathfinder = True
+        self.pathfinder = substream.read(PathFinder, move=self)
 
     def _save(self, substream: WriteStream) -> None:
-        if self.loaded_areas is False or self.loaded_pathfinder is False:
-            print("# NDPT")
-            return
-        substream.write(Version(1))
-        nb_layer = UShort(len(self))
-        substream.write(nb_layer)
+        substream.write(Version(self._version))
+        nb_layer = len(self)
+        substream.write(UShort(nb_layer))
         for layer in self:
             substream.write(layer)
 
-        print(f"write {len(self.pathfinders.size_list)} pfs with {len(self.pathfinders.link_list)} links")
-        substream.write(self.pathfinders)
+        substream.write(self.pathfinder)

@@ -3,13 +3,32 @@ from abc import ABC, abstractmethod
 from common import *
 
 # 20 dvd sections in order
-section_list = ["MISC", "BGND", "MOVE", "SGHT", "MASK", "WAYS", "ELEM", "FXBK", "MSIC", "SND ", "PAT ", "BOND", "MAT ",
-                "LIFT", "AI  ", "BUIL", "SCRP", "JUMP", "CART", "DLGS"]
+section_list = ["MISC",
+                "BGND",
+                "MOVE",
+                "SGHT",
+                "MASK",
+                "WAYS",
+                "ELEM",
+                "FXBK",
+                "MSIC",
+                "SND ",
+                "PAT ",
+                "BOND",
+                "MAT ",
+                "LIFT",
+                "AI  ",
+                "BUIL",
+                "SCRP",
+                "JUMP",
+                "CART",
+                "DLGS"]
 
 
 class Section(RWStreamable):
 
-    section_index = None  # must be defined by inheriting objects
+    _name = None  # must be defined by inheriting objects
+    _version = None
 
     def __init__(self, name, data):
         self._name = name
@@ -20,7 +39,7 @@ class Section(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         name = stream.read(String, 4)
-        assert name == section_list[cls.section_index]
+        assert name == cls._name
         size = stream.read(UInt)
         data = stream.read(Bytes, size)
         return cls(name, data)
@@ -28,22 +47,22 @@ class Section(RWStreamable):
     def to_stream(self, stream):
         if self._loaded:
             self.save()  # update self._data
-        stream.write(self._name)
+        stream.write(String(self._name))
         stream.write(UInt(len(self._data)))
-        stream.write(self._data)
+        stream.write(Bytes(self._data))
 
-    def load(self, **kwargs):
+    def load(self):
         substream = ReadStream(self._data)
-        self._load(substream, **kwargs)
+        self._load(substream)
         # next_byte = substream.read(Bytes, 1)
         # assert next_byte == b''
         self._loaded = True
-        # log.info(f"Section {self.section} built")
+        # log.info(f"Section {self.section} loaded")
 
     @abstractmethod
-    def _load(self, substream, **kwargs):
+    def _load(self, substream):
         # must read (and create) self state from substream
-        # must set self._loaded
+        # can raise an error
         pass
 
     def save(self):
@@ -54,13 +73,13 @@ class Section(RWStreamable):
             # assume _save() do nothing, self._data dont change
             pass
         else:
-            self._data = Bytes(new_data)
+            self._data = new_data
 
     @abstractmethod
     def _save(self, substream):
         # must write self state in substream
         pass
 
-    # @property
-    # def loaded(self):
-    #     return self._loaded
+    @property
+    def loaded(self):
+        return self._loaded

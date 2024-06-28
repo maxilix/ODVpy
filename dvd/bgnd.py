@@ -1,39 +1,19 @@
-
-
 import bz2
-from PIL import Image
 from PyQt6.QtGui import QImage
-
 
 from common import *
 
 from .section import Section
 
 
-# class LevelMiniMap(Pixmap, ReadableFromStream):
-#
-# 	@classmethod
-# 	def from_stream(cls, stream):
-# 		width = stream.read(UShort)
-# 		height = stream.read(UShort)
-# 		compression = stream.read(UInt)
-# 		assert compression == 2
-# 		size = stream.read(UInt)
-# 		data = stream.read(Bytes, size)
-# 		return cls(width, height, data)
-#
-# 	def build(self):
-# 		decompressed = bz2.decompress(self.data)
-# 		self.bmp = Image.frombytes("RGB", (self.width, self.height), decompressed, "raw", "BGR;16")
+class Bgnd(Section):
 
-
-class MiniMap(Section):
-
-	section_index = 1  # BGND
+	_name = "BGND"
+	_version = 4
 
 	def _load(self, substream):
-		version = substream.read(Version)
-		assert version == 4
+		assert substream.read(Version) == self._version
+
 		filename_size = substream.read(UShort)
 		self.minimap_name = substream.read(String, filename_size)
 		width = substream.read(UShort)

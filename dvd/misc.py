@@ -1,17 +1,15 @@
-
-
-
 from common import *
 
 from .section import Section
 
 
-class Miscellaneous(Section):
-    section_index = 0  # MISC
+class Misc(Section):
+    _name = "MISC"
+    _version = 6
 
     def _load(self, substream):
-        version = substream.read(Version)
-        assert version == 6
+        assert substream.read(Version) == self._version
+
         self.b0 = substream.read(Bytes, 1)
         self.f = [substream.read(Short), substream.read(Short)]
         # cast on int32_t, then on float, and divided by 10
@@ -31,7 +29,7 @@ class Miscellaneous(Section):
         self.b1 = substream.read(Bytes, 1)
         self.muwStandardViewPolygonRadius = substream.read(UShort)
         self.hearing_factor = substream.read(Float)
-        self.night = substream.read(UChar)  # length of the vision cone, sprite darkening
+        self.night = substream.read(UChar)  # impact length of the vision cone, sprite darkening
         self.b2 = substream.read(Bytes, 1)
 
         self.c = substream.read(UInt)  # 40404000 for L00

@@ -1,12 +1,11 @@
-
 from common import *
 
-from .section import Section, section_list
+from .section import Section
 
 
-class Sight(Section):
+class Sght(Section):
 
-    section_index = 3  # SGHT
+    _name = "SGHT"
 
     def _load(self, substream):
         substream.read_raw()

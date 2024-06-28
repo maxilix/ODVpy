@@ -5,7 +5,6 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QLab
 from PyQt6.QtWidgets import QStackedLayout
 from PyQt6.QtGui import QPalette, QColor, QPixmap, QWheelEvent, QMouseEvent
 
-from dvd import section_list
 from .map import QMapControl
 from .move import QMotionControl
 
@@ -16,32 +15,26 @@ class QMainControl(QTabWidget):
         # self.scene = scene
         # self.level = level
 
-        self.setMinimumWidth(550)
+        self.setMinimumWidth(800)
 
         self.setTabPosition(QTabWidget.TabPosition.East)
         self.setMovable(False)
 
-        # DVM
-        self.control_dvm = QMapControl(self, scene, level.dvm)
-        self.addTab(self.control_dvm, "DVM")
-
-
-        # ["MISC", "BGND", "MOVE", "SGHT", "MASK", "WAYS", "ELEM", "FXBK", "MSIC", "SND_", "PAT_", "BOND", "MAT_", "LIFT", "AI__", "BUIL", "SCRP", "JUMP", "CART", "DLGS"]:
+        # Map
+        self.map_control = QMapControl(self, scene, level.dvm, level.dvd.bgnd)
+        self.addTab(self.map_control, "Map")
 
         # Miscellaneous
         # self.addTab(QLabel(section_list[0]), section_list[0])
 
-        # Background
-        # self.addTab(QLabel(section_list[1]), section_list[1])
-
         # Motion
         self.control_motion = QMotionControl(self, scene, level.dvd.move)
-        self.addTab(self.control_motion, section_list[2])
+        self.addTab(self.control_motion, "Motion")
 
         # Sight
         # self.addTab(QLabel(section_list[3]), section_list[3])
 
-        # Mask
+        # Masks
         # self.addTab(QLabel(section_list[4]), section_list[4])
 
         # Ways

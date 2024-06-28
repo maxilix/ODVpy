@@ -8,7 +8,7 @@ config.json
 dvd/*/
 
 # tests
-q_tests/
+tests/
 ex_*.py
 
 # others

@@ -417,7 +417,7 @@ class CrossingPoint(RWStreamable):
     #     return QPointF(self.x, self.y)
 
 
-class PathFinders(RWStreamable):
+class PathFinder(RWStreamable):
 
     def __init__(self, motion, size_list, crossing_point_list, link_list, viability_list):
         self._motion = motion
@@ -440,8 +440,8 @@ class PathFinders(RWStreamable):
         return self.viability_list[index]
 
     @classmethod
-    def from_stream(cls, stream: ReadStream, *, motion: Any):
-        rop = cls(motion, [], [], [], [])
+    def from_stream(cls, stream: ReadStream, *, move: Any):
+        rop = cls(move, [], [], [], [])
 
         nb_pathfinder = stream.read(UShort)
         rop.size_list = [[stream.read(Float), stream.read(Float)] for _ in range(nb_pathfinder)]

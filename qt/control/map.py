@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QWidget, QScrollArea, QCheckBox, QVBoxLayout, QSlide
 
 
 class QMapControl(QScrollArea):
-    def __init__(self, parent, scene: QGraphicsScene, dvm):
+    def __init__(self, parent, scene: QGraphicsScene, dvm, bgnd):
         super().__init__(parent)
         self.scene = scene
         self.dvm = dvm
