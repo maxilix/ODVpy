@@ -1,19 +1,18 @@
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QAction, QPalette, QColor
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QPushButton, QWidget, \
-    QVBoxLayout, QGraphicsScene
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QWidget, \
+    QVBoxLayout
 
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
 from qt.info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
-# from qt.view import QScene
-# from qt.viewer import QViewer
-from qt.controller.main_controller import QControl
+from qt.control.main import QMainControl
 
 from config import CONFIG
 from common import *
-from qt.view.main_view import QViewport, QScene
+from qt.scene import QScene
+from qt.viewport import QViewport
 
 
 # from debug import *
@@ -177,7 +176,7 @@ class QWindow(QMainWindow):
             info_bar = QInfoBar(visualizer)
             scene = QScene(visualizer)
             dvm_size = QSize(*self.current_level.dvm.size)
-            control = QControl(main_widget, scene, self.current_level)
+            control = QMainControl(main_widget, scene, self.current_level)
             viewport = QViewport(scene, dvm_size, info_bar, control)
             info_bar.set_info(level_index=self.current_level.index)
             info_bar.set_info(level_size=dvm_size)

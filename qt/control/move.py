@@ -4,8 +4,8 @@ from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QV
     QScrollArea, QPushButton, QHBoxLayout, QSpinBox, QGraphicsScene, \
     QGraphicsItem, QMenu
 
-from dvd.move import Obstacle, MainArea
-from qt.view.main_view import QScene
+from dvd.move import Obstacle
+from qt.scene import QScene
 
 
 class QGraphicsArea(QGraphicsItem):
@@ -324,7 +324,7 @@ class QControlAreas(QScrollArea):
         return self.layer_item[index]
 
 
-class QControlMotion(QWidget):
+class QMotionControl(QWidget):
     def __init__(self, parent, scene, motion):
         super().__init__(parent)
         self.scene = scene

@@ -3,7 +3,7 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QScrollArea, QCheckBox, QVBoxLayout, QSlider, QGraphicsScene, QGraphicsPixmapItem
 
 
-class QControlDVM(QScrollArea):
+class QMapControl(QScrollArea):
     def __init__(self, parent, scene: QGraphicsScene, dvm):
         super().__init__(parent)
         self.scene = scene

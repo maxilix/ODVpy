@@ -6,12 +6,11 @@ from PyQt6.QtWidgets import QStackedLayout
 from PyQt6.QtGui import QPalette, QColor, QPixmap, QWheelEvent, QMouseEvent
 
 from dvd import section_list
-from .abstract_controller import Control
-from .dvm import QControlDVM
-from .motion import QControlMotion
+from .map import QMapControl
+from .move import QMotionControl
 
 
-class QControl(QTabWidget):
+class QMainControl(QTabWidget):
     def __init__(self, parent, scene, level):
         super().__init__(parent)
         # self.scene = scene
@@ -23,7 +22,7 @@ class QControl(QTabWidget):
         self.setMovable(False)
 
         # DVM
-        self.control_dvm = QControlDVM(self, scene, level.dvm)
+        self.control_dvm = QMapControl(self, scene, level.dvm)
         self.addTab(self.control_dvm, "DVM")
 
 
@@ -36,7 +35,7 @@ class QControl(QTabWidget):
         # self.addTab(QLabel(section_list[1]), section_list[1])
 
         # Motion
-        self.control_motion = QControlMotion(self, scene, level.dvd.move)
+        self.control_motion = QMotionControl(self, scene, level.dvd.move)
         self.addTab(self.control_motion, section_list[2])
 
         # Sight
