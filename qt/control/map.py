@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QWidget, QScrollArea, QCheckBox, QVBoxLayout, QSlider, QGraphicsScene, QGraphicsPixmapItem
+from PyQt6.QtWidgets import QWidget, QScrollArea, QCheckBox, QVBoxLayout, QSlider, QGraphicsScene, QGraphicsPixmapItem, \
+    QLabel
 
 
 class QMapControl(QScrollArea):
@@ -8,6 +9,7 @@ class QMapControl(QScrollArea):
         super().__init__(parent)
         self.scene = scene
         self.dvm = dvm
+        self.bgnd = bgnd
         self.init_ui()
 
         self.graphic_map_item = QGraphicsPixmapItem(QPixmap(self.dvm.level_map))
@@ -19,7 +21,7 @@ class QMapControl(QScrollArea):
         content = QWidget()
         layout = QVBoxLayout(content)
 
-        self.check_box = QCheckBox("Show DVM")
+        self.check_box = QCheckBox("Show Map")
         self.check_box.setCheckState(Qt.CheckState.Checked)
         self.check_box.clicked.connect(self.update)
         layout.addWidget(self.check_box)
@@ -31,7 +33,12 @@ class QMapControl(QScrollArea):
         self.slider.valueChanged.connect(self.update)
         layout.addWidget(self.slider)
 
-        layout.addStretch(255)
+        # layout.addStretch(255)
+
+        self.minimap = QLabel(self)
+        self.minimap.setPixmap(QPixmap.fromImage(self.bgnd.minimap))
+        layout.addWidget(self.minimap)
+
         self.setWidgetResizable(True)
         self.setWidget(content)
 
