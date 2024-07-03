@@ -23,7 +23,7 @@ class Bgnd(Section):
 		size = substream.read(UInt)
 		data = substream.read(Bytes, size)
 		decompressed = bz2.decompress(data)
-		self.minimap = QImage(decompressed, width, height, QImage.Format.Format_RGB16)
+		self.minimap = QImage(decompressed, width, height, width*2, QImage.Format.Format_RGB16)
 
 	def _save(self, substream):
 		pass
