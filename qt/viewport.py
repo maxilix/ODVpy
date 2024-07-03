@@ -16,12 +16,13 @@ class QViewport(QGraphicsView):
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
         self.setMouseTracking(True)
         self.drag_position = None
 
         self.zoom_factor = 1.1
         self.zoom_shift_factor = 1.0
-        self.zoom_max = 25
+        self.zoom_max = 50
         self.zoom_min = 0.5
 
         self.setSceneRect(QRectF(-dvm_size.width()/2,

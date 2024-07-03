@@ -3,65 +3,25 @@ from math import acos, pi
 
 from PyQt6.QtCore import QPointF, QLineF, QRectF, QPoint
 from PyQt6.QtGui import QPainterPath
-
-# from shapely.geometry import Polygon as SPolygon
-# from shapely.geometry import MultiPolygon as SMultiPolygon
+from PyQt6.QtWidgets import QWidget
 
 from common import *
-from odv.pathfinder import PathFinder, timeit
+from debug import timeit
+from odv.pathfinder import PathFinder
 from .section import Section
 
 
-# def QPolygonF_signed_area(self: QPolygonF) -> float:
-#     """
-#     Return the signed area of the polygon.
-#     A negative value indicates a clockwise points definition.
-#     A positive value indicates a counter-clockwise points definition.
-#     It's the mathematical opposite because the y-axis is inverted.
-#     WARNING, does not work with self-intersecting polygons, unexpected behavior.
-#     """
-#     area = 0.0
-#     n = self.count()
-#     for i in range(n):
-#         current_point = self[i]
-#         next_point = self[(i + 1) % n]
-#         area += (next_point.x() - current_point.x()) * (next_point.y() + current_point.y())
-#
-#     return area / 2
-#
-#
-# def QPolygonF_area(self: QPolygonF) -> float:
-#     return abs(QPolygonF_signed_area(self))
-#
-#
-# QPolygonF.signed_area = QPolygonF_signed_area
-# QPolygonF.area = QPolygonF_area
 
 
 class MovePolygon(Polygon):
     _main: bool
+    i: int
+    j: int
+    k: int
 
     @property
     def main(self) -> bool:
         return self._main
-
-    def signed_area(self) -> float:
-        """
-        Return the signed area of the polygon.
-        A negative value indicates a clockwise points definition.
-        A positive value indicates a counter-clockwise points definition.
-        It's the mathematical opposite because the y-axis is inverted.
-        WARNING, does not work with self-intersecting polygons, unexpected behavior.
-        """
-        area = 0.0
-
-        for i in range(len(self)):
-            current_point = self[i]
-            next_point = self[i + 1]
-            area += (next_point.x - current_point.x) * (next_point.y + current_point.y)
-
-        return area / 2
-
 
     @property
     def clockwise(self) -> bool:
@@ -70,12 +30,12 @@ class MovePolygon(Polygon):
         """
         # area = self.signed_area()
         # assert area != 0.0
-        return self.signed_area() <= 0
+        return self.qpf.signed_area() <= 0
 
     @clockwise.setter
     def clockwise(self, value: bool) -> None:
         if self.clockwise == value:
-            return
+            pass
         else:
             self.reverse()
 
@@ -87,21 +47,15 @@ class MovePolygon(Polygon):
     #         theta = 2*pi - theta
     #     return theta * 180 / pi
 
-    # @timeit
-    # def QPolygonF(self) -> QPolygonF:
-    #     return QPolygonF([QPointF(p.x, p.y) for p in self])
+    # def boundaries(self):
+    #     n = len(self)
+    #     rop = []
+    #     for i in range(n):
+    #         current_point = self[i]
+    #         next_point = self[(i + 1) % n]
+    #         rop.append(QLineF(current_point.x, current_point.y, next_point.x, next_point.y))
+    #     return rop
 
-    # def SPolygon(self) -> SPolygon:
-    #     return SPolygon([QPointF(p.x, p.y) for p in self])
-
-    def boundaries(self):
-        n = len(self)
-        rop = []
-        for i in range(n):
-            current_point = self[i]
-            next_point = self[(i + 1) % n]
-            rop.append(QLineF(current_point.x, current_point.y, next_point.x, next_point.y))
-        return rop
 
 
 class MainArea(MovePolygon):
@@ -113,6 +67,8 @@ class Obstacle(MovePolygon):
 
 
 class Sublayer(RWStreamable):
+    i: int
+    j: int
 
     def __init__(self, main: MainArea, obstacles: [Obstacle]) -> None:
         self.main = main
@@ -120,11 +76,6 @@ class Sublayer(RWStreamable):
         # Segments seem to be an optimization for the pathfinder, probably no longer necessary today
         # The pathfinder works well without segments
         # self.segment_list = segment_list
-        # self.boundaries = None
-        # self.build_boundaries()
-        # self.allow_path = None
-        # self.build_allow_path()
-        # self.multi_poly = SMultiPolygon([o.spf for o in obstacles])
 
     def __iter__(self) -> Iterator[MovePolygon]:
         return iter([self.main] + self.obstacles)
@@ -150,7 +101,6 @@ class Sublayer(RWStreamable):
     #     self.boundaries = []
     #     for area in self:
     #         self.boundaries += area.boundaries()
-
 
     @classmethod
     def from_stream(cls, stream: ReadStream) -> Self:
@@ -220,6 +170,8 @@ class Sublayer(RWStreamable):
 
 
 class Layer(RWStreamable):
+    i: int
+
     def __init__(self, sublayer_list):
         self.sublayer_list = sublayer_list
 
@@ -246,8 +198,8 @@ class Layer(RWStreamable):
 
     def to_stream(self, stream: WriteStream) -> None:
         stream.write(UShort(self.total_area))
-        nb_sublayer = UShort(len(self.sublayer_list))
-        stream.write(nb_sublayer)
+        nb_sublayer = len(self.sublayer_list)
+        stream.write(UShort(nb_sublayer))
         for sublayer in self.sublayer_list:
             stream.write(sublayer)
 
@@ -275,6 +227,15 @@ class Move(Section):
 
         nb_layer = substream.read(UShort)
         self.layer_list = [substream.read(Layer) for _ in range(nb_layer)]
+        for i, layer in enumerate(self):
+            layer.i = i
+            for j, sublayer in enumerate(layer):
+                sublayer.i = i
+                sublayer.j = j
+                for k, area in enumerate(sublayer):
+                    area.i = i
+                    area.j = j
+                    area.k = k
 
         self.pathfinder = substream.read(PathFinder, move=self)
 

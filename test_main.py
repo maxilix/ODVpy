@@ -1,7 +1,8 @@
 import hashlib
 
 from PyQt6.QtCore import QBuffer, QByteArray, QRectF, QLineF, QPointF, QSizeF
-from PyQt6.QtGui import QColor, QPen, QBrush, QImage, qRgb, qRed, qGreen, qBlue, QPolygonF, QVector2D
+from PyQt6.QtGui import QColor, QPen, QBrush, QImage, qRgb, qRed, qGreen, qBlue, QPolygonF, QVector2D, QPixmap
+from PyQt6.QtWidgets import QLabel, QApplication
 
 from common import *
 from config import CONFIG
@@ -103,14 +104,15 @@ def is_line_strictly_in_sublayer(line: QLineF, sublayer: Sublayer) -> bool:
 
 # level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/03_Red_River/level_03")
-level = Level("../Missions/00_All_Character/level_00")
-# level = InstalledLevel(0)
+# level = Level("../Missions/00_All_Character/level_00")
+level = InstalledLevel(2)
 # for level_index in range(26):
 #     print(f"Level {level_index}")
 
-# level = BackupedLevel(2)
+level = BackupedLevel(2)
 level.dvd.move.load()
 motion = level.dvd.move
+
 
 
 # motion.pathfinders.size_list = [(6.0, 3.0), (11.0, 6.0)]

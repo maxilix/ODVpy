@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QPointF
+from PyQt6.QtCore import QPointF, QLineF
 from PyQt6.QtGui import QPolygonF
 
 from .rw_base import Bytes, Short, UShort, UInt
@@ -10,8 +10,6 @@ from .exception import PaddingError
 
 X_MAX_OFFICIAL = 2944
 Y_MAX_OFFICIAL = 2368
-
-
 
 
 class Version(UInt):
@@ -75,9 +73,9 @@ class Point(RWStreamable):
 
     def distance(self, other):
         if other is None:
-            return (self.x**2 + self.y**2)**0.5
+            return (self.x ** 2 + self.y ** 2) ** 0.5
         else:
-            return ((self.x - other.x)**2 + (self.y - other.y)**2)**0.5
+            return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2) ** 0.5
 
     def length(self):
         return self.distance(other=None)
@@ -141,16 +139,20 @@ class Polygon(RWStreamable):
         else:
             self._point_list = point_list
         self.qpf = QPolygonF([QPointF(p.x, p.y) for p in self._point_list])
-        # self.spf = SPolygon([(p.x, p.y) for p in self._point_list])
 
     def __iter__(self):
-        return iter(self._point_list)
+        # return iter(self._point_list)
+        return iter(self.qpf)
 
     def __getitem__(self, index: int):
-        return self._point_list[index % len(self)]
+        # return self._point_list[index % len(self)]
+        return self.qpf[index % len(self)]
+        # p = self._point_list[index % len(self)]
+        # return QPointF(p.x, p.y)
 
     def __len__(self):
-        return len(self._point_list)
+        # return len(self._point_list)
+        return len(self.qpf)
 
     def reverse(self):
         self._point_list.reverse()
@@ -159,10 +161,19 @@ class Polygon(RWStreamable):
         return self._point_list.index(point)
 
     def to_stream(self, stream):
-        nb_point = UShort(len(self._point_list))
-        stream.write(nb_point)
+        nb_point = len(self._point_list)
+        stream.write(UShort(nb_point))
         for point in self._point_list:
             stream.write(point)
+
+    def boundaries(self):
+        n = len(self)
+        rop = []
+        for i in range(n):
+            current_point = self[i]
+            next_point = self[(i + 1) % n]
+            rop.append(QLineF(current_point.x, current_point.y, next_point.x, next_point.y))
+        return rop
 
     @classmethod
     def from_stream(cls, stream: ReadStream):

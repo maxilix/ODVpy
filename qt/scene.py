@@ -1,11 +1,10 @@
-from PyQt6.QtWidgets import QGraphicsScene
+from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent
 
 
 class QScene(QGraphicsScene):
     # def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
-    #     for i in self.items(event.scenePos()):
-    #         i.mouseMoveEvent(event)
-    #     super().mouseMoveEvent(event)
+    #     print("lkjhf")
+
 
     # def __init__(self, parent):
     #     super().__init__(parent)

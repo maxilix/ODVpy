@@ -7,7 +7,7 @@ from PyQt6.QtCore import QLineF, QPointF, QRectF, QSize
 from PyQt6.QtGui import QPainterPath, QPolygonF, QPolygon
 
 from common import *
-from debug import T
+from debug import timeit, T
 
 
 class Viability(RWStreamable):
@@ -626,30 +626,6 @@ class PathFinder(RWStreamable):
                                     #     exit()
 
                                     for _, sq, eq in combine_quarts:
-                                        # TODO
-                                        # construction de la ligne
-                                        # test de pertinance (agle de le ligne + agnle davec les obstacle
-                                        # construction de la trace
-                                        # test d'appartenance a la sublayer
-                                        #
-                                        # 2 tests : petinance et appartenance
-                                        # a tester dans les deux sens pour l'optimisation
-
-                                        # line, trace = link.line_and_trace(pf_index, sq, eq)
-                                        # if sublayer.contains(trace):
-                                        #     angle1_with_previous = line.angleTo(cp1.line_to_previous())
-                                        #     angle1_with_next = cp1.line_to_next().angleTo(line)
-                                        #     angle2_with_previous = line.angleTo(cp2.line_to_previous())
-                                        #     angle2_with_next = cp2.line_to_next().angleTo(line)
-                                        #     # if pf_index == 0 and cp1.x == 860 and cp1.y == 534 and cp2.x == 896 and cp2.y == 700:
-                                        #     #     print(f"{angle1_with_previous:6.2f}, {angle1_with_next:6.2f}, {angle2_with_previous:6.2f}, {angle2_with_next:6.2f}")
-                                        #     #     exit()
-                                        #
-                                        #     if (angle1_with_previous > 180 or angle1_with_next > 180) and (
-                                        #             angle2_with_previous < 180 or angle2_with_next < 180):
-                                        #         viability.t1.append(sq)
-                                        #         viability.t2.append(eq)
-
                                         if link.is_pertinent_link(pf_index, sq, eq):
                                             _, trace = link.line_and_trace(pf_index, sq, eq)
                                             if sublayer.contains(trace):
