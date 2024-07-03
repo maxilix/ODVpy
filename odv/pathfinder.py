@@ -280,13 +280,13 @@ class CrossingPoint(RWStreamable):
     def __init__(self,
                  pathfinders: Any,  # should be a PathFinders
                  accesses: [UChar | int],
-                 position,
-                 vector_to_next,
-                 vector_from_previous,
+                 point: QPointF,
+                 vector_to_next: QPointF,
+                 vector_from_previous: QPointF,
                  link_index_list: [UShort | int]):
         self._pathfinders = pathfinders
         self.accesses = accesses
-        self.position = position
+        self.point = point
         self.vector_to_next = vector_to_next
         self.vector_from_previous = vector_from_previous
         self.link_index_list = link_index_list
@@ -303,24 +303,24 @@ class CrossingPoint(RWStreamable):
 
     @property
     def x(self):
-        return self.position.x
+        return self.point.x()
 
     @property
     def y(self):
-        return self.position.y
+        return self.point.y()
 
     @timeit
     def line_to_previous(self) -> QLineF:
-        point = QPointF(self.position.x, self.position.y)
-        previous_point = QPointF(self.position.x - self.vector_from_previous.x,
-                                 self.position.y - self.vector_from_previous.y)
-        return QLineF(point, previous_point)
+        # point = QPointF(self.point.x, self.point.y)
+        # previous_point = QPointF(self.point.x - self.vector_from_previous.x,
+        #                          self.point.y - self.vector_from_previous.y)
+        return QLineF(self.point, self.point - self.vector_from_previous)
 
     @timeit
     def line_to_next(self) -> QLineF:
-        point = QPointF(self.position.x, self.position.y)
-        next_point = QPointF(self.position.x + self.vector_to_next.x, self.position.y + self.vector_to_next.y)
-        return QLineF(point, next_point)
+        # point = QPointF(self.point.x, self.point.y)
+        # next_point = QPointF(self.point.x + self.vector_to_next.x, self.point.y + self.vector_to_next.y)
+        return QLineF(self.point, self.point + self.vector_to_next)
 
     @timeit
     def rebuild_accesses(self, sublayer):
@@ -390,21 +390,21 @@ class CrossingPoint(RWStreamable):
         #   4 msb are always zero
         #   0x0f = 0b00001111 cannot be possible
 
-        position = stream.read(Point)
+        point = stream.read(QPointF)
 
-        vector_to_next = stream.read(Point)
-        vector_from_previous = stream.read(Point)
+        vector_to_next = stream.read(QPointF)
+        vector_from_previous = stream.read(QPointF)
 
         nb_path_link = stream.read(UShort)
         path_link_index_list = [stream.read(UShort) for _ in range(nb_path_link)]
-        return cls(pathfinders, accesses, position, vector_to_next, vector_from_previous, path_link_index_list)
+        return cls(pathfinders, accesses, point, vector_to_next, vector_from_previous, path_link_index_list)
 
     def to_stream(self, stream):
         nb_pathfinder = UShort(len(self.accesses))  # w
         stream.write(nb_pathfinder)
         for access in self.accesses:
             stream.write(UChar(access))
-        stream.write(self.position)
+        stream.write(self.point)
         stream.write(self.vector_to_next)
         stream.write(self.vector_from_previous)
 
@@ -561,22 +561,20 @@ class PathFinder(RWStreamable):
     @timeit
     def rebuild_crossing_point_of(self, i, j, k):
         move_area = self._motion[i][j][k]
-        # TODO second implementation based on QLineF and the angle() method
-        # probably more efficient, but small optimization anyway
-
-        # Ensures that points are covered in the right order
-        # i.e. if you walk on the border, the restricted area is on the right.
-        move_area.clockwise = not move_area.main  # reverse the order of points if necessary
+        # TODO explore oriented poly to ensure correct angle measurement
 
         self.crossing_point_list[i][j][k] = []
         for point_index in range(len(move_area)):
-            # TODO do not add point at the limit of the sublayer
             u = move_area[point_index - 1] - move_area[point_index]  # vector to previous
             v = move_area[point_index + 1] - move_area[point_index]  # vector to next
-            theta = acos((u.x * v.x + u.y * v.y) / (u.length() * v.length()))
-            if u.x * v.y - u.y * v.x > 0:
-                theta = 2 * pi - theta
-            if theta < pi:
+            # if not move_area.main:
+            #     u, v = v, u
+            theta = QLineF(move_area[point_index], move_area[point_index-1]).angleTo(
+                QLineF(move_area[point_index], move_area[point_index+1]))
+            # theta = acos((u.x() * v.x() + u.y() * v.y()) / (u.length() * v.length()))
+            # if u.x * v.y - u.y * v.x > 0:
+            #     theta = 2 * pi - theta
+            if move_area.main and theta > 180 or not move_area.main and theta < 180:
                 # this point is a crossing point
                 self.crossing_point_list[i][j][k].append(CrossingPoint(self,
                                                                        [],
@@ -584,7 +582,7 @@ class PathFinder(RWStreamable):
                                                                        v,
                                                                        -u,
                                                                        []))
-        move_area.clockwise = True  # engine need clockwise definition  TODO really needed ?
+        # move_area.clockwise = True  # engine need clockwise definition  TODO really needed ?
 
     @timeit
     def rebuild_link_list(self):
@@ -610,7 +608,7 @@ class PathFinder(RWStreamable):
                                     cp2.x > cp1.x and cp2.y < cp1.y) is False:
                                     continue
 
-                                link = Link(self, (i, j, k1, l1), (i, j, k2, l2), cp1.position.distance(cp2.position),
+                                link = Link(self, (i, j, k1, l1), (i, j, k2, l2), cp1.point.distance(cp2.point),
                                             [])
                                 for pf_index in range(len(self)):
                                     viability = Viability([], [])

@@ -105,19 +105,19 @@ def is_line_strictly_in_sublayer(line: QLineF, sublayer: Sublayer) -> bool:
 # level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/03_Red_River/level_03")
 # level = Level("../Missions/00_All_Character/level_00")
-level = InstalledLevel(2)
+# level = InstalledLevel(2)
 # for level_index in range(26):
 #     print(f"Level {level_index}")
 
-level = BackupedLevel(2)
+level = BackupedLevel(0)
 level.dvd.move.load()
 motion = level.dvd.move
 
 
 
-# motion.pathfinders.size_list = [(6.0, 3.0), (11.0, 6.0)]
-motion.pathfinder.size_list = [(6.0, 3.0), (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
-# motion.pathfinders.size_list = [(5.4, 2.7)] #, (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
+# motion.pathfinder.size_list = [(6.0, 3.0), (11.0, 6.0)]
+# motion.pathfinder.size_list = [(6.0, 3.0), (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
+# motion.pathfinder.size_list = [(5.4, 2.7)] #, (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
 
 motion.pathfinder.rebuild()
 
@@ -169,4 +169,4 @@ motion.pathfinder.rebuild()
 #
 #
 #
-level.insert_in_game()
+# level.insert_in_game()

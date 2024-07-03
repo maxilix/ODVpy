@@ -438,7 +438,7 @@ class QGraphicsArea(QGraphicsItem):
         self.exit_edit_mode(save=False)
 
     def boundingRect(self):
-        return self.area.qpf.boundingRect()
+        return self.area.poly.boundingRect()
 
     def point_moved(self, point_item: QGraphicsMovablePoint):
         n = len(self.point_item)
@@ -515,7 +515,7 @@ class QGraphicsArea(QGraphicsItem):
         if self._edit is True:
             self._edit = False
             if save is True:
-                self.area.qpf = QPolygonF([p.pos().truncated() for p in self.point_item])
+                self.area.poly = QPolygonF([p.pos().truncated() for p in self.point_item])
 
             # remove old graphics
             if self.movable_poly is not None:
@@ -527,7 +527,7 @@ class QGraphicsArea(QGraphicsItem):
             self.line_item = []
 
             # build new graphics
-            self.fixed_poly = QGraphicsFixedPolygon(self.area.qpf, self)
+            self.fixed_poly = QGraphicsFixedPolygon(self.area.poly, self)
 
             # add new graphics to the scene
             self.scene.addItem(self.fixed_poly)

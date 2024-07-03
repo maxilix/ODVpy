@@ -13,15 +13,36 @@ from .section import Section
 
 
 
-class MovePolygon(Polygon):
+class MovePolygon():
     _main: bool
     i: int
     j: int
     k: int
 
+    def __init__(self, poly: QPolygonF):
+        self._poly = poly
+
     @property
     def main(self) -> bool:
         return self._main
+
+    @property
+    def poly(self) -> QPolygonF:
+        return self._poly
+
+    @poly.setter
+    def poly(self, poly: QPolygonF):
+        self._poly = poly
+
+    def __iter__(self) -> Iterator[QPointF]:
+        return iter(self._poly)
+
+    def __len__(self) -> int:
+        return len(self._poly)
+
+    def __getitem__(self, index: int) -> QPointF:
+        return self._poly[index % len(self._poly)]
+
 
     @property
     def clockwise(self) -> bool:
@@ -30,14 +51,14 @@ class MovePolygon(Polygon):
         """
         # area = self.signed_area()
         # assert area != 0.0
-        return self.qpf.signed_area() <= 0
+        return self.poly.signed_area() <= 0
 
     @clockwise.setter
     def clockwise(self, value: bool) -> None:
         if self.clockwise == value:
             pass
         else:
-            self.reverse()
+            self.poly.reverse()
 
     # def angle_at(self, point_index):
     #     u = self[point_index - 1] - self[point_index]
@@ -56,6 +77,13 @@ class MovePolygon(Polygon):
     #         rop.append(QLineF(current_point.x, current_point.y, next_point.x, next_point.y))
     #     return rop
 
+    @classmethod
+    def from_stream(cls,  stream: ReadStream):
+        poly = stream.read(QPolygonF)
+        return cls(poly)
+
+    def to_stream(self, stream: WriteStream):
+        stream.write(self._poly)
 
 
 class MainArea(MovePolygon):
@@ -106,7 +134,7 @@ class Sublayer(RWStreamable):
     def from_stream(cls, stream: ReadStream) -> Self:
         main = stream.read(MainArea)
         nb_segment = stream.read(UShort)
-        segment_list = [stream.read(Segment) for _ in range(nb_segment)]
+        segment_list = [stream.read(QLineF) for _ in range(nb_segment)]
         nb_obstacle = stream.read(UShort)
         obstacles = [stream.read(Obstacle) for _ in range(nb_obstacle)]
 
@@ -152,12 +180,12 @@ class Sublayer(RWStreamable):
     @timeit
     def contains(self, poly: QPolygonF) -> bool:
         poly_area = poly.area()
-        inter = self.main.qpf.intersected(poly)
+        inter = self.main.poly.intersected(poly)
         inter_area = inter.area()
         if (poly_area - inter_area) <= 0.1:
             # poly is in main
             for obstacle in self.obstacles:
-                inter = obstacle.qpf.intersected(poly)
+                inter = obstacle.poly.intersected(poly)
                 if inter.isEmpty():
                     continue
                 inter_area = inter.area()
