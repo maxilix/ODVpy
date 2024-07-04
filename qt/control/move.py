@@ -336,7 +336,7 @@ class QGraphicsMovablePolygon(QGraphicsPathItem):
             super().mousePressEvent(event)
 
     def mouseDoubleClickEvent(self, event):
-        if event.button() == Qt.MouseButton.leftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self._drag_position = self.mapToScene(event.pos()).truncated()
             self.setBrush(self.parent.high_brush)
         else:
