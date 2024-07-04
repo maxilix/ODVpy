@@ -1,9 +1,4 @@
-from typing import Iterator, Self, Type
-from math import acos, pi
-
-from PyQt6.QtCore import QPointF, QLineF, QRectF, QPoint
-from PyQt6.QtGui import QPainterPath
-from PyQt6.QtWidgets import QWidget
+from typing import Iterator, Self
 
 from common import *
 from debug import timeit
@@ -15,12 +10,13 @@ from .section import Section
 
 class MovePolygon():
     _main: bool
+    _poly: QPolygonF
     i: int
     j: int
     k: int
 
     def __init__(self, poly: QPolygonF):
-        self._poly = poly
+        self.poly = poly
 
     @property
     def main(self) -> bool:
@@ -32,7 +28,13 @@ class MovePolygon():
 
     @poly.setter
     def poly(self, poly: QPolygonF):
-        self._poly = poly
+        # check if poly is clockwise
+        if poly.signed_area() <= 0:
+            # clockwise
+            self._poly = poly
+        else:
+            # counter-clockwise
+            self._poly = QPolygonF(poly[::-1])
 
     def __iter__(self) -> Iterator[QPointF]:
         return iter(self._poly)
@@ -42,40 +44,6 @@ class MovePolygon():
 
     def __getitem__(self, index: int) -> QPointF:
         return self._poly[index % len(self._poly)]
-
-
-    @property
-    def clockwise(self) -> bool:
-        """
-        Return True if polygon points are defined in clockwise order.
-        """
-        # area = self.signed_area()
-        # assert area != 0.0
-        return self.poly.signed_area() <= 0
-
-    @clockwise.setter
-    def clockwise(self, value: bool) -> None:
-        if self.clockwise == value:
-            pass
-        else:
-            self.poly.reverse()
-
-    # def angle_at(self, point_index):
-    #     u = self[point_index - 1] - self[point_index]
-    #     v = self[point_index + 1] - self[point_index]
-    #     theta = acos((u.x*v.x + u.y*v.y) / (u.length() * v.length()))
-    #     if u.x * v.y - u.y * v.x > 0:
-    #         theta = 2*pi - theta
-    #     return theta * 180 / pi
-
-    # def boundaries(self):
-    #     n = len(self)
-    #     rop = []
-    #     for i in range(n):
-    #         current_point = self[i]
-    #         next_point = self[(i + 1) % n]
-    #         rop.append(QLineF(current_point.x, current_point.y, next_point.x, next_point.y))
-    #     return rop
 
     @classmethod
     def from_stream(cls,  stream: ReadStream):
@@ -117,19 +85,6 @@ class Sublayer(RWStreamable):
     def __len__(self) -> int:
         return 1 + len(self.obstacles)
 
-    # @property
-    # def boundaries(self):
-    #     if self._boundaries is None:
-    #         self._boundaries = []
-    #         for area in self:
-    #             self._boundaries += area.boundaries()
-    #     return self._boundaries
-
-    # def build_boundaries(self):
-    #     self.boundaries = []
-    #     for area in self:
-    #         self.boundaries += area.boundaries()
-
     @classmethod
     def from_stream(cls, stream: ReadStream) -> Self:
         main = stream.read(MainArea)
@@ -144,8 +99,8 @@ class Sublayer(RWStreamable):
         substream.write(self.main)
 
         substream.write(UShort(0))  # always write zero segments
-        # nb_segment = UShort(len(self.segment_list))
-        # substream.write(nb_segment)
+        # nb_segment = len(self.segment_list)
+        # substream.write(UShort(nb_segment))
         # for segment in self.segment_list:
         #     substream.write(segment)
 
@@ -212,7 +167,6 @@ class Layer(RWStreamable):
     def __len__(self):
         return len(self.sublayer_list)
 
-    @property
     def total_area(self) -> int:
         return sum([len(sublayer) for sublayer in self])
 
@@ -225,7 +179,7 @@ class Layer(RWStreamable):
         return cls(sublayer_list)
 
     def to_stream(self, stream: WriteStream) -> None:
-        stream.write(UShort(self.total_area))
+        stream.write(UShort(self.total_area()))
         nb_sublayer = len(self.sublayer_list)
         stream.write(UShort(nb_sublayer))
         for sublayer in self.sublayer_list:

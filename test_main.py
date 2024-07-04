@@ -102,20 +102,21 @@ def is_line_strictly_in_sublayer(line: QLineF, sublayer: Sublayer) -> bool:
     return True
 
 
-# level = Level("./dev/empty_level/empty_level_02")
+level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/03_Red_River/level_03")
 # level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)
 # for level_index in range(26):
 #     print(f"Level {level_index}")
 
-level = BackupedLevel(0)
-level.dvd.move.load()
+# level = BackupedLevel(0)
+# level.dvd.move.load()
 motion = level.dvd.move
 
 
 
-# motion.pathfinder.size_list = [(6.0, 3.0), (11.0, 6.0)]
+
+motion.pathfinder.size_list = [(6.0, 3.0), (11.0, 6.0)]
 # motion.pathfinder.size_list = [(6.0, 3.0), (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
 # motion.pathfinder.size_list = [(5.4, 2.7)] #, (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
 
@@ -162,11 +163,10 @@ motion.pathfinder.rebuild()
 #                         print(i, j, k, cp1.position, cp1.accesses, cp2.accesses)
 
 
-# for sublayer in motion[0]:
-#     for area in sublayer.obstacles:
-#         poly = area.qpf
-#         level.dvm.draw(poly, QPen(QColor(255, 0, 0, 150)), QBrush(QColor(255, 0, 0, 40)))
-#
-#
-#
-# level.insert_in_game()
+for sublayer in motion[0]:
+    for area in sublayer.obstacles:
+        level.dvm.draw(area.poly, QPen(QColor(255, 90, 40, 128)), QBrush(QColor(255, 90, 40, 32)))
+
+
+
+level.insert_in_game()

@@ -561,28 +561,23 @@ class PathFinder(RWStreamable):
     @timeit
     def rebuild_crossing_point_of(self, i, j, k):
         move_area = self._motion[i][j][k]
-        # TODO explore oriented poly to ensure correct angle measurement
-
         self.crossing_point_list[i][j][k] = []
-        for point_index in range(len(move_area)):
-            u = move_area[point_index - 1] - move_area[point_index]  # vector to previous
-            v = move_area[point_index + 1] - move_area[point_index]  # vector to next
-            # if not move_area.main:
-            #     u, v = v, u
-            theta = QLineF(move_area[point_index], move_area[point_index-1]).angleTo(
-                QLineF(move_area[point_index], move_area[point_index+1]))
-            # theta = acos((u.x() * v.x() + u.y() * v.y()) / (u.length() * v.length()))
-            # if u.x * v.y - u.y * v.x > 0:
-            #     theta = 2 * pi - theta
-            if move_area.main and theta > 180 or not move_area.main and theta < 180:
+
+        point_list = [p for p in move_area]
+        if move_area.main is True:
+            point_list.reverse()
+
+        n = len(point_list)
+        for m, p in enumerate(point_list):
+            theta = QLineF(p, point_list[(m - 1) % n]).angleTo(QLineF(p, point_list[(m + 1) % n]))
+            if theta < 180:
                 # this point is a crossing point
                 self.crossing_point_list[i][j][k].append(CrossingPoint(self,
                                                                        [],
-                                                                       move_area[point_index],
-                                                                       v,
-                                                                       -u,
+                                                                       p,
+                                                                       point_list[(m + 1) % n] - p,
+                                                                       p - point_list[(m - 1) % n],
                                                                        []))
-        # move_area.clockwise = True  # engine need clockwise definition  TODO really needed ?
 
     @timeit
     def rebuild_link_list(self):
