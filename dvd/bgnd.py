@@ -1,5 +1,5 @@
 import bz2
-from PyQt6.QtGui import QImage
+from PyQt6.QtGui import QImage, QColorTransform, QColor
 
 from common import *
 
@@ -24,6 +24,13 @@ class Bgnd(Section):
 		data = substream.read(Bytes, size)
 		decompressed = bz2.decompress(data)
 		self.minimap = QImage(decompressed, width, height, width*2, QImage.Format.Format_RGB16)
+
+		# TODO very inefficient
+		self.minimap.convertTo(QImage.Format.Format_RGBA8888)
+		for x in range(self.minimap.width()):
+			for y in range(self.minimap.height()):
+				if self.minimap.pixelColor(x, y) == QColor(0, 251, 0, 255):  # green color at the corner
+					self.minimap.setPixelColor(x, y, QColor(0, 0, 0, 0))
 
 	def _save(self, substream):
 		pass
