@@ -1,12 +1,35 @@
 import sys
 
-from PyQt6.QtCore import QPointF, QEvent
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QLabel
+from PyQt6.QtCore import QPointF, QEvent, Qt
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QLabel, QMenu, QScrollArea, QGraphicsScene
 from PyQt6.QtWidgets import QStackedLayout
-from PyQt6.QtGui import QPalette, QColor, QPixmap, QWheelEvent, QMouseEvent
+from PyQt6.QtGui import QPalette, QColor, QPixmap, QWheelEvent, QMouseEvent, QAction, QCursor
 
-from .map import QMapControl
-from .move import QMotionControl
+from qt.control.common import QControl
+from qt.control.map import QMapControl
+from qt.control.move import QMotionControl
+
+
+# MISC - Miscellaneous
+# BGND - Map
+# MOVE - Motion
+# SGHT - Sights
+# MASK - Masks
+# WAYS - Ways
+# ELEM - Elements
+# FXBK - Sounds
+# MSIC - Sounds
+# SND  - Sounds
+# PAT  - Patches
+# BOND - Motion
+# MAT  -
+# LIFT - Motion
+# AI   -
+# BUIL -
+# SCRP -
+# JUMP -
+# CART - Elements
+# DLGS -
 
 
 class QMainControl(QTabWidget):
@@ -25,26 +48,32 @@ class QMainControl(QTabWidget):
         self.addTab(self.map_control, "Map")
 
         # Miscellaneous
-        # self.addTab(QLabel(section_list[0]), section_list[0])
+        self.miscellaneous_control = QControl(self, scene)
+        self.addTab(self.miscellaneous_control, "Miscellaneous")
 
         # Motion
-        self.control_motion = QMotionControl(self, scene, level.dvd.move)
-        self.addTab(self.control_motion, "Motion")
+        self.motion_control = QMotionControl(self, scene, level.dvd.move)
+        self.addTab(self.motion_control, "Motion")
 
-        # Sight
-        # self.addTab(QLabel(section_list[3]), section_list[3])
+        # Sights
+        self.sights_control = QControl(self, scene)
+        self.addTab(self.sights_control, "Sights")
 
         # Masks
-        # self.addTab(QLabel(section_list[4]), section_list[4])
+        self.masks_control = QControl(self, scene)
+        self.addTab(self.masks_control, "Masks")
 
         # Ways
-        # self.addTab(QLabel(section_list[5]), section_list[5])
+        self.ways_control = QControl(self, scene)
+        self.addTab(self.ways_control, "Ways")
 
         # Elements
-        # self.addTab(QLabel(section_list[6]), section_list[6])
+        self.elements_control = QControl(self, scene)
+        self.addTab(self.elements_control, "Elements")
 
-        # FXBK
-        # self.addTab(QLabel(section_list[7]), section_list[7])
+        # Sounds
+        self.sounds_control = QControl(self, scene)
+        self.addTab(self.sounds_control, "Sounds")
 
         # Music
         # self.addTab(QLabel(section_list[8]), section_list[8])
@@ -52,7 +81,11 @@ class QMainControl(QTabWidget):
         # ...
 
 
-    def update(self):
-        pass
+    def mousePressEvent(self, event: QMouseEvent):
+        if (event.button() == Qt.MouseButton.RightButton and
+                self.tabBar().tabAt(self.tabBar().mapFromParent(event.pos())) == self.tabBar().currentIndex()):
+            self.currentWidget().exec_context_menu()
+
+        super().mousePressEvent(event)
 
 

@@ -1,21 +1,25 @@
 from PyQt6.QtCore import Qt, QPointF, QPropertyAnimation, pyqtProperty, QParallelAnimationGroup, QRectF, \
-    QVariantAnimation, QSequentialAnimationGroup, QEasingCurve, QPoint, QSizeF, QRect, QSize, QEvent
+    QVariantAnimation, QSequentialAnimationGroup, QEasingCurve, QPoint, QSizeF, QRect, QSize, QEvent, pyqtSlot, \
+    pyqtSignal
 from PyQt6.QtGui import QPixmap, QBrush, QPen, QMouseEvent
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsRectItem, QGraphicsSceneMouseEvent
-
-
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsRectItem, QGraphicsSceneMouseEvent, \
+    QMenu
 
 
 class QViewport(QGraphicsView):
+    view_changed = pyqtSignal(QRectF)
 
-    def __init__(self, scene, dvm_size, info_bar, control):
+
+    def __init__(self, scene, dvm_size, info_bar):
         super().__init__(scene)
         self.dvm_size = dvm_size
         self.info_bar = info_bar
-        self.control = control
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
+        self.horizontalScrollBar().valueChanged.connect(lambda: self.view_changed.emit(self.current_visible_scene_rect()))
+        self.verticalScrollBar().valueChanged.connect(lambda: self.view_changed.emit(self.current_visible_scene_rect()))
 
         self.setMouseTracking(True)
         self.drag_position = None
@@ -38,6 +42,7 @@ class QViewport(QGraphicsView):
         # self.zoom = 3.4
         # self.x = 700
         # self.y = 1700
+
 
     def mousePressEvent(self, event):
         mouse_scene_pos = self.mapToScene(event.pos())
@@ -76,13 +81,13 @@ class QViewport(QGraphicsView):
 
         super().mouseMoveEvent(event)
 
-    def mouseDoubleClickEvent(self, event):
-        event.ignore()
-        super().mouseDoubleClickEvent(event)
+    # def mouseDoubleClickEvent(self, event):
+    #     event.ignore()
+    #     super().mouseDoubleClickEvent(event)
 
-    def leaveEvent(self, event: QEvent):
-        super().leaveEvent(event)
-        # self.control.mousse_event(None, event)
+    # def leaveEvent(self, event: QEvent):
+    #     super().leaveEvent(event)
+
 
     def wheelEvent(self, event):
         mouse_view_pos = event.position().toPoint()
@@ -121,6 +126,7 @@ class QViewport(QGraphicsView):
         x_margin = self.horizontalScrollBar().pageStep()/new_zoom / 2# + 10
         y_margin = self.verticalScrollBar().pageStep()/new_zoom / 2# + 10
         self.setSceneRect(QRectF(-x_margin, -y_margin, self.dvm_size.width() + 2*x_margin, self.dvm_size.height() + 2*y_margin))
+        # self.view_changed.emit(self.current_visible_scene_rect())
         self.info_bar.set_info(zoom=self.zoom)
 
     @pyqtProperty(float)
@@ -132,6 +138,7 @@ class QViewport(QGraphicsView):
     def x(self, value):
         h = self.horizontalScrollBar()
         h.setValue(int(self.zoom * value - h.pageStep() / 2))
+        # self.view_changed.emit(self.current_visible_scene_rect())
 
     @pyqtProperty(float)
     def y(self):
@@ -142,6 +149,7 @@ class QViewport(QGraphicsView):
     def y(self, value):
         v = self.verticalScrollBar()
         v.setValue(int(self.zoom * value - v.pageStep() / 2))
+        # self.view_changed.emit(self.current_visible_scene_rect())
 
     def move_to_item(self, item: QGraphicsItem):
         self.move_to_rect(item.boundingRect())
@@ -188,6 +196,10 @@ class QViewport(QGraphicsView):
         for anim in anims:
             group.addAnimation(anim)
         group.start()
+
+    def current_visible_scene_rect(self):
+        return self.mapToScene(self.viewport().rect()).boundingRect()
+
 
 
 

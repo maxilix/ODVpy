@@ -228,4 +228,5 @@ class Move(Section):
         for layer in self:
             substream.write(layer)
 
+        self.pathfinder.rebuild()
         substream.write(self.pathfinder)

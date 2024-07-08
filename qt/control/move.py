@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QV
     QGraphicsObject, QGraphicsPathItem
 
 from dvd.move import Obstacle, MovePolygon
+from qt.control.common import QControl
 from qt.scene import QScene
 
 
@@ -375,7 +376,7 @@ class QGraphicsFixedPolygon(QGraphicsPolygonItem):
             # menu.addAction(action_delete)
 
             a = self.parent.common_actions()  # temp variable needed
-            menu.addActions(a)
+            menu.addActions(self.parent.common_actions())
 
             menu.exec(QCursor.pos())
         else:
@@ -389,11 +390,13 @@ class QGraphicsFixedPolygon(QGraphicsPolygonItem):
         self.setBrush(self.parent.high_brush)
         self.parent.control.setSelected(True)
         self.update()
+        # super().hoverEnterEvent(event)
 
     def hoverLeaveEvent(self, event):
         self.setBrush(self.parent.low_brush)
         self.parent.control.setSelected(False)
         self.update()
+        # super().hoverLeaveEvent(event)
 
 
 class QGraphicsArea(QGraphicsItem):
@@ -405,7 +408,10 @@ class QGraphicsArea(QGraphicsItem):
         self.scene = scene
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
 
-        main_color = QColor(160, 200, 40) if area.main else QColor(255, 90, 40)
+        if area.main:
+            main_color = QColor(160, 200, 40)
+        else:
+            main_color = QColor(255, 90, 40)
 
         # self._visible = True
         self._edit = False
@@ -438,6 +444,7 @@ class QGraphicsArea(QGraphicsItem):
         self.exit_edit_mode(save=False)
 
     def boundingRect(self):
+        # TODO does not take account of pen thickness
         return self.area.poly.boundingRect()
 
     def point_moved(self, point_item: QGraphicsMovablePoint):
@@ -447,7 +454,9 @@ class QGraphicsArea(QGraphicsItem):
         self.line_item[index].mp1 = point_item
         self.movable_poly.mp_list = self.point_item
 
-    def point_added(self, previous_point_item: QGraphicsMovablePoint, new_point_item: QGraphicsMovablePoint,
+    def point_added(self,
+                    previous_point_item: QGraphicsMovablePoint,
+                    new_point_item: QGraphicsMovablePoint,
                     new_line_item: QGraphicsMovableLine):
         index = self.point_item.index(previous_point_item)
         self.point_item.insert(index + 1, new_point_item)
@@ -468,10 +477,11 @@ class QGraphicsArea(QGraphicsItem):
 
     def common_actions(self) -> list[QAction]:
         if self._edit is False:
-            action_edit = QAction("Enter edit mode")
-            action_edit.triggered.connect(self.enter_edit_mode)
-            return [action_edit]
+            self.action_edit = QAction("Enter edit mode")
+            self.action_edit.triggered.connect(self.enter_edit_mode)
+            return [self.action_edit]
         else:
+
             separator = QAction()
             separator.setSeparator(True)
             action_save = QAction("Exit edit mode && Save")
@@ -488,7 +498,6 @@ class QGraphicsArea(QGraphicsItem):
         else:
             self.fixed_poly.setVisible(visible)
         super().setVisible(visible)
-
 
     def enter_edit_mode(self):
         if self._edit is False:
@@ -583,6 +592,7 @@ class QControlLayer(QTreeWidgetItem):
         self.setText(0, f"Layer {layer.i}")
         self.setCheckState(0, Qt.CheckState.Unchecked)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate)
+        self.setExpanded(True)
 
         self.sublayer_item = [QControlSublayer(self, self.scene, sublayer) for sublayer in layer]
 
@@ -660,11 +670,10 @@ class QAreaTreeWidget(QTreeWidget):
                 # Implement your delete action here
 
 
-class QMotionControl(QScrollArea):
+class QMotionControl(QControl):
     def __init__(self, parent, scene, move):
-        super().__init__(parent)
+        super().__init__(parent, scene)
         self.highlight_widget = None
-        self.scene = scene
         self.move = move
         self.layer_item = []
         self.init_ui()
@@ -699,7 +708,6 @@ class QMotionControl(QScrollArea):
         layout.addStretch(255)
 
         # self.set_highlight_mode()
-        self.setWidgetResizable(True)
         self.setWidget(content)
 
     # def set_highlight_mode(self):

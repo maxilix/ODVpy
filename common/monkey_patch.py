@@ -84,17 +84,17 @@ def QPolygonF_signed_area(self: QPolygonF) -> float:
 def QPolygonF_area(self: QPolygonF) -> float:
     return abs(self.signed_area())
 
-def QPolygonF_reversed(self: QPolygonF) -> QPolygonF:
-    return QPolygonF(reversed(self))
-
-def QPolygonF_reverse(self: QPolygonF) -> None:
-    # self.swap(self.reversed())
-    for i in range(len(self)//2):
-        self.swapItemAt(i, len(self) - 1 - i)
+# def QPolygonF_reversed(self: QPolygonF) -> QPolygonF:
+#     return QPolygonF(reversed(self))
+#
+# def QPolygonF_reverse(self: QPolygonF) -> None:
+#     # self.swap(self.reversed())
+#     for i in range(len(self)//2):
+#         self.swapItemAt(i, len(self) - 1 - i)
 
 QPolygonF.from_stream = classmethod(QPolygonF_from_stream)
 QPolygonF.to_stream = QPolygonF_to_stream
 QPolygonF.signed_area = QPolygonF_signed_area
 QPolygonF.area = QPolygonF_area
-QPolygonF.reversed = QPolygonF_reversed
-QPolygonF.reverse = QPolygonF_reverse
+# QPolygonF.reversed = QPolygonF_reversed
+# QPolygonF.reverse = QPolygonF_reverse
