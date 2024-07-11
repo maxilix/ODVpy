@@ -6,14 +6,9 @@ from odv.pathfinder import PathFinder
 from .section import Section
 
 
-
-
 class MovePolygon():
     _main: bool
     _poly: QPolygonF
-    i: int
-    j: int
-    k: int
 
     def __init__(self, poly: QPolygonF):
         self.poly = poly
@@ -63,27 +58,41 @@ class Obstacle(MovePolygon):
 
 
 class Sublayer(RWStreamable):
-    i: int
-    j: int
 
     def __init__(self, main: MainArea, obstacles: [Obstacle]) -> None:
-        self.main = main
-        self.obstacles = obstacles
+        self.move_polygon = [main] + obstacles
+        # self.main = main
+        # self.obstacles = obstacles
         # Segments seem to be an optimization for the pathfinder, probably no longer necessary today
         # The pathfinder works well without segments
         # self.segment_list = segment_list
 
     def __iter__(self) -> Iterator[MovePolygon]:
-        return iter([self.main] + self.obstacles)
+        return iter(self.move_polygon)
 
     def __getitem__(self, index: int) -> MovePolygon:
-        if index == 0:
-            return self.main
-        else:
-            return self.obstacles[index - 1]
+        return self.move_polygon[index]
 
     def __len__(self) -> int:
-        return 1 + len(self.obstacles)
+        return len(self.move_polygon)
+
+    @property
+    def main(self) -> MainArea:
+        return self.move_polygon[0]
+
+    @property
+    def obstacles(self) -> list[Obstacle]:
+        return self.move_polygon[1:]
+
+    def add_obstacle(self, obstacle: Obstacle, index: int = 0):
+        if index <= 0:
+            self.move_polygon.append(obstacle)
+        else:
+            self.move_polygon.insert(index, obstacle)
+
+    def remove_obstacle(self, index: int):
+        assert 0 < index < len(self.move_polygon)
+        self.move_polygon.pop(index)
 
     @classmethod
     def from_stream(cls, stream: ReadStream) -> Self:
@@ -104,8 +113,8 @@ class Sublayer(RWStreamable):
         # for segment in self.segment_list:
         #     substream.write(segment)
 
-        nb_obstacle = UShort(len(self.obstacles))
-        substream.write(nb_obstacle)
+        nb_obstacle = len(self.obstacles)
+        substream.write(UShort(nb_obstacle))
         for obstacle in self.obstacles:
             substream.write(obstacle)
 
@@ -153,7 +162,6 @@ class Sublayer(RWStreamable):
 
 
 class Layer(RWStreamable):
-    i: int
 
     def __init__(self, sublayer_list):
         self.sublayer_list = sublayer_list
@@ -209,15 +217,6 @@ class Move(Section):
 
         nb_layer = substream.read(UShort)
         self.layer_list = [substream.read(Layer) for _ in range(nb_layer)]
-        for i, layer in enumerate(self):
-            layer.i = i
-            for j, sublayer in enumerate(layer):
-                sublayer.i = i
-                sublayer.j = j
-                for k, area in enumerate(sublayer):
-                    area.i = i
-                    area.j = j
-                    area.k = k
 
         self.pathfinder = substream.read(PathFinder, move=self)
 
@@ -228,5 +227,5 @@ class Move(Section):
         for layer in self:
             substream.write(layer)
 
-        self.pathfinder.rebuild()
+        # self.pathfinder.rebuild()
         substream.write(self.pathfinder)
