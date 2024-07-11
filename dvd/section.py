@@ -27,8 +27,8 @@ section_list = ["MISC",
 
 class Section(RWStreamable):
 
-    _name = None  # must be defined by inheriting objects
-    _version = None
+    _name: str
+    _version: int
 
     def __init__(self, name, data):
         self._name = name
@@ -39,17 +39,18 @@ class Section(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         name = stream.read(String, 4)
-        assert name == cls._name
+        try:
+            assert name == cls._name
+        except AssertionError:
+            raise ValueError(f"Name mismatch: {name} and {cls._name}")
         size = stream.read(UInt)
-        data = stream.read(Bytes, size)
+        version = stream.read(Version)
+        try:
+            assert version == cls._version
+        except AssertionError:
+            raise ValueError(f"{cls._name} version mismatch: {version} and {cls._version}")
+        data = stream.read(Bytes, size - 4)  # minus version size
         return cls(name, data)
-
-    def to_stream(self, stream):
-        if self._loaded:
-            self.save()  # update self._data
-        stream.write(String(self._name))
-        stream.write(UInt(len(self._data)))
-        stream.write(Bytes(self._data))
 
     def load(self):
         substream = ReadStream(self._data)
@@ -60,10 +61,18 @@ class Section(RWStreamable):
         # log.info(f"Section {self.section} loaded")
 
     @abstractmethod
-    def _load(self, substream):
+    def _load(self, substream: ReadStream) -> None:
         # must read (and create) self state from substream
         # can raise an error
         pass
+
+    def to_stream(self, stream):
+        if self._loaded:
+            self.save()  # update self._data
+        stream.write(String(self._name))
+        stream.write(UInt(len(self._data) + 4))  # plus version size
+        stream.write(Version(self._version))
+        stream.write(Bytes(self._data))
 
     def save(self):
         substream = WriteStream()
@@ -76,7 +85,7 @@ class Section(RWStreamable):
             self._data = new_data
 
     @abstractmethod
-    def _save(self, substream):
+    def _save(self, substream: WriteStream) -> None:
         # must write self state in substream
         pass
 

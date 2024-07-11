@@ -103,6 +103,8 @@ def is_line_strictly_in_sublayer(line: QLineF, sublayer: Sublayer) -> bool:
 
 
 level = Level("./dev/empty_level/empty_level_02")
+dvd = level.dvd
+exit()
 # level = Level("../Missions/03_Red_River/level_03")
 # level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)

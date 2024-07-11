@@ -183,7 +183,7 @@ L25 04000000 0200 1a00 0f
 
 from common import *
 
-from .section import Section, section_list
+from .section import Section
 
 
 class Mask(Section):
@@ -217,7 +217,7 @@ class Mask(Section):
                 substream.read_raw()
                 return
 
-    def _save(self, substream):
+    def _save(self, substream: WriteStream) -> None:
         pass
 
     def p_build(self):

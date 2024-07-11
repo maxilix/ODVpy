@@ -213,15 +213,12 @@ class Move(Section):
         return len(self.layer_list)
 
     def _load(self, substream: ReadStream) -> None:
-        assert substream.read(Version) == self._version
-
         nb_layer = substream.read(UShort)
         self.layer_list = [substream.read(Layer) for _ in range(nb_layer)]
 
         self.pathfinder = substream.read(PathFinder, move=self)
 
     def _save(self, substream: WriteStream) -> None:
-        substream.write(Version(self._version))
         nb_layer = len(self)
         substream.write(UShort(nb_layer))
         for layer in self:

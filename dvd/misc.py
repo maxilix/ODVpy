@@ -7,9 +7,7 @@ class Misc(Section):
     _name = "MISC"
     _version = 6
 
-    def _load(self, substream):
-        assert substream.read(Version) == self._version
-
+    def _load(self, substream: ReadStream) -> None:
         self.b0 = substream.read(Bytes, 1)
         self.f = [substream.read(Short), substream.read(Short)]
         # cast on int32_t, then on float, and divided by 10
@@ -40,8 +38,7 @@ class Misc(Section):
         else:
             self.tail = []
 
-    def _save(self, substream):
-        substream.write(Version(6))
+    def _save(self, substream: WriteStream) -> None:
         substream.write(self.b0)
         substream.write(self.f[0])
         substream.write(self.f[1])

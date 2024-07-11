@@ -11,9 +11,7 @@ class Bgnd(Section):
 	_name = "BGND"
 	_version = 4
 
-	def _load(self, substream):
-		assert substream.read(Version) == self._version
-
+	def _load(self, substream: ReadStream) -> None:
 		filename_size = substream.read(UShort)
 		self.minimap_name = substream.read(String, filename_size)
 		width = substream.read(UShort)
@@ -32,9 +30,8 @@ class Bgnd(Section):
 				if self.minimap.pixelColor(x, y) == QColor(0, 251, 0, 255):  # green color at the corner
 					self.minimap.setPixelColor(x, y, QColor(0, 0, 0, 0))
 
-	def _save(self, substream):
+	def _save(self, substream: WriteStream) -> None:
 		pass
-		# substream.write(Version(4))
 		# filename_size = UShort(len(self.minimap_name))
 		# substream.write(filename_size)
 		# substream.write(self.minimap_name)
