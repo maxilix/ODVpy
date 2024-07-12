@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QLab
 from PyQt6.QtWidgets import QStackedLayout
 from PyQt6.QtGui import QPalette, QColor, QPixmap, QWheelEvent, QMouseEvent, QAction, QCursor
 
+from qt.control.bond import QBondControl
 from qt.control.common import QControl
 from qt.control.map import QMapControl
 from qt.control.move import QMotionControl
@@ -79,6 +80,10 @@ class QMainControl(QTabWidget):
         # self.addTab(QLabel(section_list[8]), section_list[8])
 
         # ...
+
+        # Sounds
+        self.bond_control = QBondControl(self, scene, level.dvd.bond)
+        self.addTab(self.bond_control, "BOND")
 
 
     def mousePressEvent(self, event: QMouseEvent):
