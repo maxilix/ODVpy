@@ -5,7 +5,6 @@ from .rw_base import Bytes, Short, UShort, UInt
 from .rw_stream import RWStreamable, ReadStream
 from .exception import PaddingError
 
-
 X_MAX_OFFICIAL = 2944
 Y_MAX_OFFICIAL = 2368
 
@@ -47,6 +46,25 @@ class Padding(Bytes):
 
     def to_stream(self, stream):
         super().to_stream(stream)
+
+
+class Gateway(RWStreamable):
+    def __init__(self, p_in: QPointF, p_mid: QPointF, p_out: QPointF):
+        self.p_in = p_in
+        self.p_mid = p_mid
+        self.p_out = p_out
+
+    @classmethod
+    def from_stream(cls, stream):
+        p_in = stream.read(QPointF)
+        p_mid = stream.read(QPointF)
+        p_out = stream.read(QPointF)
+        return cls(p_in, p_mid, p_out)
+
+    def to_stream(self, stream):
+        stream.write(self.p_in)
+        stream.write(self.p_mid)
+        stream.write(self.p_out)
 
 
 # class Point(RWStreamable):
