@@ -85,6 +85,11 @@ class QMainControl(QTabWidget):
         self.bond_control = QBondControl(self, scene, level.dvd.bond)
         self.addTab(self.bond_control, "BOND")
 
+        self.update()
+
+    def update(self):
+        super().update()
+        self.motion_control.update()
 
     def mousePressEvent(self, event: QMouseEvent):
         if (event.button() == Qt.MouseButton.RightButton and

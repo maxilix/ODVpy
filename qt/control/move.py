@@ -500,6 +500,7 @@ class QControlArea(QTreeWidgetItem):
         else:
             self.setBold(False)
         self.setText(0, name)
+        self.setText(1, f"{self.area.global_id}")
 
         self.setVisible(self.checkState(0) == Qt.CheckState.Checked)
 
@@ -709,7 +710,8 @@ class QAreaTreeWidget(QTreeWidget):
         super().__init__(parent)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setHeaderHidden(True)
+        self.setColumnCount(2)
+        # self.setHeaderHidden(False)
 
         self.scene = scene
         self.move = move
@@ -721,15 +723,18 @@ class QAreaTreeWidget(QTreeWidget):
         self.itemExpanded.connect(self.update_height)
         self.itemCollapsed.connect(self.update_height)
 
+
     def update_height(self):
         h = self.header().height() + 18 * self._count_visible_item() + 2
         self.setMinimumHeight(h)
         self.setMaximumHeight(h)
-        self.resizeColumnToContents(0)
+        self.setColumnWidth(0, 200)
+        # self.resizeColumnToContents(0)
+        # self.resizeColumnToContents(1)
 
     def update(self):
-        self.update_height()
         super().update()
+        self.update_height()
 
     def _count_visible_item(self):
         count = 0
@@ -741,16 +746,11 @@ class QAreaTreeWidget(QTreeWidget):
 
     def item_changed(self, item, column):
         item.update()
-        # item_type = type(item)
-        # while type(ib:= self.itemBelow(item)) == item_type:
-        #     item = ib
-        #     print(ib.k)
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         item = self.itemAt(event.pos())
         if isinstance(item, QControlArea):
             item.contextMenuEvent(event)
-
 
 
 class QMotionControl(QControl):
@@ -787,12 +787,14 @@ class QMotionControl(QControl):
         self.tree_widget = QAreaTreeWidget(self, scene, move)
         layout.addWidget(self.tree_widget)
 
-
         layout.addStretch(255)
-
-        # self.set_highlight_mode()
         self.setWidget(content)
-        self.tree_widget.update_height()
+
+    def update(self):
+        super().update()
+        self.tree_widget.update()
+
+
 
     # def set_highlight_mode(self):
     #     state = self.check_box.isChecked()

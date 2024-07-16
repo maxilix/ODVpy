@@ -6,12 +6,13 @@ from odv.pathfinder import PathFinder
 from .section import Section
 
 
-class MovePolygon():
+class MovePolygon(RWStreamable):
     _main: bool
     _poly: QPolygonF
 
-    def __init__(self, poly: QPolygonF):
+    def __init__(self, poly: QPolygonF, parent=None):
         self.poly = poly
+        self._parent = parent
 
     @property
     def main(self) -> bool:
@@ -31,6 +32,30 @@ class MovePolygon():
             # counter-clockwise
             self._poly = QPolygonF(poly[::-1])
 
+    @property
+    def i(self):
+        if self._parent is None:
+            return None
+        return self._parent.i
+
+    @property
+    def j(self):
+        if self._parent is None:
+            return None
+        return self._parent.j
+
+    @property
+    def k(self):
+        if self._parent is None:
+            return None
+        return self._parent.move_polygon.index(self)
+
+    @property
+    def global_id(self) -> int:
+        return (self.k +
+                sum([len(self._parent._parent[j]) for j in range(self.j)]) +
+                sum([self._parent._parent._parent[i].total_area() for i in range(self.i)]))
+
     def __iter__(self) -> Iterator[QPointF]:
         return iter(self._poly)
 
@@ -41,9 +66,9 @@ class MovePolygon():
         return self._poly[index % len(self._poly)]
 
     @classmethod
-    def from_stream(cls,  stream: ReadStream):
+    def from_stream(cls,  stream: ReadStream, *, parent):
         poly = stream.read(QPolygonF)
-        return cls(poly)
+        return cls(poly, parent)
 
     def to_stream(self, stream: WriteStream):
         stream.write(self._poly)
@@ -59,13 +84,24 @@ class Obstacle(MovePolygon):
 
 class Sublayer(RWStreamable):
 
-    def __init__(self, main: MainArea, obstacles: [Obstacle]) -> None:
+    def __init__(self, main: MainArea, obstacles: [Obstacle], parent=None) -> None:
         self.move_polygon = [main] + obstacles
-        # self.main = main
-        # self.obstacles = obstacles
         # Segments seem to be an optimization for the pathfinder, probably no longer necessary today
         # The pathfinder works well without segments
         # self.segment_list = segment_list
+        self._parent = parent
+
+    @property
+    def i(self):
+        if self._parent is None:
+            return None
+        return self._parent.i
+
+    @property
+    def j(self):
+        if self._parent is None:
+            return None
+        return self._parent.sublayer_list.index(self)
 
     def __iter__(self) -> Iterator[MovePolygon]:
         return iter(self.move_polygon)
@@ -95,14 +131,16 @@ class Sublayer(RWStreamable):
         self.move_polygon.pop(index)
 
     @classmethod
-    def from_stream(cls, stream: ReadStream) -> Self:
-        main = stream.read(MainArea)
+    def from_stream(cls, stream: ReadStream, *, parent) -> Self:
+        rop = cls(None, [], parent)
+
+        main = stream.read(MainArea, parent=rop)
         nb_segment = stream.read(UShort)
         segment_list = [stream.read(QLineF) for _ in range(nb_segment)]
         nb_obstacle = stream.read(UShort)
-        obstacles = [stream.read(Obstacle) for _ in range(nb_obstacle)]
-
-        return cls(main, obstacles)
+        obstacles = [stream.read(Obstacle, parent=rop) for _ in range(nb_obstacle)]
+        rop.move_polygon = [main] + obstacles
+        return rop
 
     def to_stream(self, substream: WriteStream) -> None:
         substream.write(self.main)
@@ -163,8 +201,15 @@ class Sublayer(RWStreamable):
 
 class Layer(RWStreamable):
 
-    def __init__(self, sublayer_list):
+    def __init__(self, sublayer_list, parent=None):
         self.sublayer_list = sublayer_list
+        self._parent = parent
+
+    @property
+    def i(self):
+        if self._parent is None:
+            return None
+        return self._parent.layer_list.index(self)
 
     def __iter__(self):
         return iter(self.sublayer_list)
@@ -179,12 +224,13 @@ class Layer(RWStreamable):
         return sum([len(sublayer) for sublayer in self])
 
     @classmethod
-    def from_stream(cls, stream: ReadStream) -> Self:
+    def from_stream(cls, stream: ReadStream, *, parent) -> Self:
         # total_area is not used by the constructor and it's rebuilt on demand
+        rop = cls([], parent)
         total_area = stream.read(UShort)
         nb_sublayer = stream.read(UShort)
-        sublayer_list = [stream.read(Sublayer) for _ in range(nb_sublayer)]
-        return cls(sublayer_list)
+        rop.sublayer_list = [stream.read(Sublayer, parent=rop) for _ in range(nb_sublayer)]
+        return rop
 
     def to_stream(self, stream: WriteStream) -> None:
         stream.write(UShort(self.total_area()))
@@ -214,7 +260,7 @@ class Move(Section):
 
     def _load(self, substream: ReadStream) -> None:
         nb_layer = substream.read(UShort)
-        self.layer_list = [substream.read(Layer) for _ in range(nb_layer)]
+        self.layer_list = [substream.read(Layer, parent=self) for _ in range(nb_layer)]
 
         self.pathfinder = substream.read(PathFinder, move=self)
 
@@ -224,5 +270,5 @@ class Move(Section):
         for layer in self:
             substream.write(layer)
 
-        # self.pathfinder.rebuild()
+        self.pathfinder.rebuild()
         substream.write(self.pathfinder)
