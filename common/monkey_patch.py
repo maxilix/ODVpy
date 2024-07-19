@@ -25,11 +25,15 @@ def QPointF_to_stream(self, stream):
     stream.write(Short(self.x()))
     stream.write(Short(self.y()))
 
+def QPointF___str__(self):
+    return f'({self.x()}, {self.y()})'
+
 
 QPointF.truncated = QPointF_truncated
 QPointF.distance = QPointF_distance
 QPointF.from_stream = classmethod(QPointF_from_stream)
 QPointF.to_stream = QPointF_to_stream
+QPointF.__str__ = QPointF___str__
 
 
 # QLineF monkey patch
