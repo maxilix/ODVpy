@@ -10,9 +10,13 @@ class MovePolygon(RWStreamable):
     _main: bool
     _poly: QPolygonF
 
-    def __init__(self, poly: QPolygonF, parent=None):
-        self.poly = poly
-        self._parent = parent
+    def __init__(self, parent, poly: QPolygonF = None):
+        assert isinstance(parent, Sublayer)
+        self.parent = parent
+        if poly is None:
+            self._poly = QPolygonF()
+        else:
+            self.poly = poly
 
     @property
     def main(self) -> bool:
@@ -34,27 +38,21 @@ class MovePolygon(RWStreamable):
 
     @property
     def i(self):
-        if self._parent is None:
-            return None
-        return self._parent.i
+        return self.parent.i
 
     @property
     def j(self):
-        if self._parent is None:
-            return None
-        return self._parent.j
+        return self.parent.j
 
     @property
     def k(self):
-        if self._parent is None:
-            return None
-        return self._parent.move_polygon.index(self)
+        return self.parent.area_list.index(self)
 
     @property
     def global_id(self) -> int:
         return (self.k +
-                sum([len(self._parent._parent[j]) for j in range(self.j)]) +
-                sum([self._parent._parent._parent[i].total_area() for i in range(self.i)]))
+                sum([len(self.parent.parent[j]) for j in range(self.j)]) +
+                sum([self.parent.parent.parent[i].total_area() for i in range(self.i)]))
 
     def __iter__(self) -> Iterator[QPointF]:
         return iter(self._poly)
@@ -66,9 +64,9 @@ class MovePolygon(RWStreamable):
         return self._poly[index % len(self._poly)]
 
     @classmethod
-    def from_stream(cls,  stream: ReadStream, *, parent):
+    def from_stream(cls, stream: ReadStream, *, parent):
         poly = stream.read(QPolygonF)
-        return cls(poly, parent)
+        return cls(parent, poly)
 
     def to_stream(self, stream: WriteStream):
         stream.write(self._poly)
@@ -84,62 +82,67 @@ class Obstacle(MovePolygon):
 
 class Sublayer(RWStreamable):
 
-    def __init__(self, main: MainArea, obstacles: [Obstacle], parent=None) -> None:
-        self.move_polygon = [main] + obstacles
+    def __init__(self, parent, main: MainArea | None = None, obstacles: list[Obstacle] | None = None) -> None:
+        assert isinstance(parent, Layer)
+        self.parent = parent
+        if main is None:
+            self.area_list = []
+        else:
+            if obstacles is None:
+                self.area_list = [main]
+            else:
+                self.area_list = [main] + obstacles
         # Segments seem to be an optimization for the pathfinder, probably no longer necessary today
         # The pathfinder works well without segments
         # self.segment_list = segment_list
-        self._parent = parent
 
     @property
     def i(self):
-        if self._parent is None:
-            return None
-        return self._parent.i
+        return self.parent.i
 
     @property
     def j(self):
-        if self._parent is None:
-            return None
-        return self._parent.sublayer_list.index(self)
+        return self.parent.sublayer_list.index(self)
 
     def __iter__(self) -> Iterator[MovePolygon]:
-        return iter(self.move_polygon)
+        return iter(self.area_list)
 
     def __getitem__(self, index: int) -> MovePolygon:
-        return self.move_polygon[index]
+        return self.area_list[index]
 
     def __len__(self) -> int:
-        return len(self.move_polygon)
+        return len(self.area_list)
 
     @property
     def main(self) -> MainArea:
-        return self.move_polygon[0]
+        return self.area_list[0]
 
     @property
     def obstacles(self) -> list[Obstacle]:
-        return self.move_polygon[1:]
+        return self.area_list[1:]
 
-    def add_obstacle(self, obstacle: Obstacle, index: int = 0):
+    def add_obstacle(self, poly: QPolygonF, index: int = 0) -> Obstacle:
+        obstacle = Obstacle(self, poly)
         if index <= 0:
-            self.move_polygon.append(obstacle)
+            self.area_list.append(obstacle)
         else:
-            self.move_polygon.insert(index, obstacle)
+            self.area_list.insert(index, obstacle)
+        return obstacle
 
     def remove_obstacle(self, index: int):
-        assert 0 < index < len(self.move_polygon)
-        self.move_polygon.pop(index)
+        assert 0 < index < len(self.area_list)
+        self.area_list.pop(index)
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
-        rop = cls(None, [], parent)
+        rop = cls(parent)
 
         main = stream.read(MainArea, parent=rop)
         nb_segment = stream.read(UShort)
         segment_list = [stream.read(QLineF) for _ in range(nb_segment)]
         nb_obstacle = stream.read(UShort)
         obstacles = [stream.read(Obstacle, parent=rop) for _ in range(nb_obstacle)]
-        rop.move_polygon = [main] + obstacles
+        rop.area_list = [main] + obstacles
         return rop
 
     def to_stream(self, substream: WriteStream) -> None:
@@ -201,15 +204,17 @@ class Sublayer(RWStreamable):
 
 class Layer(RWStreamable):
 
-    def __init__(self, sublayer_list, parent=None):
-        self.sublayer_list = sublayer_list
-        self._parent = parent
+    def __init__(self, parent, sublayer_list=None):
+        assert isinstance(parent, Move)
+        self.parent = parent
+        if sublayer_list is None:
+            self.sublayer_list = []
+        else:
+            self.sublayer_list = sublayer_list
 
     @property
     def i(self):
-        if self._parent is None:
-            return None
-        return self._parent.layer_list.index(self)
+        return self.parent.layer_list.index(self)
 
     def __iter__(self):
         return iter(self.sublayer_list)
@@ -225,8 +230,8 @@ class Layer(RWStreamable):
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
+        rop = cls(parent)
         # total_area is not used by the constructor and it's rebuilt on demand
-        rop = cls([], parent)
         total_area = stream.read(UShort)
         nb_sublayer = stream.read(UShort)
         rop.sublayer_list = [stream.read(Sublayer, parent=rop) for _ in range(nb_sublayer)]
@@ -257,6 +262,19 @@ class Move(Section):
 
     def __len__(self) -> int:
         return len(self.layer_list)
+
+    def get_by_global(self, k: int) -> MainArea:
+        i = 0
+        while (ta_i := self[i].total_area()) <= k:
+            i += 1
+            k -= ta_i
+        j = 0
+        while (ta_j := len(self[i][j])) <= k:
+            j += 1
+            k -= ta_j
+        rop = self[i][j][k]
+        # assert isinstance(rop, MainArea)
+        return rop
 
     def _load(self, substream: ReadStream) -> None:
         nb_layer = substream.read(UShort)

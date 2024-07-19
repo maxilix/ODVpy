@@ -651,18 +651,17 @@ class QControlSublayer(QTreeWidgetItem):
             return -1
         return self.parent().indexOfChild(self)
 
-
     def add_obstacle(self, k):
         r: QRectF = self.scene.viewport().current_visible_scene_rect()
-        p1 = (0.75*r.topLeft() + 0.25*r.bottomRight()).truncated()
-        p2 = (0.75*r.topRight() + 0.25*r.bottomLeft()).truncated()
-        p3 = (0.75*r.bottomRight() + 0.25*r.topLeft()).truncated()
-        p4 = (0.75*r.bottomLeft() + 0.25*r.topRight()).truncated()
-        new_obstacle = Obstacle(QPolygonF([p1, p2, p3, p4]))
-        self.sublayer.add_obstacle(new_obstacle, k + 1)
+        p1 = (0.7*r.topLeft() + 0.3*r.bottomRight()).truncated()
+        p2 = (0.7*r.topRight() + 0.3*r.bottomLeft()).truncated()
+        p3 = (0.7*r.bottomRight() + 0.3*r.topLeft()).truncated()
+        p4 = (0.7*r.bottomLeft() + 0.3*r.topRight()).truncated()
+        new_poly = QPolygonF([p1, p2, p3, p4])
+        new_obstacle = self.sublayer.add_obstacle(new_poly, k + 1)
         new_child_item = QControlArea(None, self.scene, new_obstacle)
-        new_child_item.setCheckState(0, Qt.CheckState.Checked)
         self.insertChild(k + 1, new_child_item)
+        new_child_item.setCheckState(0, Qt.CheckState.Checked)
         new_child_item.enter_edit_mode()
         for index in range(k+1, self.childCount()):
             self.child(index).update()
