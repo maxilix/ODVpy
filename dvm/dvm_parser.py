@@ -100,6 +100,20 @@ class DvmParser(Parser):
 		return self._level_map
 
 	@property
+	def data(self) -> list[int]:
+		return [self._data[i] + 256*self._data[i+1] for i in range(0, len(self._data), 2)]
+
+	@data.setter
+	def data(self, data: list[int]):
+		assert len(data)*2 == len(self._data)
+		self._data = b''.join([pixel.to_bytes(2, byteorder='little') for pixel in data])
+		self._level_map = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
+
+	def load_another_image(self, image_path):
+		self._draw = QImage(image_path).convertedTo(QImage.Format.Format_RGB16)
+
+
+	@property
 	def size(self):
 		return (self._width, self._height)
 
@@ -135,6 +149,11 @@ class DvmParser(Parser):
 		with open(filename, 'wb') as file:
 			file.write(stream.get_value())
 		print(f"Saved to {filename}")
+
+	def extract_to_bmp(self, filename):
+		self._level_map.save(filename)
+
+
 
 	# def save_to_file(self, filename):
 	# 	if self._draw is None:
