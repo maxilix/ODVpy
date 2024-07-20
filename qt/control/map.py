@@ -1,47 +1,36 @@
-from PyQt6.QtCore import Qt, QRectF
+from PyQt6.QtCore import Qt, QRectF, QPointF
 from PyQt6.QtGui import QPixmap, QAction
-from PyQt6.QtWidgets import QWidget, QScrollArea, QCheckBox, QVBoxLayout, QSlider, QGraphicsScene, QGraphicsPixmapItem, \
-    QLabel, QGraphicsView, QGraphicsRectItem
+from PyQt6.QtWidgets import QWidget, QCheckBox, QVBoxLayout, QSlider, QGraphicsScene, QGraphicsPixmapItem, \
+    QGraphicsView, QGraphicsRectItem
 
-from qt.common.q_shared_menu import QSharedMenuSection
-from qt.control.common import QControl
-
-
-class QGraphicsMapItem(QGraphicsPixmapItem):
-
-    def __init__(self, pixmap: QPixmap, control):
-        super().__init__(pixmap)
-        self.control = control
-        self.a_show = QAction("Show")
-        self.a_show.triggered.connect(lambda: self.control.check_box.toggle())
-        self.a_hide = QAction("Hide")
-        self.a_hide.triggered.connect(lambda: self.control.check_box.toggle())
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton and self.control.context_menu_enabled():
-            section = QSharedMenuSection("Map", [], self.control.context_menu_priority, False)
-            if self.control.check_box.isChecked():
-                section.append(self.a_hide)
-            else:
-                section.append(self.a_show)
-            event.shared_menu.add_section(section)
-
-        super().mousePressEvent(event)
+from qt.graphics.common import QCGPixmap
+from qt.control.common import QTabControl
+from qt.scene import QScene
 
 
-class QMapControl(QControl):
-    def __init__(self, parent, scene: QGraphicsScene, dvm, bgnd):
+class QMapControl(QTabControl):
+    def __init__(self, parent, scene: QScene, dvm, bgnd):
         super().__init__(parent, scene)
         self.dvm = dvm
         self.bgnd = bgnd
         self.wf = self.dvm.level_map.size().width() / self.bgnd.minimap.size().width()
         self.hf = self.dvm.level_map.size().height() / self.bgnd.minimap.size().height()
         self.scene.viewport().view_changed.connect(self.refresh_minimap)
-        self.init_ui()
 
-        self.graphic_map_item = QGraphicsMapItem(QPixmap(self.dvm.level_map), self)
+        self.init_ui()
+        self.init_actions()
+
+        self.graphic_map_item = QCGPixmap(self, QPixmap(self.dvm.level_map))
+
+        self.scene.addRect(QRectF(QPointF(0, 0), self.dvm.level_map.size().toSizeF()))
         self.scene.addItem(self.graphic_map_item)
         self.graphic_map_item.setVisible(self.check_box.isChecked())
+
+    def context_menu_exclusive(self):
+        return False
+
+    def context_menu_name(self):
+        return "Map"
 
     def init_ui(self):
         content = QWidget()
@@ -80,15 +69,26 @@ class QMapControl(QControl):
 
         self.setWidget(content)
 
+    def item_visibility(self):
+        return self.check_box.isChecked()
+
+    def init_actions(self):
+        self.a_show = QAction("Show")
+        self.a_show.triggered.connect(lambda: self.check_box.setCheckState(Qt.CheckState.Checked))
+        self.a_hide = QAction("Hide")
+        self.a_hide.triggered.connect(lambda: self.check_box.setCheckState(Qt.CheckState.Unchecked))
+
+    def common_action_list(self, scene_position):
+        if self.item_visibility():
+            return [self.a_hide]
+        else:
+            return [self.a_show]
+
     def update(self):
         # r = self.scene.viewport().current_visible_scene_rect()
         # self.minimap_rect_item.setRect(r.x()/self.wf, r.y()/self.hf, r.width()/self.wf, r.height()/self.wf)
-        if self.check_box.isChecked() is True:
-            self.graphic_map_item.setVisible(True)
-            self.graphic_map_item.setOpacity(self.slider.value() / 255)
-
-        else:
-            self.graphic_map_item.setVisible(False)
+        self.graphic_map_item.setOpacity(self.slider.value() / 255)
+        self.graphic_map_item.update()
         super().update()
 
     def refresh_minimap(self, rect_view: QRectF):

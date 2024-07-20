@@ -129,7 +129,7 @@ class Sublayer(RWStreamable):
             self.area_list.insert(index, obstacle)
         return obstacle
 
-    def remove_obstacle(self, index: int):
+    def delete_obstacle(self, index: int):
         assert 0 < index < len(self.area_list)
         self.area_list.pop(index)
 

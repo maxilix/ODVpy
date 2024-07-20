@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QLabel, QApplication
 from common import *
 from config import CONFIG
 from dvd import DvdParser
+from dvd.bond import BondLink
 from dvd.move import Obstacle, Sublayer
 from odv.level import Level, BackupedLevel, InstalledLevel
 from odv.pathfinder import PathFinder, CrossingPoint
@@ -102,72 +103,31 @@ def is_line_strictly_in_sublayer(line: QLineF, sublayer: Sublayer) -> bool:
     return True
 
 
-level = Level("./dev/empty_level/empty_level_02")
-dvd = level.dvd
-exit()
+# level = Level("./dev/empty_level/empty_level_19")
 # level = Level("../Missions/03_Red_River/level_03")
 # level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)
+level = BackupedLevel(0)
+level.dvm.load_another_image("../Missions/Level_28.png")
 # for level_index in range(26):
 #     print(f"Level {level_index}")
 
-# level = BackupedLevel(0)
-# level.dvd.move.load()
-motion = level.dvd.move
+# move = level.dvd.move
 
+# buil = level.dvd.buil
+# print(len(buil.building_list), len(buil.special_door_list))
+# for sd in buil.special_door_list:
+#     print(sd.accesses[0].point, sd.accesses[0].area_global_id, sd.accesses[0].layer_id)
+#     print(sd.accesses[1].point, sd.accesses[1].area_global_id, sd.accesses[1].layer_id)
+#     print(sd.accesses[2].point, sd.accesses[2].area_global_id, sd.accesses[2].layer_id)
+#     print()
 
-
-
-motion.pathfinder.size_list = [(6.0, 3.0), (11.0, 6.0)]
-# motion.pathfinder.size_list = [(6.0, 3.0), (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
-# motion.pathfinder.size_list = [(5.4, 2.7)] #, (11.0, 6.0), (3.0, 2.0), (19.0, 11.0)]
-
-motion.pathfinder.rebuild()
-
-# for v in motion.pathfinders.viability_list:
-#     if v.t1 == [1, 4] and v.t2 == [4, 1]:
-#         v.t1 = [2]
-#         v.t2 = [8]
-
-
-# s = motion[0][0]
-# p1 = QPointF(650, 1630)
-# s = QSizeF(50, 50).to
-#
-# print(p1 + s)
-# p2 = QPointF(650, 1680)
-# p3 = QPointF(660, 1670)
-# poly = QPolygonF([p1, p2, p3])
-# print(s.contains_poly(poly))
 # exit()
 
 
-
-# motion[0][0].obstacles[27] = Obstacle([Point(793,1541), Point(798,1541), Point(796,1545)])
-
-# print("\nDone")
-
-# for i in range(len(pf1.crossing_point_list)):
-#     for j in range(len(pf1.crossing_point_list[i])):
-#         for k in range(len(pf1.crossing_point_list[i][j])):
-#             # assert len(pf1.crossing_point_list[i][j][k]) == len(pf2.crossing_point_list[i][j][k])
-#             for cp1_index in range(len(pf1.crossing_point_list[i][j][k])):
-#                 cp2_index = [c.position for c in pf2.crossing_point_list[i][j][k]].index(
-#                     pf1.crossing_point_list[i][j][k][cp1_index].position)
-#                 cp1: CrossingPoint = pf1.crossing_point_list[i][j][k][cp1_index]
-#                 cp2 = pf2.crossing_point_list[i][j][k][cp2_index]
-#                 assert cp1.position == cp2.position
-#                 if cp1.accesses != cp2.accesses:
-#                     if (cp1.vector_to_next.x != 0 and
-#                             cp1.vector_to_next.y != 0 and
-#                             cp1.vector_from_previous.x != 0 and
-#                             cp1.vector_from_previous.y != 0):
-#                         print(i, j, k, cp1.position, cp1.accesses, cp2.accesses)
-
-
-for sublayer in motion[0]:
-    for area in sublayer.obstacles:
-        level.dvm.draw(area.poly, QPen(QColor(255, 90, 40, 128)), QBrush(QColor(255, 90, 40, 32)))
+# for sublayer in motion[0]:
+#     for area in sublayer.obstacles:
+#         level.dvm.draw(area.poly, QPen(QColor(255, 90, 40, 128)), QBrush(QColor(255, 90, 40, 32)))
 
 
 

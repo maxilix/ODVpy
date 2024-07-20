@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QStackedLayout
 from PyQt6.QtGui import QPalette, QColor, QPixmap, QWheelEvent, QMouseEvent, QAction, QCursor
 
 from qt.control.bond import QBondControl
-from qt.control.common import QControl
+from qt.control.common import QTabControl
 from qt.control.map import QMapControl
 from qt.control.move import QMotionControl
 
@@ -49,7 +49,7 @@ class QMainControl(QTabWidget):
         self.addTab(self.map_control, "Map")
 
         # Miscellaneous
-        self.miscellaneous_control = QControl(self, scene)
+        self.miscellaneous_control = QTabControl(self, scene)
         self.addTab(self.miscellaneous_control, "Miscellaneous")
 
         # Motion
@@ -57,23 +57,23 @@ class QMainControl(QTabWidget):
         self.addTab(self.motion_control, "Motion")
 
         # Sights
-        self.sights_control = QControl(self, scene)
+        self.sights_control = QTabControl(self, scene)
         self.addTab(self.sights_control, "Sights")
 
         # Masks
-        self.masks_control = QControl(self, scene)
+        self.masks_control = QTabControl(self, scene)
         self.addTab(self.masks_control, "Masks")
 
         # Ways
-        self.ways_control = QControl(self, scene)
+        self.ways_control = QTabControl(self, scene)
         self.addTab(self.ways_control, "Ways")
 
         # Elements
-        self.elements_control = QControl(self, scene)
+        self.elements_control = QTabControl(self, scene)
         self.addTab(self.elements_control, "Elements")
 
         # Sounds
-        self.sounds_control = QControl(self, scene)
+        self.sounds_control = QTabControl(self, scene)
         self.addTab(self.sounds_control, "Sounds")
 
         # Music
@@ -86,6 +86,12 @@ class QMainControl(QTabWidget):
         self.addTab(self.bond_control, "BOND")
 
         self.update()
+
+        self.setCurrentWidget(self.motion_control)
+
+
+
+
 
     def update(self):
         super().update()

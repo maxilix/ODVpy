@@ -2,7 +2,7 @@ from PyQt6.QtCore import Qt, QLineF
 from PyQt6.QtGui import QContextMenuEvent, QAction, QCursor
 from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget, QListWidget, QListWidgetItem, QGraphicsLineItem, QMenu
 
-from qt.control.common import QControl
+from qt.control.common import QTabControl
 
 
 class QBondItem(QListWidgetItem):
@@ -79,7 +79,7 @@ class QBondListWidget(QListWidget):
         item.contextMenuEvent(event)
 
 
-class QBondControl(QControl):
+class QBondControl(QTabControl):
     def __init__(self, parent, scene, bond):
         super().__init__(parent, scene)
         self.bond = bond

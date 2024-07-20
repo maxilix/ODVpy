@@ -1,421 +1,517 @@
 from math import floor
-from typing import Self, Iterator
 
-from PyQt6.QtCore import Qt, QRectF, QLineF, QPointF, pyqtSignal, QObject
-from PyQt6.QtGui import QColor, QPen, QBrush, QPainter, QPainterPath, QAction, QCursor, QContextMenuEvent, QMouseEvent, \
-    QPolygonF, QPolygon
-from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTabWidget, QLabel, QVBoxLayout, QCheckBox, QWidget, \
-    QScrollArea, QPushButton, QHBoxLayout, QSpinBox, QGraphicsScene, \
-    QGraphicsItem, QMenu, QGraphicsPolygonItem, QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsItemGroup, \
-    QGraphicsObject, QGraphicsPathItem
+from PyQt6.QtCore import Qt, QRectF, QPointF, QLineF
+from PyQt6.QtGui import QColor, QPen, QBrush, QAction, QCursor, QContextMenuEvent, QPolygonF, QPainter, QMouseEvent, \
+    QPainterPath
+from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QLabel, QVBoxLayout, QWidget, \
+    QGraphicsScene, QMenu, QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsPathItem, QGraphicsPolygonItem, \
+    QGraphicsSceneMouseEvent
 
-from dvd.move import Obstacle, MovePolygon
-from qt.control.common import QControl
-from qt.scene import QScene
+from dvd.move import MovePolygon
+from qt.graphics.common import QCGHighlightablePolygon, QCGPoint, QCGLine, QCGPolygonShape, QCGEditablePolygon
+from qt.control.common import QTabControl, QSubControl
 
 
-# class QGraphicsArea(QGraphicsItem):
+# class QGraphicsMovablePointt(QGraphicsEllipseItem):
+#     size: float = 2.2
 #
-#     def __init__(self, main_color: QColor,  area: Obstacle, scene: QGraphicsScene, control):
-#         super().__init__()
-#         self.area = area
+#     def __init__(self,control , pos: QPointF):
+#         super().__init__(-self.size / 2, -self.size / 2, self.size, self.size)
 #         self.control = control
-#         self.main_color = main_color
+#         self.setPen(control.pen)
+#         self.setBrush(control.low_brush)
 #
-#         self.poly_pen_color = self.main_color
-#         self.poly_pen_color.setAlpha(255)
-#         self.poly_pen = QPen(self.poly_pen_color)
-#         self.poly_pen.setWidthF(0.4)
-#         self.poly_pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+#         self.setPos(pos)
+#         self._is_moving = False
 #
-#         self.poly_brush_color = self.main_color
-#         self.poly_brush_color.setAlpha(32)
-#         self.poly_brush = QBrush(self.poly_brush_color)
-#
-#         self._highlightable = True
-#         self._highlight = False
-#         self._visible = True
-#
-#         scene.addItem(self)
-#         # self.setAcceptHoverEvents(True)
-#         self.setAcceptTouchEvents(True)
-#
-#     def setVisible(self, visible: bool) -> None:
-#         self._visible = visible
-#         super().setVisible(self._visible or self._highlightable)
-#         self.update()
-#
-#     def setHighlight(self, highlightable: bool) -> None:
-#         self._highlightable = highlightable
-#         super().setVisible(self._visible or self._highlightable)
-#         self.update()
-#
-#     def boundingRect(self) -> QRectF:
-#         r = self.area.qpf.boundingRect()
-#         r.setX(r.x() - self.poly_pen.widthF() / 2)
-#         r.setY(r.y() - self.poly_pen.widthF() / 2)
-#         r.setWidth(r.width() + self.poly_pen.widthF())
-#         r.setHeight(r.height() + self.poly_pen.widthF())
-#         return r
+#     def setPos(self, pos: QPointF):
+#         super().setPos(floor(pos.x()) + 0.5, floor(pos.y()) + 0.5)
 #
 #     def paint(self, painter: QPainter, option, widget=None):
-#         if self._highlight and self._highlightable:
-#             self.poly_brush_color.setAlpha(64)
+#         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+#         super().paint(painter, option, widget)
+#
+#     def move(self, vector: QPointF):
+#         self.setPos(self.pos() + vector)
+#
+#     def delete(self):
+#         self.scene().removeItem(self)
+#         self.control.point_deleted(self)
+#
+#     def mousePressEvent(self, event):
+#         if event.button() == Qt.MouseButton.LeftButton:
+#             self._is_moving = True
+#             self.setBrush(self.control.high_brush)
+#         elif event.button() == Qt.MouseButton.RightButton:
+#             menu = QMenu()
+#             menu.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
+#             action_delete = QAction("Delete Point")
+#             action_delete.setEnabled(self.control.is_point_deletable)
+#             action_delete.triggered.connect(self.delete)
+#             menu.addAction(action_delete)
+#
+#             a = self.control.common_actions()  # temp variable needed
+#             menu.addActions(a)
+#
+#             menu.exec(QCursor.pos())
+#
+#     def mouseReleaseEvent(self, event):
+#         # self.setPos(self.mapToScene(event.pos()))
+#         self._is_moving = False
+#         self.setBrush(self.control.low_brush)
+#
+#     def mouseMoveEvent(self, event: QMouseEvent):
+#         if self._is_moving is True:
+#             self.setPos(self.mapToScene(event.pos()))
+#             self.control.point_moved(self)
+
+
+# class QGraphicsMovableLine(QGraphicsLineItem):
+#     _mp1: QCGPoint
+#     _mp2: QCGPoint
+#
+#     def __init__(self, mp1: QCGPoint, mp2: QCGPoint, control):
+#         super().__init__()
+#         self.control = control
+#         self.setPen(control.pen)
+#
+#         self._mp2 = mp2  # set _mp2 first because, mp1 property use mp2
+#         self.mp1 = mp1
+#         self.mp2 = mp2
+#
+#     @property
+#     def mp1(self):
+#         return self._mp1
+#
+#     @mp1.setter
+#     def mp1(self, value):
+#         self._mp1 = value
+#         self.update()
+#
+#     @property
+#     def mp2(self):
+#         return self._mp2
+#
+#     @mp2.setter
+#     def mp2(self, value):
+#         self._mp2 = value
+#         self.update()
+#
+#     def update(self, rect: QRectF = QRectF()):
+#         temp_line = QLineF(self.mp1.pos(), self.mp2.pos())
+#         length = temp_line.length()
+#         if length > QCGPoint.size:
+#             p1 = self.mp1.pos()
+#             p2 = self.mp2.pos()
+#             f = (QCGPoint.size / 2) / length
+#             p1, p2 = (1 - f) * p1 + f * p2, (1 - f) * p2 + f * p1
+#             self.setLine(QLineF(p1, p2))
 #         else:
-#             if self._visible is True:
-#                 self.poly_brush_color.setAlpha(32)
-#             else:
-#                 # no drawing
-#                 return
+#             self.setLine(QLineF())
+#         super().update(rect)
 #
-#         self.poly_brush = QBrush(self.poly_brush_color)
+#     def paint(self, painter: QPainter, option, widget=None):
+#         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+#         super().paint(painter, option, widget)
 #
-#         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+#     def delete(self):
+#         self.scene().removeItem(self)
 #
-#         painter.setPen(self.poly_pen)
-#         painter.setBrush(self.poly_brush)
-#
-#         painter.drawPolygon(self.area.qpf.translated(0.5, 0.5), Qt.FillRule.OddEvenFill)
+#     def add_point(self, pos: QPointF):
+#         new_point = QCGPoint(self.control, pos)
+#         self.scene().addItem(new_point)
+#         old_mp2 = self.mp2
+#         self.mp2 = new_point
+#         new_line = QGraphicsMovableLine(new_point, old_mp2, self.control)
+#         self.scene().addItem(new_line)
+#         self.control.point_added(self.mp1, new_point, new_line)
 #
 #     def shape(self):
+#         # virtually extends the line width for click detection
+#         temp_line = QGraphicsLineItem(self.line())
+#         pen = self.pen()
+#         pen.setWidthF(pen.widthF() * 5)
+#         temp_line.setPen(pen)
+#         return temp_line.shape()
+#
+#     def mousePressEvent(self, event):
+#         if event.button() == Qt.MouseButton.RightButton:
+#             menu = QMenu()
+#             action_add_point = QAction("Add Point")
+#             action_add_point.triggered.connect(lambda: self.add_point(self.mapToScene(event.pos())))
+#             menu.addAction(action_add_point)
+#
+#             a = self.control.common_actions()  # temp variable needed
+#             menu.addActions(a)
+#             menu.exec(QCursor.pos())
+#
+#         # super().mousePressEvent(event)
+
+
+# class QGraphicsMovablePolygon(QGraphicsPathItem):
+#
+#     def __init__(self, mp_list: list[QCGPoint], control):
+#         super().__init__()
+#         self.control = control
+#         self.mp_list = mp_list
+#         self.setBrush(control.low_brush)
+#         self.setPen(QPen(Qt.GlobalColor.transparent))
+#         self._drag_position = None
+#
+#     @property
+#     def mp_list(self):
+#         return self._mp_list
+#
+#     @mp_list.setter
+#     def mp_list(self, value):
+#         self._mp_list = value
+#         self.update()
+#
+#     def update(self, rect: QRectF = QRectF()):
 #         path = QPainterPath()
-#         path.addPolygon(self.area.qpf)
-#         return path
+#         path.addPolygon(QPolygonF([mp.pos() for mp in self._mp_list]))
+#         negative = QPainterPath()
+#         for mp in self._mp_list:
+#             negative.addEllipse(mp.boundingRect().translated(mp.pos()))
+#         self.setPath(path - negative)
+#         super().update(rect)
+#
+#     def mousePressEvent(self, event):
+#         if event.button() == Qt.MouseButton.RightButton:
+#             menu = QMenu()
+#             menu.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
+#             # action_delete = QAction("Delete Point")
+#             # action_delete.setEnabled(self.parent.is_point_deletable)
+#             # action_delete.triggered.connect(self.delete)
+#             # menu.addAction(action_delete)
+#
+#             a = self.control.common_actions()  # temp variable needed
+#             menu.addActions(a)
+#
+#             menu.exec(QCursor.pos())
+#
+#         # super().mousePressEvent(event)
+#
+#     def mouseDoubleClickEvent(self, event):
+#         if event.button() == Qt.MouseButton.LeftButton:
+#             self._drag_position = self.mapToScene(event.pos()).truncated()
+#             self.setBrush(self.control.high_brush)
+#
+#         # super().mouseDoubleClickEvent(event)
+#
+#     def mouseReleaseEvent(self, event):
+#         # self.setPos(self.mapToScene(event.pos()))
+#         self._drag_position = None
+#         self.setBrush(self.control.low_brush)
+#         # super().mouseReleaseEvent(event)
+#
+#     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
+#         if self._drag_position is not None:
+#             delta = self.mapToScene(event.pos()).truncated() - self._drag_position
+#             for mp in self.mp_list:
+#                 mp.move(delta)
+#                 self.control.point_moved(mp)
+#             self._drag_position = self.mapToScene(event.pos()).truncated()
+#         # super().mouseMoveEvent(event)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# class QGraphicsFixedPolygon(QGraphicsPolygonItem):
+#
+#     def __init__(self, poly: QPolygonF, control):
+#         super().__init__(poly.translated(0.5, 0.5))
+#         self.control = control
+#         self.setBrush(control.low_brush)
+#         self.setPen(control.pen)
+#         self.setAcceptHoverEvents(True)
+#
+#     def mousePressEvent(self, event):
+#         if event.button() == Qt.MouseButton.RightButton:
+#             menu = QMenu()
+#             menu.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
+#             # action_delete = QAction("Delete Point")
+#             # action_delete.setEnabled(self.parent.is_point_deletable)
+#             # action_delete.triggered.connect(self.delete)
+#             # menu.addAction(action_delete)
+#
+#             a = self.control.common_actions()  # temp variable needed
+#             menu.addActions(self.control.common_actions())
+#
+#             menu.exec(QCursor.pos())
+#         else:
+#             super().mousePressEvent(event)
+#
+#     def paint(self, painter: QPainter, option, widget=None):
+#         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+#         super().paint(painter, option, widget)
 #
 #     def hoverEnterEvent(self, event):
-#         # print("enter")
-#         self._highlight = True
+#         self.setBrush(self.control.high_brush)
 #         self.control.setSelected(True)
 #         self.update()
+#         # super().hoverEnterEvent(event)
 #
 #     def hoverLeaveEvent(self, event):
-#         # print("leave")
-#         self._highlight = False
+#         self.setBrush(self.control.low_brush)
 #         self.control.setSelected(False)
 #         self.update()
+#         # super().hoverLeaveEvent(event)
+
+
+# class QControlArea(QSubControl, QTreeWidgetItem):
 #
-#     def mouseMoveEvent(self, event):
-#         print("mouse move")
+#     def __init__(self, parent, scene: QGraphicsScene, area: MovePolygon):
+#         super().__init__(parent)
+#         self.scene = scene
+#         self.area = area
 #
-#     def mousePressEvent(self, event):
-#         if event.button() == Qt.MouseButton.RightButton:
-#             self._highlight = True
-#             self.control.setSelected(True)
-#             menu = QMenu()
-#             # header = QAction(f"{self.control.text(0)}")
-#             # f = header.font()
-#             # f.setBold(True)
-#             # header.setFont(f)
-#             # header.setEnabled(False)
-#             action_show = QAction("Show")
-#             action_hide = QAction("Hide")
-#             action_edit = QAction("Edit")
-#             action_delete = QAction("Delete")
+#         self.setCheckState(0, Qt.CheckState.Unchecked)
+#         if area.main:
+#             main_color = QColor(160, 200, 40)
+#         else:
+#             main_color = QColor(255, 90, 40)
 #
-#             # menu.addAction(header)
-#             menu.addSection(f"{self.control.text(0)}")
-#             menu.addAction(action_show)
-#             menu.addAction(action_hide)
-#             menu.addSeparator()
-#             menu.addAction(action_edit)
-#             menu.addAction(action_delete)
+#         # self._visible = True
+#         self._edit = False
+#         # self._enable = True
 #
-#             action = menu.exec(QCursor.pos())
+#         self.pen_color = main_color
+#         self.pen_color.setAlpha(255)
+#         self.pen = QPen(self.pen_color)
+#         self.pen.setWidthF(0.3)
+#         self.pen.setCapStyle(Qt.PenCapStyle.FlatCap)
+#         self.pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
 #
-#             if action == action_show:
-#                 self.control.setCheckState(0, Qt.CheckState.Checked)
-#             elif action == action_hide:
-#                 self.control.setCheckState(0, Qt.CheckState.Unchecked)
-#             elif action == action_edit:
-#                 print("EDIT")
-#             elif action == action_delete:
-#                 print("DELETE")
-
-# class QGraphicsFixedArea(QGraphicsPolygonItem):
-#     def mousePressEvent(self, event):
-#         if event.button() == Qt.MouseButton.RightButton:
-#             menu = QMenu()
-#             action_show = QAction("Show")
-#             action_hide = QAction("Hide")
-#             action_edit = QAction("Edit")
-#             action_delete = QAction("Delete")
+#         self.brush_color = main_color
+#         self.brush_color.setAlpha(32)
+#         self.brush = QBrush(self.brush_color)
+#         self.low_brush = QBrush(self.brush_color)
+#         self.brush_color.setAlpha(96)
+#         self.high_brush = QBrush(self.brush_color)
 #
-#             menu.addSection(f"text")
-#             menu.addAction(action_show)
-#             menu.addAction(action_hide)
-#             menu.addSeparator()
-#             menu.addAction(action_edit)
-#             menu.addAction(action_delete)
+#         # Define editable objects
+#         self.point_item = []
+#         self.line_item = []
+#         self.movable_poly = None
 #
-#             action = menu.exec(QCursor.pos())
+#         # Define fixed objects
+#         self.fixed_poly = None
 #
-#             if action == action_show:
-#                 print("SHOW")
-#             elif action == action_hide:
-#                 print("HIDE")
-#             elif action == action_edit:
-#                 print("EDIT")
-#             elif action == action_delete:
-#                 print("DELETE")
+#         self.init_actions()
+#
+#         # simulation of exiting edit mode to create fixed objects
+#         self._edit = True
+#         self.exit_edit_mode(save=False)
+#         self.update()
+#
+#     def context_menu_exclusive(self):
+#         return self._edit
+#
+#     def context_menu_name(self):
+#         if self.area.main:
+#             return f"Main area {self.area.global_id}"
+#         else:
+#             return f"Obstacle {self.area.global_id}"
+#
+#     def init_actions(self):
+#         self.a_localise = QAction("Localise")
+#         self.a_localise.triggered.connect(self.localise)
+#
+#         self.a_enter_edit = QAction("Enter edit mode")
+#         self.a_enter_edit.triggered.connect(self.enter_edit_mode)
+#
+#         self.a_exit_edit_save = QAction("Exit edit mode && Save")
+#         self.a_exit_edit_save.triggered.connect(lambda: self.exit_edit_mode(save=True))
+#
+#         self.a_exit_edit_cancel = QAction("Exit edit mode && Cancel")
+#         self.a_exit_edit_cancel.triggered.connect(lambda: self.exit_edit_mode(save=False))
+#
+#         self.a_show_obstacle = QAction("Show obstacle")
+#         self.a_show_obstacle.triggered.connect(lambda: self.setCheckState(0, Qt.CheckState.Checked))
+#
+#         self.a_hide_obstacle = QAction("Hide obstacle")
+#         self.a_hide_obstacle.triggered.connect(lambda: self.setCheckState(0, Qt.CheckState.Unchecked))
+#
+#         self.a_add_obstacle = QAction("Add obstacle")
+#         self.a_add_obstacle.triggered.connect(lambda: self.parent().add_obstacle(self.area.k))
+#
+#         self.a_delete_obstacle = QAction("Delete obstacle")
+#         self.a_delete_obstacle.triggered.connect(lambda: self.parent().delete_obstacle(self.area.k))
+#
+#
+#     def setBold(self, value):
+#         f = self.font(0)
+#         f.setBold(value)
+#         self.setFont(0, f)
+#
+#     def update(self):
+#         name = self.context_menu_name()
+#         if self._edit is True:
+#             self.setBold(True)
+#             name += " ... editing ..."
+#             self.movable_poly.update()
+#             [p.update() for p in self.point_item]
+#             [l.update() for l in self.line_item]
+#             self.setCheckState(0, Qt.CheckState.Checked)
+#         else:
+#             self.setBold(False)
+#             self.fixed_poly.update()
+#         self.setText(0, name)
+#
+#     def point_moved(self, point_item: QCGPoint):
+#         n = len(self.point_item)
+#         index = self.point_item.index(point_item)
+#         self.line_item[(index - 1) % n].update()
+#         self.line_item[index].update()
+#         self.movable_poly.update()
+#
+#     def point_added(self,
+#                     previous_point_item: QCGPoint,
+#                     new_point_item: QCGPoint,
+#                     new_line_item: QCGLine):
+#         index = self.point_item.index(previous_point_item)
+#         self.point_item.insert(index + 1, new_point_item)
+#         self.line_item.insert(index + 1, new_line_item)
+#         for p in self.point_item:
+#             p.deletable = True
+#         self.movable_poly.mp_list = self.point_item
+#
+#     def point_deleted(self, point_item: QCGPoint):
+#         n = len(self.point_item)
+#         index = self.point_item.index(point_item)
+#         self.line_item[(index - 1) % n].p2 = self.point_item[(index + 1) % n]
+#         self.line_item[index].delete()
+#         self.line_item.remove(self.line_item[index])
+#         self.point_item.remove(point_item)
+#         if len(self.point_item) <= 3:
+#             for p in self.point_item:
+#                 p.deletable = False
+#         self.movable_poly.mp_list = self.point_item
+#
+#     def line_deleted(self, line_item: QCGLine):
+#         pass
+#
+#     def common_action_list(self, scene_position:QPointF = QPointF()) -> list[QAction]:
+#         rop = []
+#         if self._edit:
+#             rop.append(self.a_delete_obstacle)
+#             rop.append(self.a_exit_edit_save)
+#             rop.append(self.a_exit_edit_cancel)
+#         else:
+#             if self.item_visibility():
+#                 rop.append(self.a_hide_obstacle)
+#             else:
+#                 rop.append(self.a_show_obstacle)
+#             rop.append(self.a_enter_edit)
+#             rop.append(self.a_add_obstacle)
+#         return rop
+#
+#     def item_visibility(self):
+#         return self.checkState(0) == Qt.CheckState.Checked
+#
+#     def remove_graphics(self):
+#         if self.movable_poly is not None:
+#             self.scene.removeItem(self.movable_poly)
+#             self.movable_poly = None
+#         if self.fixed_poly is not None:
+#             self.scene.removeItem(self.fixed_poly)
+#             self.fixed_poly = None
+#         [self.scene.removeItem(p) for p in self.point_item]
+#         self.point_item = []
+#         [self.scene.removeItem(l) for l in self.line_item]
+#         self.line_item = []
+#
+#     def enter_edit_mode(self):
+#         self.take_focus()
+#
+#         if self._edit is False:
+#             self._edit = True
+#
+#             # remove old graphics
+#             if self.fixed_poly is not None:
+#                 self.scene.removeItem(self.fixed_poly)
+#                 self.fixed_poly = None
+#
+#             # build new graphics
+#             deletable = len(self.area) > 3
+#             self.point_item = [QCGPoint(self, p, movable=True, deletable=deletable) for p in self.area]
+#             self.line_item = [QCGLine(self, mp1, mp2, secable=True, deletable=False) for mp1, mp2 in
+#                               zip(self.point_item, self.point_item[1:] + [self.point_item[0]])]
+#             self.movable_poly = QCGPolygonShape(self, self.point_item, movable=True)
+#
+#             # add new graphics to the scene
+#             self.scene.addItem(self.movable_poly)
+#             [self.scene.addItem(p) for p in self.point_item]
+#             [self.scene.addItem(l) for l in self.line_item]
+#
+#             self.setCheckState(0, Qt.CheckState.Checked)
+#             self.update()
+#
+#     def exit_edit_mode(self, save: bool):
+#         if self._edit is True:
+#             self._edit = False
+#             if save is True:
+#                 self.area.poly = QPolygonF([p.pos().truncated() for p in self.point_item])
+#
+#             # remove old graphics
+#             if self.movable_poly is not None:
+#                 self.scene.removeItem(self.movable_poly)
+#                 self.movable_poly = None
+#             [self.scene.removeItem(p) for p in self.point_item]
+#             self.point_item = []
+#             [self.scene.removeItem(l) for l in self.line_item]
+#             self.line_item = []
+#
+#             # build new graphics
+#             self.fixed_poly = QCGHighlightablePolygon(self, self.area.poly)
+#
+#             # add new graphics to the scene
+#             self.scene.addItem(self.fixed_poly)
+#
+#             self.update()
+#
+#     def contextMenuEvent(self, event):
+#         menu = QMenu()
+#         menu.addAction(self.a_localise)
+#         menu.addActions(self.common_action_list())
+#         menu.exec(QCursor.pos())
+#
+#     def localise(self):
+#         self.setCheckState(0, Qt.CheckState.Checked)
+#         if self._edit is True:
+#             self.scene.move_to_item(self.movable_poly)
+#         else:
+#             self.scene.move_to_item(self.fixed_poly)
 
 
-class QGraphicsMovablePoint(QGraphicsEllipseItem):
-    size: float = 2.2
-
-    def __init__(self, pos: QPointF, control):
-        super().__init__(-self.size / 2, -self.size / 2, self.size, self.size)
-        self.control = control
-        self.setPen(control.pen)
-        self.setBrush(control.low_brush)
-
-        self.setPos(pos)
-        self._is_moving = False
-
-    def setPos(self, pos: QPointF):
-        super().setPos(floor(pos.x()) + 0.5, floor(pos.y()) + 0.5)
-
-    def paint(self, painter: QPainter, option, widget=None):
-        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
-        super().paint(painter, option, widget)
-
-    def move(self, vector: QPointF):
-        self.setPos(self.pos() + vector)
-
-    def delete(self):
-        self.scene().removeItem(self)
-        self.control.point_deleted(self)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self._is_moving = True
-            self.setBrush(self.control.high_brush)
-        elif event.button() == Qt.MouseButton.RightButton:
-            menu = QMenu()
-            menu.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
-            action_delete = QAction("Delete Point")
-            action_delete.setEnabled(self.control.is_point_deletable)
-            action_delete.triggered.connect(self.delete)
-            menu.addAction(action_delete)
-
-            a = self.control.common_actions()  # temp variable needed
-            menu.addActions(a)
-
-            menu.exec(QCursor.pos())
-
-    def mouseReleaseEvent(self, event):
-        # self.setPos(self.mapToScene(event.pos()))
-        self._is_moving = False
-        self.setBrush(self.control.low_brush)
-
-    def mouseMoveEvent(self, event: QMouseEvent):
-        if self._is_moving is True:
-            self.setPos(self.mapToScene(event.pos()))
-            self.control.point_moved(self)
 
 
-class QGraphicsMovableLine(QGraphicsLineItem):
-    _mp1: QGraphicsMovablePoint
-    _mp2: QGraphicsMovablePoint
 
-    def __init__(self, mp1: QGraphicsMovablePoint, mp2: QGraphicsMovablePoint, control):
-        super().__init__()
-        self.control = control
-        self.setPen(control.pen)
+class QControlArea(QSubControl, QTreeWidgetItem):
 
-        self._mp2 = mp2  # set _mp2 first because, mp1 property use mp2
-        self.mp1 = mp1
-        self.mp2 = mp2
-
-    @property
-    def mp1(self):
-        return self._mp1
-
-    @mp1.setter
-    def mp1(self, value):
-        self._mp1 = value
-        self.update()
-
-    @property
-    def mp2(self):
-        return self._mp2
-
-    @mp2.setter
-    def mp2(self, value):
-        self._mp2 = value
-        self.update()
-
-    def update(self, rect: QRectF = QRectF()):
-        temp_line = QLineF(self.mp1.pos(), self.mp2.pos())
-        length = temp_line.length()
-        if length > QGraphicsMovablePoint.size:
-            p1 = self.mp1.pos()
-            p2 = self.mp2.pos()
-            f = (QGraphicsMovablePoint.size / 2) / length
-            p1, p2 = (1 - f) * p1 + f * p2, (1 - f) * p2 + f * p1
-            self.setLine(QLineF(p1, p2))
-        else:
-            self.setLine(QLineF())
-        super().update(rect)
-
-    def paint(self, painter: QPainter, option, widget=None):
-        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
-        super().paint(painter, option, widget)
-
-    def delete(self):
-        self.scene().removeItem(self)
-
-    def add_point(self, pos: QPointF):
-        new_point = QGraphicsMovablePoint(pos, self.control)
-        self.scene().addItem(new_point)
-        old_mp2 = self.mp2
-        self.mp2 = new_point
-        new_line = QGraphicsMovableLine(new_point, old_mp2, self.control)
-        self.scene().addItem(new_line)
-        self.control.point_added(self.mp1, new_point, new_line)
-
-    def shape(self):
-        # virtually extends the line width for click detection
-        temp_line = QGraphicsLineItem(self.line())
-        pen = self.pen()
-        pen.setWidthF(pen.widthF() * 5)
-        temp_line.setPen(pen)
-        return temp_line.shape()
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton:
-            menu = QMenu()
-            action_add_point = QAction("Add Point")
-            action_add_point.triggered.connect(lambda: self.add_point(self.mapToScene(event.pos())))
-            menu.addAction(action_add_point)
-
-            a = self.control.common_actions()  # temp variable needed
-            menu.addActions(a)
-            menu.exec(QCursor.pos())
-        else:
-            super().mousePressEvent(event)
-
-
-class QGraphicsMovablePolygon(QGraphicsPathItem):
-
-    def __init__(self, mp_list: list[QGraphicsMovablePoint], control):
-        super().__init__()
-        self.control = control
-        self.mp_list = mp_list
-        self.setBrush(control.low_brush)
-        self.setPen(QPen(Qt.GlobalColor.transparent))
-        self._drag_position = None
-
-    @property
-    def mp_list(self):
-        return self._mp_list
-
-    @mp_list.setter
-    def mp_list(self, value):
-        self._mp_list = value
-        path = QPainterPath()
-        path.addPolygon(QPolygonF([mp.pos() for mp in self._mp_list]))
-        negative = QPainterPath()
-        for mp in self._mp_list:
-            negative.addEllipse(mp.boundingRect().translated(mp.pos()))
-        self.setPath(path - negative)
-        self.update()
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton:
-            menu = QMenu()
-            menu.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
-            # action_delete = QAction("Delete Point")
-            # action_delete.setEnabled(self.parent.is_point_deletable)
-            # action_delete.triggered.connect(self.delete)
-            # menu.addAction(action_delete)
-
-            a = self.control.common_actions()  # temp variable needed
-            menu.addActions(a)
-
-            menu.exec(QCursor.pos())
-        else:
-            super().mousePressEvent(event)
-
-    def mouseDoubleClickEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self._drag_position = self.mapToScene(event.pos()).truncated()
-            self.setBrush(self.control.high_brush)
-        else:
-            super().mouseDoubleClickEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        # self.setPos(self.mapToScene(event.pos()))
-        self._drag_position = None
-        self.setBrush(self.control.low_brush)
-
-    def mouseMoveEvent(self, event: QMouseEvent):
-        if self._drag_position is not None:
-            delta = self.mapToScene(event.pos()).truncated() - self._drag_position
-            for mp in self.mp_list:
-                mp.move(delta)
-                self.control.point_moved(mp)
-            self._drag_position = self.mapToScene(event.pos()).truncated()
-
-
-class QGraphicsFixedPolygon(QGraphicsPolygonItem):
-
-    def __init__(self, poly: QPolygonF, control):
-        super().__init__(poly.translated(0.5, 0.5))
-        self.control = control
-        self.setBrush(control.low_brush)
-        self.setPen(control.pen)
-        self.setAcceptHoverEvents(True)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton:
-            menu = QMenu()
-            menu.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
-            # action_delete = QAction("Delete Point")
-            # action_delete.setEnabled(self.parent.is_point_deletable)
-            # action_delete.triggered.connect(self.delete)
-            # menu.addAction(action_delete)
-
-            a = self.control.common_actions()  # temp variable needed
-            menu.addActions(self.control.common_actions())
-
-            menu.exec(QCursor.pos())
-        else:
-            super().mousePressEvent(event)
-
-    def paint(self, painter: QPainter, option, widget=None):
-        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
-        super().paint(painter, option, widget)
-
-    def hoverEnterEvent(self, event):
-        self.setBrush(self.control.high_brush)
-        self.control.setSelected(True)
-        self.update()
-        # super().hoverEnterEvent(event)
-
-    def hoverLeaveEvent(self, event):
-        self.setBrush(self.control.low_brush)
-        self.control.setSelected(False)
-        self.update()
-        # super().hoverLeaveEvent(event)
-
-
-class QControlArea(QTreeWidgetItem):
-
-    def __init__(self, parent, scene: QGraphicsScene,  area: MovePolygon):
+    def __init__(self, parent, scene: QGraphicsScene, area: MovePolygon):
         super().__init__(parent)
         self.scene = scene
         self.area = area
 
         self.setCheckState(0, Qt.CheckState.Unchecked)
-
         if area.main:
             main_color = QColor(160, 200, 40)
         else:
             main_color = QColor(255, 90, 40)
 
-        # self._visible = True
-        self._edit = False
-        # self._enable = True
 
         self.pen_color = main_color
         self.pen_color.setAlpha(255)
@@ -426,66 +522,54 @@ class QControlArea(QTreeWidgetItem):
 
         self.brush_color = main_color
         self.brush_color.setAlpha(32)
+        self.brush = QBrush(self.brush_color)
         self.low_brush = QBrush(self.brush_color)
         self.brush_color.setAlpha(96)
         self.high_brush = QBrush(self.brush_color)
 
-        self.a_enter_edit = QAction("Enter edit mode")
-        self.a_enter_edit.triggered.connect(self.enter_edit_mode)
-        self.a_exit_edit_save = QAction("Exit edit mode && Save")
-        self.a_exit_edit_save.triggered.connect(lambda: self.exit_edit_mode(save=True))
-        self.a_exit_edit_cancel = QAction("Exit edit mode && Cancel")
-        self.a_exit_edit_cancel.triggered.connect(lambda: self.exit_edit_mode(save=False))
-        self.a_add_obstacle = QAction("Add obstacle")
-        self.a_add_obstacle.triggered.connect(lambda: self.parent().add_obstacle(self.k))
-        self.a_remove_obstacle = QAction("Remove obstacle")
-        self.a_remove_obstacle.triggered.connect(lambda: self.parent().remove_obstacle(self.k))
+        self._edit = False
+        self.fixed_polygon = QCGHighlightablePolygon(self, self.area.poly)
+        self.scene.addItem(self.fixed_polygon)
+        self.editable_polygon = None
 
-        # Define editable objects
-        self.point_item = []
-        self.is_point_deletable = 0
-        self.line_item = []
-        self.movable_poly = None
+        self.init_actions()
 
-        # Define fixed objects
-        self.fixed_poly = None
-
-        # simulation of exiting edit mode to create fixed objects
-        self._edit = True
-        self.exit_edit_mode(save=False)
         self.update()
 
-    @property
-    def i(self):
-        if self.parent() is None:
-            return -1
-        return self.parent().i
+    def context_menu_exclusive(self):
+        return self._edit
 
-    @property
-    def j(self):
-        if self.parent() is None:
-            return -1
-        return self.parent().j
-
-    @property
-    def k(self):
-        if self.parent() is None:
-            return -1
-        return self.parent().indexOfChild(self)
-
-    @property
-    def short_name(self):
+    def context_menu_name(self):
         if self.area.main:
-            return "Main Area"
+            return f"Main area {self.area.global_id}"
         else:
-            return f"Obstacle {self.k}"
+            return f"Obstacle {self.area.global_id}"
 
-    @property
-    def abs_name(self):
-        if self.area.main:
-            return f"Main Area {self.i} {self.j}"
-        else:
-            return f"Obstacle {self.i} {self.j} {self.k}"
+    def init_actions(self):
+        self.a_localise = QAction("Localise")
+        self.a_localise.triggered.connect(self.localise)
+
+        self.a_enter_edit = QAction("Enter edit mode")
+        self.a_enter_edit.triggered.connect(self.enter_edit_mode)
+
+        self.a_exit_edit_save = QAction("Exit edit mode && Save")
+        self.a_exit_edit_save.triggered.connect(lambda: self.exit_edit_mode(save=True))
+
+        self.a_exit_edit_cancel = QAction("Exit edit mode && Cancel")
+        self.a_exit_edit_cancel.triggered.connect(lambda: self.exit_edit_mode(save=False))
+
+        self.a_show_obstacle = QAction("Show obstacle")
+        self.a_show_obstacle.triggered.connect(lambda: self.setCheckState(0, Qt.CheckState.Checked))
+
+        self.a_hide_obstacle = QAction("Hide obstacle")
+        self.a_hide_obstacle.triggered.connect(lambda: self.setCheckState(0, Qt.CheckState.Unchecked))
+
+        self.a_add_obstacle = QAction("Add obstacle")
+        self.a_add_obstacle.triggered.connect(lambda: self.parent().add_obstacle(self.area.k))
+
+        self.a_delete_obstacle = QAction("Delete obstacle")
+        self.a_delete_obstacle.triggered.connect(lambda: self.parent().delete_obstacle(self.area.k))
+
 
     def setBold(self, value):
         f = self.font(0)
@@ -493,93 +577,53 @@ class QControlArea(QTreeWidgetItem):
         self.setFont(0, f)
 
     def update(self):
-        name = self.short_name
+        name = self.context_menu_name()
         if self._edit is True:
             self.setBold(True)
             name += " ... editing ..."
+            self.editable_polygon.update()
+            self.setCheckState(0, Qt.CheckState.Checked)
         else:
             self.setBold(False)
+            self.fixed_polygon.update()
         self.setText(0, name)
-        self.setText(1, f"{self.area.global_id}")
 
-        self.setVisible(self.checkState(0) == Qt.CheckState.Checked)
-
-    def point_moved(self, point_item: QGraphicsMovablePoint):
-        n = len(self.point_item)
-        index = self.point_item.index(point_item)
-        self.line_item[(index - 1) % n].mp2 = point_item
-        self.line_item[index].mp1 = point_item
-        self.movable_poly.mp_list = self.point_item
-
-    def point_added(self,
-                    previous_point_item: QGraphicsMovablePoint,
-                    new_point_item: QGraphicsMovablePoint,
-                    new_line_item: QGraphicsMovableLine):
-        index = self.point_item.index(previous_point_item)
-        self.point_item.insert(index + 1, new_point_item)
-        self.line_item.insert(index + 1, new_line_item)
-        self.is_point_deletable = True
-        self.movable_poly.mp_list = self.point_item
-
-    def point_deleted(self, point_item):
-        n = len(self.point_item)
-        index = self.point_item.index(point_item)
-        self.line_item[(index - 1) % n].mp2 = self.point_item[(index + 1) % n]
-        self.line_item[index].delete()
-        self.line_item.remove(self.line_item[index])
-        self.point_item.remove(point_item)
-        if len(self.point_item) <= 3:
-            self.is_point_deletable = False
-        self.movable_poly.mp_list = self.point_item
-
-
-
-    def common_actions(self) -> list[QAction]:
-        if self._edit is False:
-            return [self.a_enter_edit, self.a_add_obstacle, self.a_remove_obstacle]
+    def common_action_list(self, scene_position:QPointF = QPointF()) -> list[QAction]:
+        rop = []
+        if self._edit:
+            rop.append(self.a_delete_obstacle)
+            rop.append(self.a_exit_edit_save)
+            rop.append(self.a_exit_edit_cancel)
         else:
-            return [self.a_add_obstacle, self.a_remove_obstacle, self.a_exit_edit_save, self.a_exit_edit_cancel]
+            if self.item_visibility():
+                rop.append(self.a_hide_obstacle)
+            else:
+                rop.append(self.a_show_obstacle)
+            rop.append(self.a_enter_edit)
+            rop.append(self.a_add_obstacle)
+        return rop
 
-    def setVisible(self, visible: bool):
-        if self._edit is True:
-            self.movable_poly.setVisible(visible)
-            [p.setVisible(visible) for p in self.point_item]
-            [l.setVisible(visible) for l in self.line_item]
-        else:
-            self.fixed_poly.setVisible(visible)
+    def item_visibility(self):
+        return self.checkState(0) == Qt.CheckState.Checked
 
     def remove_graphics(self):
-        if self.movable_poly is not None:
-            self.scene.removeItem(self.movable_poly)
-            self.movable_poly = None
-        if self.fixed_poly is not None:
-            self.scene.removeItem(self.fixed_poly)
-            self.fixed_poly = None
-        [self.scene.removeItem(p) for p in self.point_item]
-        self.point_item = []
-        [self.scene.removeItem(l) for l in self.line_item]
-        self.line_item = []
+        if self.fixed_polygon is not None:
+            self.scene.removeItem(self.fixed_polygon)
+            self.fixed_polygon = None
+        if self.editable_polygon is not None:
+            self.scene.removeItem(self.editable_polygon)
+            self.editable_polygon = None
 
     def enter_edit_mode(self):
+        self.take_focus()
         if self._edit is False:
             self._edit = True
 
-            # remove old graphics
-            if self.fixed_poly is not None:
-                self.scene.removeItem(self.fixed_poly)
-                self.fixed_poly = None
+            self.scene.removeItem(self.fixed_polygon)
+            self.fixed_polygon = None
 
-            # build new graphics
-            self.point_item = [QGraphicsMovablePoint(p, self) for p in self.area]
-            self.is_point_deletable = len(self.area) > 3
-            self.line_item = [QGraphicsMovableLine(mp1, mp2, self) for mp1, mp2 in
-                              zip(self.point_item, self.point_item[1:] + [self.point_item[0]])]
-            self.movable_poly = QGraphicsMovablePolygon(self.point_item, self)
-
-            # add new graphics to the scene
-            self.scene.addItem(self.movable_poly)
-            [self.scene.addItem(p) for p in self.point_item]
-            [self.scene.addItem(l) for l in self.line_item]
+            self.editable_polygon = QCGEditablePolygon(self, self.area.poly)
+            self.scene.addItem(self.editable_polygon)
 
             self.setCheckState(0, Qt.CheckState.Checked)
             self.update()
@@ -588,40 +632,53 @@ class QControlArea(QTreeWidgetItem):
         if self._edit is True:
             self._edit = False
             if save is True:
-                self.area.poly = QPolygonF([p.pos().truncated() for p in self.point_item])
+                self.area.poly = QPolygonF([p.pos().truncated() for p in self.editable_polygon])
 
-            # remove old graphics
-            if self.movable_poly is not None:
-                self.scene.removeItem(self.movable_poly)
-                self.movable_poly = None
-            [self.scene.removeItem(p) for p in self.point_item]
-            self.point_item = []
-            [self.scene.removeItem(l) for l in self.line_item]
-            self.line_item = []
+            self.scene.removeItem(self.editable_polygon)
+            self.editable_polygon = None
 
-            # build new graphics
-            self.fixed_poly = QGraphicsFixedPolygon(self.area.poly, self)
-
-            # add new graphics to the scene
-            self.scene.addItem(self.fixed_poly)
+            self.fixed_polygon = QCGHighlightablePolygon(self, self.area.poly)
+            self.scene.addItem(self.fixed_polygon)
 
             self.update()
 
     def contextMenuEvent(self, event):
         menu = QMenu()
-        a_localise = QAction("Localise")
-        a_localise.triggered.connect(self.localise)
-        menu.addAction(a_localise)
-
-        menu.addActions(self.common_actions())
+        menu.addAction(self.a_localise)
+        menu.addActions(self.common_action_list())
         menu.exec(QCursor.pos())
 
     def localise(self):
         self.setCheckState(0, Qt.CheckState.Checked)
-        if self._edit is True:
-            self.scene.move_to_item(self.movable_poly)
+        if self._edit:
+            self.scene.move_to_item(self.editable_polygon)
         else:
-            self.scene.move_to_item(self.fixed_poly)
+            self.scene.move_to_item(self.fixed_polygon)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -632,24 +689,12 @@ class QControlSublayer(QTreeWidgetItem):
         self.sublayer = sublayer
         self.setCheckState(0, Qt.CheckState.Unchecked)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsAutoTristate)
+        self.setExpanded(True)
 
         for area in sublayer:
             QControlArea(self, self.scene, area)
 
         self.update()
-
-    @property
-    def i(self):
-        if self.parent() is None:
-            return -1
-        return self.parent().i
-
-
-    @property
-    def j(self):
-        if self.parent() is None:
-            return -1
-        return self.parent().indexOfChild(self)
 
     def add_obstacle(self, k):
         r: QRectF = self.scene.viewport().current_visible_scene_rect()
@@ -667,8 +712,8 @@ class QControlSublayer(QTreeWidgetItem):
             self.child(index).update()
         self.treeWidget().update_height()
 
-    def remove_obstacle(self, k):
-        self.sublayer.remove_obstacle(k)
+    def delete_obstacle(self, k):
+        self.sublayer.delete_obstacle(k)
         item = self.child(k)
         item.remove_graphics()
         self.removeChild(item)
@@ -676,9 +721,8 @@ class QControlSublayer(QTreeWidgetItem):
             self.child(index).update()
         self.treeWidget().update_height()
 
-
     def update(self):
-        self.setText(0, f"Sublayer {self.j}")
+        self.setText(0, f"Sublayer {self.sublayer.j}")
 
 
 class QControlLayer(QTreeWidgetItem):
@@ -696,12 +740,8 @@ class QControlLayer(QTreeWidgetItem):
         self.update()
 
 
-    @property
-    def i(self):
-        return self.treeWidget().indexOfTopLevelItem(self)
-
     def update(self):
-        self.setText(0, f"Layer {self.i}")
+        self.setText(0, f"Layer {self.layer.i}")
 
 
 class QAreaTreeWidget(QTreeWidget):
@@ -709,8 +749,8 @@ class QAreaTreeWidget(QTreeWidget):
         super().__init__(parent)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setColumnCount(2)
-        # self.setHeaderHidden(False)
+        self.setColumnCount(1)
+        self.setHeaderHidden(True)
 
         self.scene = scene
         self.move = move
@@ -727,7 +767,7 @@ class QAreaTreeWidget(QTreeWidget):
         h = self.header().height() + 18 * self._count_visible_item() + 2
         self.setMinimumHeight(h)
         self.setMaximumHeight(h)
-        self.setColumnWidth(0, 200)
+        # self.setColumnWidth(0, 200)
         # self.resizeColumnToContents(0)
         # self.resizeColumnToContents(1)
 
@@ -748,11 +788,11 @@ class QAreaTreeWidget(QTreeWidget):
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         item = self.itemAt(event.pos())
-        if isinstance(item, QControlArea):
+        if isinstance(item, QControlArea | QControlSublayer | QControlLayer):
             item.contextMenuEvent(event)
 
 
-class QMotionControl(QControl):
+class QMotionControl(QTabControl):
     def __init__(self, parent, scene, move):
         super().__init__(parent, scene)
         self.highlight_widget = None
