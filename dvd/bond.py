@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, Iterator
 
 from PyQt6.QtCore import QPoint
 
@@ -8,41 +8,53 @@ from .section import Section
 
 
 class BondLink(RWStreamable):
+    has_graphic = True
 
-    def __init__(self, p1: QPointF, p2: QPointF, left_id, right_id, layer_id) -> None:
+    def __init__(self, parent, p1: QPointF, p2: QPointF, left_id, right_id, layer) -> None:
+        self.parent = parent
         self.p1 = p1
         self.p2 = p2
         self.left_id = left_id
         self.right_id = right_id
-        self.layer_id = layer_id
+        self.layer = layer
+
+    @property
+    def i(self):
+        return self.parent.bond_list.index(self)
 
     @classmethod
-    def from_stream(cls, stream: ReadStream) -> Self:
+    def from_stream(cls, stream: ReadStream, *, parent, move) -> Self:
         p1 = stream.read(QPointF)
         p2 = stream.read(QPointF)
         left_id = stream.read(UShort)
         right_id = stream.read(UShort)
-        layer_id = stream.read(UShort)
-        return cls(p1, p2, left_id, right_id, layer_id)
+        layer = move[stream.read(UShort)]
+        return cls(parent, p1, p2, left_id, right_id, layer)
 
     def to_stream(self, stream: WriteStream) -> None:
         stream.write(self.p1)
         stream.write(self.p2)
-        stream.write(Bytes(self.left_id))
+        stream.write(UShort(self.left_id))
         stream.write(UShort(self.right_id))
-        stream.write(UShort(self.layer_id))
+        stream.write(UShort(self.layer.i))
 
 
 class Bond(Section):
     _name = "BOND"
     _version = 2
 
-    def _load(self, substream: ReadStream) -> None:
-        nb_bond = substream.read(UShort)
-        self.bond_list = [substream.read(BondLink) for _ in range(nb_bond)]
+    def __iter__(self) -> Iterator[BondLink]:
+        return iter(self.bond_list)
 
-        # self.raw = substream.read_raw()
-        # self.hraw = self.raw.hex().upper()
+    def __getitem__(self, index: int) -> BondLink:
+        return self.bond_list[index]
+
+    def __len__(self) -> int:
+        return len(self.bond_list)
+
+    def _load(self, substream: ReadStream, *, move) -> None:
+        nb_bond = substream.read(UShort)
+        self.bond_list = [substream.read(BondLink, parent=self, move=move) for _ in range(nb_bond)]
 
     def _save(self, substream: WriteStream) -> None:
         nb_bond = len(self.bond_list)

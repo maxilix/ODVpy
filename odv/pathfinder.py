@@ -246,34 +246,6 @@ class Link(RWStreamable):
 
         return end_condition
 
-        #
-        # a = line.angle()
-        # if a == 0:
-        #     if sq == 2:
-        #         s_condition = self.cp1.line_to_previous.angleTo(line)
-        #     return line, QPolygonF([c1 + v4, c1 + v2, c2 + v1, c2 + v8])
-        # if 0 < a < 90:
-        #     return line, QPolygonF([c1 + v4, c1 + v1, c2 + v1, c2 + v4])
-        # if a == 90:
-        #     return line, QPolygonF([c1 + v2, c1 + v1, c2 + v8, c2 + v4])
-        # if 90 < a < 180:
-        #     return line, QPolygonF([c1 + v2, c1 + v8, c2 + v8, c2 + v2])
-        # if a == 180:
-        #     return line, QPolygonF([c2 + v4, c2 + v2, c1 + v1, c1 + v8])
-        # if 180 < a < 270:
-        #     return line, QPolygonF([c2 + v4, c2 + v1, c1 + v1, c1 + v4])
-        # if a == 270:
-        #     return line, QPolygonF([c2 + v2, c2 + v1, c1 + v8, c1 + v4])
-        # if 270 < a < 360:
-        #     return line, QPolygonF([c2 + v2, c2 + v8, c1 + v8, c1 + v2])
-        #
-        # raise Exception("code should be inaccessible")
-
-    # def QLineF(self):
-    #     p1 = self.start_position.QPointF()
-    #     p2 = self.end_position.QPointF()
-    #     return QLineF(p1, p2)
-
 
 class CrossingPoint(RWStreamable):
 
@@ -291,16 +263,6 @@ class CrossingPoint(RWStreamable):
         self.vector_from_previous = vector_from_previous
         self.link_index_list = link_index_list
 
-    # def __iter__(self):
-    #     return iter(self.path_link_list)
-    #
-    # def __getitem__(self, item):
-    #     return self.path_link_list[item]
-    #
-    # def __len__(self):
-    #     # assert (len(self.path_link_list) == len(self.global_path_link_index_list))
-    #     return len(self.path_link_list)
-
     @property
     def x(self):
         return self.point.x()
@@ -311,15 +273,10 @@ class CrossingPoint(RWStreamable):
 
     @timeit
     def line_to_previous(self) -> QLineF:
-        # point = QPointF(self.point.x, self.point.y)
-        # previous_point = QPointF(self.point.x - self.vector_from_previous.x,
-        #                          self.point.y - self.vector_from_previous.y)
         return QLineF(self.point, self.point - self.vector_from_previous)
 
     @timeit
     def line_to_next(self) -> QLineF:
-        # point = QPointF(self.point.x, self.point.y)
-        # next_point = QPointF(self.point.x + self.vector_to_next.x, self.point.y + self.vector_to_next.y)
         return QLineF(self.point, self.point + self.vector_to_next)
 
     @timeit
@@ -412,9 +369,6 @@ class CrossingPoint(RWStreamable):
         stream.write(nb_path_link)
         for path_link_index in self.link_index_list:
             stream.write(UShort(path_link_index))
-
-    # def QPF(self):
-    #     return QPointF(self.x, self.y)
 
 
 class PathFinder(RWStreamable):

@@ -17,7 +17,6 @@ class QScene(QGraphicsScene):
         self.viewport().move_to_item(item)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
-        print(len(self.items()))
         event.shared_menu = QSharedMenu()
         super().mousePressEvent(event)
 

@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 
 
 class RStreamable(ABC):
+    has_graphic = False
     @classmethod
     @abstractmethod
     def from_stream(cls, stream):

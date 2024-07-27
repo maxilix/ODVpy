@@ -145,7 +145,7 @@ class DvdParser(Parser):
     @property
     def bond(self):
         if self._bond.loaded is False:
-            self._bond.load()
+            self._bond.load(move=self.move)
         return self._bond
 
     @property

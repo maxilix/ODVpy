@@ -3,12 +3,13 @@ from PyQt6.QtGui import QPixmap, QAction
 from PyQt6.QtWidgets import QWidget, QCheckBox, QVBoxLayout, QSlider, QGraphicsScene, QGraphicsPixmapItem, \
     QGraphicsView, QGraphicsRectItem
 
-from qt.graphics.common import QCGPixmap
-from qt.control.common import QTabControl
+
+from qt.control.common import QTabControl, QSubControl
+from qt.graphics.pixmap import QCGPixmap
 from qt.scene import QScene
 
 
-class QMapControl(QTabControl):
+class QMapControl(QSubControl, QTabControl):
     def __init__(self, parent, scene: QScene, dvm, bgnd):
         super().__init__(parent, scene)
         self.dvm = dvm
@@ -26,9 +27,7 @@ class QMapControl(QTabControl):
         self.scene.addItem(self.graphic_map_item)
         self.graphic_map_item.setVisible(self.check_box.isChecked())
 
-    def context_menu_exclusive(self):
-        return False
-
+    @property
     def context_menu_name(self):
         return "Map"
 

@@ -36,6 +36,13 @@ class MovePolygon(RWStreamable):
             # counter-clockwise
             self._poly = QPolygonF(poly[::-1])
 
+    def __str__(self):
+        if self.main:
+            return f"Main Area {self.global_id} ({self.i}-{self.j}-{self.k})"
+        else:
+            return f"Obstacle {self.global_id} ({self.i}-{self.j}-{self.k})"
+
+
     @property
     def i(self):
         return self.parent.i
@@ -103,6 +110,9 @@ class Sublayer(RWStreamable):
     @property
     def j(self):
         return self.parent.sublayer_list.index(self)
+
+    def __str__(self):
+        return f"Sublayer ({self.i}-{self.j})"
 
     def __iter__(self) -> Iterator[MovePolygon]:
         return iter(self.area_list)
@@ -215,6 +225,9 @@ class Layer(RWStreamable):
     @property
     def i(self):
         return self.parent.layer_list.index(self)
+
+    def __str__(self):
+        return f"Layer ({self.i})"
 
     def __iter__(self):
         return iter(self.sublayer_list)

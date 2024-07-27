@@ -24,6 +24,39 @@ section_list = ["MISC",
                 "CART",
                 "DLGS"]
 
+"""
+DVM/BGND    Loading map             Chargement de la carte
+PAT         Loading updates         Chargement des modifications
+ELEM        Loading actors          Chargement des acteurs
+MOVE        Loading areas           Chargement des secteurs
+MOVE        Loading pathfinder      Chargement du générateur de chemin
+SGHT        Loading 3D Elements     Chargement de vision volumétrique
+MISC        Loading parameters      Chargement des paramètres spécifiques
+BOND        Loading bonds           Chargement des liaisons de zones
+FXBK        Loading SFX info        Chargement des sources sonores
+MAT         Loading materials       Chargement des matériaux
+FILT        Loading links           Chargement des liaisons verticales
+BUIL        Loading buildings       Chargement des batiments
+WAYS        Loading waypoints       Chargement des chemins de rondes
+SCRP        Loading scripts         Chargement des scripts
+AI          Loading AI tactics      Chargement des tactiques d'IA
+JUMP        Loading jump zones      Chargement des zones de saut
+CART        Loading moving objects  Chargement des objets mobiles
+DLGS        Loading dialogues       Chargement des dialogues
+MSIC        Loading music           Chargement des musiques
+SND         Loading sound           Chargement des sons
+WAYS        Loading waypoints       Chargement des chemins de rondes
+"""
+
+
+
+
+
+
+
+
+
+
 
 class Section(RWStreamable):
 
@@ -52,16 +85,16 @@ class Section(RWStreamable):
         data = stream.read(Bytes, size - 4)  # minus version size
         return cls(name, data)
 
-    def load(self):
+    def load(self, **kwargs):
         substream = ReadStream(self._data)
-        self._load(substream)
+        self._load(substream, **kwargs)
         next_byte = substream.read(Bytes, 1)
         assert next_byte == b''
         self._loaded = True
         # log.info(f"Section {self.section} loaded")
 
     @abstractmethod
-    def _load(self, substream: ReadStream) -> None:
+    def _load(self, substream: ReadStream, **kwargs) -> None:
         # must read (and create) self state from substream
         # can raise an error
         pass
