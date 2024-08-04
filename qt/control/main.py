@@ -1,15 +1,10 @@
-import sys
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QMouseEvent
+from PyQt6.QtWidgets import QTabWidget
 
-from PyQt6.QtCore import QPointF, QEvent, Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QLabel, QMenu, QScrollArea, QGraphicsScene, \
-    QPushButton, QGraphicsItem
-from PyQt6.QtWidgets import QStackedLayout
-from PyQt6.QtGui import QPalette, QColor, QPixmap, QWheelEvent, QMouseEvent, QAction, QCursor
-
-from qt.control.bond import QBondControl
-from qt.control.common import QTabControl
-from qt.control.map import QMapControl
-from qt.control.move import QMotionControl
+from qt.control.bond import QBondTabControl
+from qt.control.map import QMapTabControl
+from qt.control.move import QMoveTabControl
 from qt.scene import QScene
 
 
@@ -47,15 +42,15 @@ class QMainControl(QTabWidget):
         self.setMovable(False)
 
         # Map
-        self.map_control = QMapControl(self, scene, level.dvm, level.dvd.bgnd)
-        self.addTab(self.map_control, "DVM")
+        self.map_control = QMapTabControl(self, scene, level.dvm, level.dvd.bgnd)
+        self.addTab(self.map_control, "Map")
 
         # Miscellaneous
         # self.miscellaneous_control = QTabControl(self, scene)
         # self.addTab(self.miscellaneous_control, "MISC")
 
         # Motion
-        self.motion_control = QMotionControl(self, scene, level.dvd.move)
+        self.motion_control = QMoveTabControl(self, scene, level.dvd.move)
         self.addTab(self.motion_control, "MOVE")
 
         # Sights
@@ -84,25 +79,21 @@ class QMainControl(QTabWidget):
         # ...
 
         # Bonds
-        self.bond_control = QBondControl(self, scene, level.dvd.bond)
+        self.bond_control = QBondTabControl(self, scene, level.dvd.bond)
         self.addTab(self.bond_control, "BOND")
 
         # self.update()
 
-        # self.setCurrentWidget(self.motion_control)
+        self.setCurrentWidget(self.bond_control)
 
-        button = scene.addWidget(QPushButton("Button 1"))
-        button.setFlag(button.GraphicsItemFlag.ItemIgnoresTransformations)
-        button.setPos(20, 50)
-        button.setFlags(button.flags() | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-
-    # def update(self):
-    #     super().update()
-    #     self.motion_control.update()
+        # button = scene.addWidget(QPushButton("Button 1"))
+        # button.setFlag(button.GraphicsItemFlag.ItemIgnoresTransformations)
+        # button.setPos(20, 50)
+        # button.setFlags(button.flags() | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
 
     def mousePressEvent(self, event: QMouseEvent):
         if (event.button() == Qt.MouseButton.RightButton and
                 self.tabBar().tabAt(self.tabBar().mapFromParent(event.pos())) == self.tabBar().currentIndex()):
-            self.currentWidget().exec_context_menu()
+            self.currentWidget().exec_scene_menu()
 
         super().mousePressEvent(event)

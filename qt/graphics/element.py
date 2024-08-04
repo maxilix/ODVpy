@@ -7,9 +7,9 @@ from qt.graphics.point import QCGPoint
 
 
 class QCGLineElement(CustomGraphicsItem, QGraphicsLineItem):
-    def __init__(self, control, p1: QCGPoint, p2: QCGPoint, secable: bool = False, deletable: bool = False):
-        super().__init__(control)
-        self.setPen(control.pen)
+    def __init__(self, q_dvd_item, p1: QCGPoint, p2: QCGPoint, secable: bool = False, deletable: bool = False):
+        super().__init__(q_dvd_item)
+        self.setPen(q_dvd_item.pen)
         self._p1 = p1
         self._p2 = p2
         self.secable = secable
@@ -54,11 +54,11 @@ class QCGLineElement(CustomGraphicsItem, QGraphicsLineItem):
 
     def add_point(self, pos: QPointF):
         deletable = self.p1.deletable or self.p2.deletable
-        new_point = QCGPoint(self.control, pos, movable=True, deletable=deletable)
+        new_point = QCGPoint(self.q_dvd_item, pos, movable=True, deletable=deletable)
         self.scene().addItem(new_point)
         old_p2 = self.p2
         self.p2 = new_point
-        new_line = QCGLineElement(self.control, new_point, old_p2, secable=True)
+        new_line = QCGLineElement(self.q_dvd_item, new_point, old_p2, secable=True)
         self.scene().addItem(new_line)
         if self.parentItem() is not None:
             self.parentItem().point_added(self.p1, new_point, new_line)
@@ -71,7 +71,7 @@ class QCGLineElement(CustomGraphicsItem, QGraphicsLineItem):
         temp_line.setPen(pen)
         return temp_line.shape()
 
-    def local_action_list(self, scene_position):
+    def scene_menu_local_actions(self, scene_position):
         rop = []
         if self.secable is True:
             a_add_point = QAction("Add Point")
@@ -105,9 +105,9 @@ class QCGLineElement(CustomGraphicsItem, QGraphicsLineItem):
 
 
 class QCGPolygonShapeElement(CustomGraphicsItem, QGraphicsPathItem):
-    def __init__(self, control, p_list: list[QCGPoint], movable: bool = False):
-        super().__init__(control)
-        self.setBrush(control.brush)
+    def __init__(self, q_dvd_item, p_list: list[QCGPoint], movable: bool = False):
+        super().__init__(q_dvd_item)
+        self.setBrush(q_dvd_item.brush)
         self.setPen(QPen(Qt.GlobalColor.transparent))
         self.movable = movable
         self._p_list = p_list
@@ -140,14 +140,14 @@ class QCGPolygonShapeElement(CustomGraphicsItem, QGraphicsPathItem):
     def mouseDoubleClickEvent(self, event):
         if self.visible and self.movable and event.button() == Qt.MouseButton.LeftButton:
             self._drag_position = self.mapToScene(event.pos()).truncated()
-            self.setBrush(self.control.high_brush)
+            self.setBrush(self.q_dvd_item.high_brush)
         else:
             super().mouseDoubleClickEvent(event)
 
     def mouseReleaseEvent(self, event):
         if self.visible and self.movable:
             self._drag_position = None
-            self.setBrush(self.control.brush)
+            self.setBrush(self.q_dvd_item.brush)
         else:
             super().mouseReleaseEvent(event)
 

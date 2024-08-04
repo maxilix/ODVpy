@@ -91,7 +91,7 @@ class DvmParser(Parser):
 		self.compressed_data = self.stream.read(Bytes, compressed_data_length)
 		self._data = bz2.decompress(self.compressed_data)
 		self._level_map = None
-		self._draw = None
+		# self._draw = None
 
 	@property
 	def level_map(self) -> QImage:
@@ -108,35 +108,49 @@ class DvmParser(Parser):
 		assert len(data)*2 == len(self._data)
 		self._data = b''.join([pixel.to_bytes(2, byteorder='little') for pixel in data])
 		self._level_map = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
+		self.modified = True
 
-	def load_another_image(self, image_path):
-		self._draw = QImage(image_path).convertedTo(QImage.Format.Format_RGB16)
+	# def load_another_image(self, image_path):
+	# 	self._draw = QImage(image_path).convertedTo(QImage.Format.Format_RGB16)
+
+	def change_dvm(self, image_path):
+		self._level_map = QImage(image_path).convertedTo(QImage.Format.Format_RGB16)
+		self._width = self._level_map.width()
+		self._height = self._level_map.height()
+		self.modified = True
+
+
 
 
 	@property
-	def size(self):
-		return (self._width, self._height)
+	def width(self):
+		return self._width
 
-	def draw(self, poly, pen, brush):
-		if self._draw is None:
-			self._draw = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
+	@property
+	def height(self):
+		return self._height
 
-		painter = QPainter(self._draw)
-		painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-		painter.setPen(pen)
-		painter.setBrush(brush)
-		painter.drawPolygon(poly)
-
-		painter.end()
-		# self._draw.save("test.png")
+	# def draw(self, poly, pen, brush):
+	# 	if self._draw is None:
+	# 		self._draw = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
+	#
+	# 	painter = QPainter(self._draw)
+	# 	painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+	#
+	# 	painter.setPen(pen)
+	# 	painter.setBrush(brush)
+	# 	painter.drawPolygon(poly)
+	#
+	# 	painter.end()
+	# 	# self._draw.save("test.png")
 
 	def save_to_file(self, filename):
-		if self._draw is None:
-			data = self._data
+		if self.modified:
+			s = self.level_map.sizeInBytes()
+			data = bytes(self.level_map.bits().asarray(s))
 		else:
-			s = self._draw.sizeInBytes()
-			data = bytes(self._draw.bits().asarray(s))
+			data = self._data
+
 		compressed_data = Bytes(bz2.compress(data))
 		compressed_data_length = UInt(len(compressed_data))
 

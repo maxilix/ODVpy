@@ -18,6 +18,8 @@ class BondLink(RWStreamable):
         self.right_id = right_id
         self.layer = layer
 
+    def __str__(self):
+        return f"Bond {self.i}"
     @property
     def i(self):
         return self.parent.bond_list.index(self)

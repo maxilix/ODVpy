@@ -10,9 +10,9 @@ class QViewport(QGraphicsView):
     view_changed = pyqtSignal(QRectF)
 
 
-    def __init__(self, scene, dvm_size, info_bar):
+    def __init__(self, scene, dvm, info_bar):
         super().__init__(scene)
-        self.dvm_size = dvm_size
+        self.dvm = dvm
         self.info_bar = info_bar
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -29,15 +29,15 @@ class QViewport(QGraphicsView):
         self.zoom_max = 50
         self.zoom_min = 0.5
 
-        self.setSceneRect(QRectF(-dvm_size.width()/2,
-                                 -dvm_size.height()/2,
-                                 2*self.dvm_size.width(),
-                                 2*self.dvm_size.height()))
+        self.setSceneRect(QRectF(-self.dvm.width / 2,
+                                 -self.dvm.height / 2,
+                                 2 * self.dvm.width,
+                                 2 * self.dvm.height))
 
         # initial view position
         self.zoom = 1  # set zoom first, as it defines the margins around the dvm
-        self.x = dvm_size.width() // 2
-        self.y = dvm_size.height() // 2
+        self.x = dvm.width // 2
+        self.y = dvm.height // 2
 
         # self.zoom = 3.4
         # self.x = 700
@@ -125,7 +125,7 @@ class QViewport(QGraphicsView):
         self.scale(new_zoom/current_zoom, new_zoom/current_zoom)
         x_margin = self.horizontalScrollBar().pageStep()/new_zoom / 2# + 10
         y_margin = self.verticalScrollBar().pageStep()/new_zoom / 2# + 10
-        self.setSceneRect(QRectF(-x_margin, -y_margin, self.dvm_size.width() + 2*x_margin, self.dvm_size.height() + 2*y_margin))
+        self.setSceneRect(QRectF(-x_margin, -y_margin, self.dvm.width + 2 * x_margin, self.dvm.height + 2 * y_margin))
         # self.view_changed.emit(self.current_visible_scene_rect())
         self.info_bar.set_info(zoom=self.zoom)
 

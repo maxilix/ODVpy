@@ -1,9 +1,6 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QCursor
-from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMenu, QGraphicsItemGroup, QGraphicsItem
+from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent
 
-from qt.control.common import QSharedMenu
-
+from qt.control.q_scene_menu import QSceneMenu
 
 
 class QScene(QGraphicsScene):
@@ -17,13 +14,13 @@ class QScene(QGraphicsScene):
         self.viewport().move_to_item(item)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
-        event.shared_menu = QSharedMenu()
+        event.shared_menu = QSceneMenu()
         super().mousePressEvent(event)
 
         event.shared_menu.exec()
 
 
     def mouseDoubleClickEvent(self, event: QGraphicsSceneMouseEvent):
-        event.shared_menu = QSharedMenu()
+        event.shared_menu = QSceneMenu()
         super().mouseDoubleClickEvent(event)
         event.shared_menu.exec()

@@ -2,7 +2,7 @@ from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QPainter
 from PyQt6.QtWidgets import QGraphicsItem
 
-from qt.control.common import QSharedMenuSection
+from qt.control.q_scene_menu import QSceneMenuSection
 
 
 # CG : CustomGraphicsItem
@@ -11,11 +11,12 @@ from qt.control.common import QSharedMenuSection
 # H : highlightable
 # M : movable
 
+# TODO ZValue
 
 class CustomGraphicsItem(object):
 
-    def __init__(self, control, *args, **kwargs):
-        self.control = control
+    def __init__(self, q_dvd_item, *args, **kwargs):
+        self.q_dvd_item = q_dvd_item
         self._force_visibility = False
         super().__init__(*args, **kwargs)
 
@@ -26,22 +27,22 @@ class CustomGraphicsItem(object):
 
     @property
     def visible(self):
-        return self.control.item_visibility() or self._force_visibility
+        return self.q_dvd_item.visible or self._force_visibility
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
-            section = QSharedMenuSection(self, event)
+            section = QSceneMenuSection(self, event)
             event.shared_menu.add_section(section)
             event.accept()
         super().mousePressEvent(event)
 
-    def local_action_list(self, scene_position):
+    def scene_menu_local_actions(self, scene_position):
         return []
 
 
 class QCGItemGroup(QGraphicsItem):
-    def __init__(self, control, *args, **kwargs):
-        self.control = control
+    def __init__(self, q_dvd_item, *args, **kwargs):
+        self.q_dvd_item = q_dvd_item
         super().__init__(*args, **kwargs)
         self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
 

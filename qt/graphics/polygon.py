@@ -5,41 +5,41 @@ from qt.graphics.common import CustomGraphicsItem, QCGItemGroup
 from qt.graphics.element import QCGPoint, QCGLineElement, QCGPolygonShapeElement
 
 
-class QCGFixedPolygon(CustomGraphicsItem, QGraphicsPolygonItem):
-    def __init__(self, control, polygon: QPolygonF):
-        super().__init__(control, polygon.translated(0.5, 0.5))
-        self.setBrush(control.brush)
-        self.setPen(control.pen)
+class QCGPolygon(CustomGraphicsItem, QGraphicsPolygonItem):
+    def __init__(self, q_dvd_item, polygon: QPolygonF):
+        super().__init__(q_dvd_item, polygon.translated(0.5, 0.5))
+        self.setBrush(q_dvd_item.brush)
+        self.setPen(q_dvd_item.pen)
 
 
-class QCGHighlightablePolygon(QCGFixedPolygon):
-    def __init__(self, control, polygon: QPolygonF):
-        super().__init__(control, polygon)
-        self.setAcceptHoverEvents(True)
-
-    def hoverEnterEvent(self, event):
-        # self._force_visibility = True
-        # self.setBrush(QBrush(Qt.GlobalColor.transparent))
-        self.setBrush(self.control.high_brush)
-        # self.update()
-        super().hoverEnterEvent(event)
-
-    def hoverLeaveEvent(self, event):
-        # self._force_visibility = False
-        self.setBrush(self.control.brush)
-        # self.update()
-        super().hoverLeaveEvent(event)
+# class QCGHighlightablePolygon(QCGPolygon):
+#     def __init__(self, q_dvd_item, polygon: QPolygonF):
+#         super().__init__(q_dvd_item, polygon)
+#         self.setAcceptHoverEvents(True)
+#
+#     def hoverEnterEvent(self, event):
+#         # self._force_visibility = True
+#         # self.setBrush(QBrush(Qt.GlobalColor.transparent))
+#         self.setBrush(self.q_dvd_item.high_brush)
+#         # self.update()
+#         super().hoverEnterEvent(event)
+#
+#     def hoverLeaveEvent(self, event):
+#         # self._force_visibility = False
+#         self.setBrush(self.q_dvd_item.brush)
+#         # self.update()
+#         super().hoverLeaveEvent(event)
 
 
 class QCGEditablePolygon(QCGItemGroup):
-    def __init__(self, control, polygon: QPolygonF):
-        super().__init__(control)
+    def __init__(self, q_dvd_item, polygon: QPolygonF):
+        super().__init__(q_dvd_item)
 
         deletable = len(polygon) > 3
-        self.point_item = [QCGPoint(self.control, p, movable=True, deletable=deletable) for p in polygon]
-        self.line_item = [QCGLineElement(self.control, p1, p2, secable=True, deletable=False) for p1, p2 in
+        self.point_item = [QCGPoint(self.q_dvd_item, p, movable=True, deletable=deletable) for p in polygon]
+        self.line_item = [QCGLineElement(self.q_dvd_item, p1, p2, secable=True, deletable=False) for p1, p2 in
                           zip(self.point_item, self.point_item[1:] + [self.point_item[0]])]
-        self.polygon_shape = QCGPolygonShapeElement(self.control, self.point_item, movable=True)
+        self.polygon_shape = QCGPolygonShapeElement(self.q_dvd_item, self.point_item, movable=True)
 
         self.add_child(self.polygon_shape)
         self.add_children(self.line_item)

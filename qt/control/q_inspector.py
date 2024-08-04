@@ -1,7 +1,8 @@
 from PyQt6.QtCore import QSize
-from PyQt6.QtWidgets import QWidget, QPushButton, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QCheckBox
+from PyQt6.QtWidgets import QWidget, QPushButton, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QCheckBox, QFrame
 
 TITLE_SIZE = 22
+
 
 class QSettingsButtons(QPushButton):
     def __init__(self, parent):
@@ -19,6 +20,7 @@ class QSettingsButtons(QPushButton):
             }
         """)
 
+
 class QTitleLabel(QLabel):
     def __init__(self, parent):
         super().__init__(parent)
@@ -33,6 +35,7 @@ class QEditWidget(QWidget):
         self.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
         self._edit = False
         layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         self.edit_button = QPushButton("Edit")
         self.edit_button.setEnabled(not self._edit)
@@ -60,43 +63,58 @@ class QEditWidget(QWidget):
         self.cancel_button.setEnabled(self._edit)
 
 
-class QInspector(QWidget):
-    def __init__(self, parent, dvd_item):
-        super().__init__(parent)
-        self._dvd_item = dvd_item
+class QDVDInspectorItem(QWidget):
+    properties_layout = None
+
+    def __init__(self, q_odv_item):
+        super().__init__()
+        self.q_odv_item = q_odv_item
 
         self.main_layout = QVBoxLayout(self)
 
-        l1_layout = QHBoxLayout()
-
+        header_layout = QHBoxLayout()
         self.settings_button = QSettingsButtons(self)
-        l1_layout.addWidget(self.settings_button)
-
+        header_layout.addWidget(self.settings_button)
         self.title = QTitleLabel(self)
-        l1_layout.addWidget(self.title)
-
-        l1_layout.addStretch(255)
-
-        if dvd_item.has_graphic:
+        self.title.setText(self.q_odv_item.name)
+        header_layout.addWidget(self.title)
+        header_layout.addStretch(255)
+        if self.q_odv_item.q_graphic_item is not None:
             self.visible_checkbox = QCheckBox()
-            self.visible_checkbox.setChecked(False)
-            l1_layout.addWidget(self.visible_checkbox)
-
-            self.localise = QPushButton("Localise")
-            l1_layout.addWidget(self.localise)
+            self.visible_checkbox.setStyleSheet(f"QCheckBox::indicator {{width: {TITLE_SIZE}px; height: {TITLE_SIZE}px;}}")
+            self.visible_checkbox.setChecked(self.q_odv_item.visible)
+            self.visible_checkbox.stateChanged.connect(self.visible_checkbox_clicked)
+            header_layout.addWidget(self.visible_checkbox)
+            self.localise_button = QPushButton("Localise")
+            self.localise_button.clicked.connect(self.q_odv_item.localise)
+            header_layout.addWidget(self.localise_button)
         else:
             self.visible_checkbox = None
-            self.localise = None
-
-        self.main_layout.addLayout(l1_layout)
+            self.localise_button = None
+        self.main_layout.addLayout(header_layout)
 
         self.edit_widget = QEditWidget(self)
         self.main_layout.addWidget(self.edit_widget)
+        separator = QFrame()
+        separator.setFrameShape(QFrame.Shape.HLine)
+        self.main_layout.addWidget(separator)
+        if self.properties_layout is not None:
+            self.main_layout.addLayout(self.properties_layout)
+        self.main_layout.addStretch(255)
 
+    @property
+    def visible(self):
+        if self.q_odv_item.q_graphic_item is not None:
+            return self.visible_checkbox.isChecked()
+        else:
+            return False
 
+    @visible.setter
+    def visible(self, state):
+        if self.q_odv_item.q_graphic_item is not None:
+            self.visible_checkbox.setChecked(state)
 
-    # def update(self):
-    #     if self.item is not None:
-    #         self.localise.clicked.connect(self.item.localise)
-    #         self.title.setText(self.item.context_menu_name)
+    def visible_checkbox_clicked(self):#, state: Qt.CheckState):
+        self.q_odv_item.visible = self.visible
+
 

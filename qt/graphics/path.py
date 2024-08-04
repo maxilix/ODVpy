@@ -6,15 +6,15 @@ from qt.graphics.common import CustomGraphicsItem
 
 
 class QCGPath(CustomGraphicsItem, QGraphicsPathItem):
-    def __init__(self, control, path: QPainterPath):
-        super().__init__(control, path.translated(0.5, 0.5))
-        self.setBrush(control.brush)
-        self.setPen(control.pen)
+    def __init__(self, q_dvd_item, path: QPainterPath):
+        super().__init__(q_dvd_item, path.translated(0.5, 0.5))
+        self.setBrush(q_dvd_item.brush)
+        self.setPen(q_dvd_item.pen)
 
 
 class QCGHighlightablePath(QCGPath):
-    def __init__(self, control, path: QPainterPath):
-        super().__init__(control, path)
+    def __init__(self, q_dvd_item, path: QPainterPath):
+        super().__init__(q_dvd_item, path)
         self.setAcceptHoverEvents(True)
 
     def hoverEnterEvent(self, event):
@@ -24,5 +24,5 @@ class QCGHighlightablePath(QCGPath):
 
     def hoverLeaveEvent(self, event):
         self._force_visibility = False
-        self.setBrush(self.control.brush)
+        self.setBrush(self.q_dvd_item.brush)
         super().hoverLeaveEvent(event)

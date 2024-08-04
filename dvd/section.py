@@ -63,8 +63,7 @@ class Section(RWStreamable):
     _name: str
     _version: int
 
-    def __init__(self, name, data):
-        self._name = name
+    def __init__(self, data):
         self._data = data
         self._loaded = False
         # log.info(f"Section {self.section} initialized.")
@@ -83,7 +82,7 @@ class Section(RWStreamable):
         except AssertionError:
             raise ValueError(f"{cls._name} version mismatch: {version} and {cls._version}")
         data = stream.read(Bytes, size - 4)  # minus version size
-        return cls(name, data)
+        return cls(data)
 
     def load(self, **kwargs):
         substream = ReadStream(self._data)

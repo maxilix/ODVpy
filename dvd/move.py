@@ -1,5 +1,7 @@
 from typing import Iterator, Self
 
+from PyQt6.QtGui import QPainterPath
+
 from common import *
 from debug import timeit
 from odv.pathfinder import PathFinder
@@ -38,9 +40,9 @@ class MovePolygon(RWStreamable):
 
     def __str__(self):
         if self.main:
-            return f"Main Area {self.global_id} ({self.i}-{self.j}-{self.k})"
+            return f"Main Area {self.global_id}"
         else:
-            return f"Obstacle {self.global_id} ({self.i}-{self.j}-{self.k})"
+            return f"Obstacle {self.global_id}"
 
 
     @property
@@ -92,6 +94,7 @@ class Sublayer(RWStreamable):
     def __init__(self, parent, main: MainArea | None = None, obstacles: list[Obstacle] | None = None) -> None:
         assert isinstance(parent, Layer)
         self.parent = parent
+        self._path = None
         if main is None:
             self.area_list = []
         else:
@@ -112,7 +115,7 @@ class Sublayer(RWStreamable):
         return self.parent.sublayer_list.index(self)
 
     def __str__(self):
-        return f"Sublayer ({self.i}-{self.j})"
+        return f"Sublayer {self.j}"
 
     def __iter__(self) -> Iterator[MovePolygon]:
         return iter(self.area_list)
@@ -132,6 +135,7 @@ class Sublayer(RWStreamable):
         return self.area_list[1:]
 
     def add_obstacle(self, poly: QPolygonF, index: int = 0) -> Obstacle:
+        self._path = None
         obstacle = Obstacle(self, poly)
         if index <= 0:
             self.area_list.append(obstacle)
@@ -140,6 +144,7 @@ class Sublayer(RWStreamable):
         return obstacle
 
     def delete_obstacle(self, index: int):
+        self._path = None
         assert 0 < index < len(self.area_list)
         self.area_list.pop(index)
 
@@ -169,18 +174,18 @@ class Sublayer(RWStreamable):
         for obstacle in self.obstacles:
             substream.write(obstacle)
 
-    # @property
-    # def allow_path(self):
-    #     if self._allow_path is None:
-    #         self._allow_path = QPainterPath()
-    #         self._allow_path.addPolygon(self.main.QPolygonF())
-    #         self._allow_path.closeSubpath()
-    #         for obstacle in self.obstacles:
-    #             negative = QPainterPath()
-    #             negative.addPolygon(obstacle.QPolygonF())
-    #             negative.closeSubpath()
-    #             self._allow_path -= negative
-    #     return self._allow_path
+    @property
+    def path(self):
+        if self._path is None:
+            self._path = QPainterPath()
+            self._path.addPolygon(self.main.poly)
+            self._path.closeSubpath()
+            for obstacle in self.obstacles:
+                negative = QPainterPath()
+                negative.addPolygon(obstacle.poly)
+                negative.closeSubpath()
+                self._path -= negative
+        return self._path
 
     # def build_allow_path(self):
     #     self.allow_path = QPainterPath()
@@ -227,7 +232,7 @@ class Layer(RWStreamable):
         return self.parent.layer_list.index(self)
 
     def __str__(self):
-        return f"Layer ({self.i})"
+        return f"Layer {self.i}"
 
     def __iter__(self):
         return iter(self.sublayer_list)
