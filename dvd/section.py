@@ -35,7 +35,7 @@ MISC        Loading parameters      Chargement des paramètres spécifiques
 BOND        Loading bonds           Chargement des liaisons de zones
 FXBK        Loading SFX info        Chargement des sources sonores
 MAT         Loading materials       Chargement des matériaux
-FILT        Loading links           Chargement des liaisons verticales
+LIFT        Loading links           Chargement des liaisons verticales
 BUIL        Loading buildings       Chargement des batiments
 WAYS        Loading waypoints       Chargement des chemins de rondes
 SCRP        Loading scripts         Chargement des scripts
