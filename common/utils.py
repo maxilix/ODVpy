@@ -27,5 +27,6 @@ def temp_filename(prefix=".", suffix=".temp", alphabet="0123456789abcdef", lengt
 
 
 def copy(source, destination):
-    os.makedirs(os.path.dirname(destination), exist_ok=True)
-    shutil.copy2(source, destination)
+    if source != destination:
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        shutil.copy2(source, destination)

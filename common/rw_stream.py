@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 
 
 class RStreamable(ABC):
+    has_graphic = False
     @classmethod
     @abstractmethod
     def from_stream(cls, stream):
@@ -56,7 +57,7 @@ class ReadStream(object):
         return self._input.read(length)
 
     def read(self, object_type, *arg, **kwarg):
-        assert issubclass(object_type, RWStreamable)
+        # assert issubclass(object_type, RStreamable)
         rop = object_type.from_stream(self, *arg, **kwarg)
 
         return rop
@@ -124,5 +125,5 @@ class WriteStream(object):
         self._output.write(data)
 
     def write(self, element):
-        assert isinstance(element, RWStreamable)
+        # assert isinstance(element, WStreamable)
         element.to_stream(self)

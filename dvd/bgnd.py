@@ -1,39 +1,17 @@
-
-
 import bz2
-from PIL import Image
-from PyQt6.QtGui import QImage
-
+from PyQt6.QtGui import QImage, QColorTransform, QColor
 
 from common import *
 
 from .section import Section
 
 
-# class LevelMiniMap(Pixmap, ReadableFromStream):
-#
-# 	@classmethod
-# 	def from_stream(cls, stream):
-# 		width = stream.read(UShort)
-# 		height = stream.read(UShort)
-# 		compression = stream.read(UInt)
-# 		assert compression == 2
-# 		size = stream.read(UInt)
-# 		data = stream.read(Bytes, size)
-# 		return cls(width, height, data)
-#
-# 	def build(self):
-# 		decompressed = bz2.decompress(self.data)
-# 		self.bmp = Image.frombytes("RGB", (self.width, self.height), decompressed, "raw", "BGR;16")
+class Bgnd(Section):
 
+	_name = "BGND"
+	_version = 4
 
-class MiniMap(Section):
-
-	section_index = 1  # BGND
-
-	def _load(self, substream):
-		version = substream.read(Version)
-		assert version == 4
+	def _load(self, substream: ReadStream) -> None:
 		filename_size = substream.read(UShort)
 		self.minimap_name = substream.read(String, filename_size)
 		width = substream.read(UShort)
@@ -43,11 +21,17 @@ class MiniMap(Section):
 		size = substream.read(UInt)
 		data = substream.read(Bytes, size)
 		decompressed = bz2.decompress(data)
-		self.minimap = QImage(decompressed, width, height, QImage.Format.Format_RGB16)
+		self.minimap = QImage(decompressed, width, height, width*2, QImage.Format.Format_RGB16)
 
-	def _save(self, substream):
+		# TODO very inefficient
+		self.minimap.convertTo(QImage.Format.Format_RGBA8888)
+		for x in range(self.minimap.width()):
+			for y in range(self.minimap.height()):
+				if self.minimap.pixelColor(x, y) == QColor(0, 251, 0, 255):  # green color at the corner
+					self.minimap.setPixelColor(x, y, QColor(0, 0, 0, 0))
+
+	def _save(self, substream: WriteStream) -> None:
 		pass
-		# substream.write(Version(4))
 		# filename_size = UShort(len(self.minimap_name))
 		# substream.write(filename_size)
 		# substream.write(self.minimap_name)

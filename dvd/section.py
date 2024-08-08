@@ -3,16 +3,67 @@ from abc import ABC, abstractmethod
 from common import *
 
 # 20 dvd sections in order
-section_list = ["MISC", "BGND", "MOVE", "SGHT", "MASK", "WAYS", "ELEM", "FXBK", "MSIC", "SND ", "PAT ", "BOND", "MAT ",
-                "LIFT", "AI  ", "BUIL", "SCRP", "JUMP", "CART", "DLGS"]
+section_list = ["MISC",
+                "BGND",
+                "MOVE",
+                "SGHT",
+                "MASK",
+                "WAYS",
+                "ELEM",
+                "FXBK",
+                "MSIC",
+                "SND ",
+                "PAT ",
+                "BOND",
+                "MAT ",
+                "LIFT",
+                "AI  ",
+                "BUIL",
+                "SCRP",
+                "JUMP",
+                "CART",
+                "DLGS"]
+
+"""
+DVM/BGND    Loading map             Chargement de la carte
+PAT         Loading updates         Chargement des modifications
+ELEM        Loading actors          Chargement des acteurs
+MOVE        Loading areas           Chargement des secteurs
+MOVE        Loading pathfinder      Chargement du générateur de chemin
+SGHT        Loading 3D Elements     Chargement de vision volumétrique
+MISC        Loading parameters      Chargement des paramètres spécifiques
+BOND        Loading bonds           Chargement des liaisons de zones
+FXBK        Loading SFX info        Chargement des sources sonores
+MAT         Loading materials       Chargement des matériaux
+LIFT        Loading links           Chargement des liaisons verticales
+BUIL        Loading buildings       Chargement des batiments
+WAYS        Loading waypoints       Chargement des chemins de rondes
+SCRP        Loading scripts         Chargement des scripts
+AI          Loading AI tactics      Chargement des tactiques d'IA
+JUMP        Loading jump zones      Chargement des zones de saut
+CART        Loading moving objects  Chargement des objets mobiles
+DLGS        Loading dialogues       Chargement des dialogues
+MSIC        Loading music           Chargement des musiques
+SND         Loading sound           Chargement des sons
+WAYS        Loading waypoints       Chargement des chemins de rondes
+"""
+
+
+
+
+
+
+
+
+
 
 
 class Section(RWStreamable):
 
-    section_index = None  # must be defined by inheriting objects
+    _name: str
+    _version: int
 
-    def __init__(self, name, data):
-        self._name = name
+    def __init__(self, data):
         self._data = data
         self._loaded = False
         # log.info(f"Section {self.section} initialized.")
@@ -20,30 +71,40 @@ class Section(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         name = stream.read(String, 4)
-        assert name == section_list[cls.section_index]
+        try:
+            assert name == cls._name
+        except AssertionError:
+            raise ValueError(f"Name mismatch: {name} and {cls._name}")
         size = stream.read(UInt)
-        data = stream.read(Bytes, size)
-        return cls(name, data)
+        version = stream.read(Version)
+        try:
+            assert version == cls._version
+        except AssertionError:
+            raise ValueError(f"{cls._name} version mismatch: {version} and {cls._version}")
+        data = stream.read(Bytes, size - 4)  # minus version size
+        return cls(data)
+
+    def load(self, **kwargs):
+        substream = ReadStream(self._data)
+        self._load(substream, **kwargs)
+        next_byte = substream.read(Bytes, 1)
+        assert next_byte == b''
+        self._loaded = True
+        # log.info(f"Section {self.section} loaded")
+
+    @abstractmethod
+    def _load(self, substream: ReadStream, **kwargs) -> None:
+        # must read (and create) self state from substream
+        # can raise an error
+        pass
 
     def to_stream(self, stream):
         if self._loaded:
             self.save()  # update self._data
-        stream.write(self._name)
-        stream.write(UInt(len(self._data)))
-        stream.write(self._data)
-
-    def load(self):
-        substream = ReadStream(self._data)
-        self._load(substream)
-        next_byte = substream.read(Bytes, 1)
-        assert next_byte == b''
-        self._loaded = True
-        # log.info(f"Section {self.section} built")
-
-    @abstractmethod
-    def _load(self, substream):
-        # must read (and create) self state from substream
-        pass
+        stream.write(String(self._name))
+        stream.write(UInt(len(self._data) + 4))  # plus version size
+        stream.write(Version(self._version))
+        stream.write(Bytes(self._data))
 
     def save(self):
         substream = WriteStream()
@@ -53,10 +114,10 @@ class Section(RWStreamable):
             # assume _save() do nothing, self._data dont change
             pass
         else:
-            self._data = Bytes(new_data)
+            self._data = new_data
 
     @abstractmethod
-    def _save(self, substream):
+    def _save(self, substream: WriteStream) -> None:
         # must write self state in substream
         pass
 

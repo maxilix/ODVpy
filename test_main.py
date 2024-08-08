@@ -1,14 +1,17 @@
 import hashlib
 
-from PyQt6.QtCore import QBuffer, QByteArray
-from PyQt6.QtGui import QColor, QPen, QBrush, QImage, qRgb, qRed, qGreen, qBlue
+from PyQt6.QtCore import QBuffer, QByteArray, QRectF, QLineF, QPointF, QSizeF
+from PyQt6.QtGui import QColor, QPen, QBrush, QImage, qRgb, qRed, qGreen, qBlue, QPolygonF, QVector2D, QPixmap
+from PyQt6.QtWidgets import QLabel, QApplication
 
 from common import *
 from config import CONFIG
 from dvd import DvdParser
+from dvd.bond import BondLink
+from dvd.move import Obstacle, Sublayer
 from odv.level import Level, BackupedLevel, InstalledLevel
+from odv.pathfinder import PathFinder, CrossingPoint
 from settings import *
-
 
 CONFIG.load()
 
@@ -50,110 +53,82 @@ L24   [6.0, 3.0]  [11.0, 6.0]  [3.0, 2.0]
 L25   [6.0, 3.0]  [11.0, 6.0] 
 """
 
-
-# for i in range(26):
-#     level = BackupedLevel(i)
-#     # motion = level.dvd.move
-#     # print(f"L{i:02}   ", end="")
-#     # l = [pl.link_length for pl in motion.global_path_link_list]
-#     # print(f"{min(l):6.3f} {max(l):8.3f}")
-#     misc = level.dvd.misc
-#     print(hex(misc.c))
-#
-# exit()
+"""
+L00 
+nb_cb = 781
+nb_link = 7676
+"""
 
 
+def draw_obstacle_on_dvm(level, layer_index=0):
+    if level.dvd.move.loaded_areas is False:
+        level.dvd.move.load(only_areas=True)
+    pen = QPen(QColor(255, 0, 0, 128))
+    pen.setWidthF(0.5)
+    brush = QBrush(QColor(255, 0, 0, 32))
+    for sublayer in level.dvd.move[layer_index]:
+        for obstacle in sublayer:
+            level.dvm.draw(obstacle.QPolygonF(), pen, brush)
 
 
+def signed_area(polygon: QPolygonF):
+    area = 0.0
+    num_points = polygon.size()
+
+    for i in range(num_points):
+        current_point = QVector2D(polygon[i])
+        next_point = QVector2D(polygon[(i + 1) % num_points])
+        area += (next_point.x() - current_point.x()) * (next_point.y() + current_point.y())
+
+    print(area)
+    return area <= 0.0
 
 
+def is_line_strictly_in_sublayer(line: QLineF, sublayer: Sublayer) -> bool:
 
-level = Level("./dev/empty_level/empty_level_02")
-# level = Level("../Missions/DemoMod_L00/level_00")
+    center = line.center()
+    if not sublayer.allow_path.contains(center):
+        print(f"c {center.x():8.3f} {center.y():8.3f}   ", end="")
+        return False
+
+    for bound in sublayer.boundaries:
+        # if line == bound or line.p1() == bound.p2() and line.p2() == bound.p1():
+        #     return True
+        if (i := bound.intersects(line))[0] == QLineF.IntersectionType.BoundedIntersection:
+            if i[1] != line.p1() and i[1] != line.p2():
+                print(f"i {i[1].x():8.3f} {i[1].y():8.3f}   ", end="")
+                return False
+        # else:
+        #     print(i[0])
+    return True
+
+
+# level = Level("./dev/empty_level/empty_level_19")
+# level = Level("../Missions/03_Red_River/level_03")
+# level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)
-# level = BackupedLeve  l(5)
+level = BackupedLevel(0)
+level.dvm.load_another_image("../Missions/Level_28.png")
+# for level_index in range(26):
+#     print(f"Level {level_index}")
 
-motion = level.dvd.move
-# t = [pl.unk_int - motion.w_list[1] for pl in motion.global_path_link_list]
-# print(motion.w_list)
-# print(sum(t)/len(t))
-# print(max(t))
+# move = level.dvd.move
 
+# buil = level.dvd.buil
+# print(len(buil.building_list), len(buil.special_door_list))
+# for sd in buil.special_door_list:
+#     print(sd.accesses[0].point, sd.accesses[0].area_global_id, sd.accesses[0].layer_id)
+#     print(sd.accesses[1].point, sd.accesses[1].area_global_id, sd.accesses[1].layer_id)
+#     print(sd.accesses[2].point, sd.accesses[2].area_global_id, sd.accesses[2].layer_id)
+#     print()
 
-# for v in motion.w:
-#     print(v)
 # exit()
 
-# motion[0][0][103][2][5].unk_obj_list[0].t1 = []
-# motion[0][0][103][2][5].unk_obj_list[0].t1 = []
-# motion[0][0][103][2][5].unk_obj_list[0].t2 = []
-# motion[0][0][103][10][11].unk_obj_list[0].t1 = []
-# motion[0][0][103][10][11].unk_obj_list[0].t2 = []
-# motion[0][0][103][10][12].unk_obj_list[0].t1 = []
-# motion[0][0][103][10][12].unk_obj_list[0].t2 = []
-# motion[0][0][41][4][6].unk_obj_list[0].t1 = []
-# motion[0][0][41][4][6].unk_obj_list[0].t2 = []
 
-index = motion.get_ff_index()
-motion.global_unk_obj_list[0].t1 = [UChar(1)]
-motion.global_unk_obj_list[0].t2 = [UChar(1)]
-
-for i, layer in enumerate(motion):
-    for j, sublayer in enumerate(layer):
-        for k, area in enumerate(sublayer):
-            for l, cp in enumerate(area):
-                for m, pl in enumerate(cp):
-                    pl.global_unk_obj_index_list[0] = UShort(0)
-
-#
-# exit()
-
-# motion.w = [[UFloat(6.0),  UFloat(3.0)],
-#             [UFloat(11.0), UFloat(6.0)],
-#             [UFloat(3.0),  UFloat(2.0)],
-#             [UFloat(19.0), UFloat(11.0)]]
+# for sublayer in motion[0]:
+#     for area in sublayer.obstacles:
+#         level.dvm.draw(area.poly, QPen(QColor(255, 90, 40, 128)), QBrush(QColor(255, 90, 40, 32)))
 
 
-# motion.w[0] = [UFloat(1.0), UFloat(1.0)]
-# motion.w[1] = [UFloat(25.0), UFloat(25.0)]
-# motion.w[2] = [UFloat(11.0), UFloat(6.0)]
-# motion.w[2] = [UFloat(40.0), UFloat(30.0)]
-# motion.w[3] = [UFloat(40.0), UFloat(30.0)]
-
-for sublayer in motion[0]:
-    for area in sublayer[1:]:
-        poly = area.QPolygonF()
-        level.dvm.draw(poly, QPen(QColor(255, 0, 0)), QBrush(QColor(255, 0, 0, 64)))
-
-# for layer in motion[1:-1]:
-#     for sublayer in layer:
-#         poly = sublayer[0].QPolygonF()
-#         level.dvm.draw(poly, QPen(QColor(160, 200, 40)), QBrush(QColor(160, 200, 40, 64)))
-
-
-# for layer in motion:
-#     for sublayer in layer:
-#         for area in sublayer:
-#             for cp in area:
-#                 cp.unk_char = [cp.unk_char[0],
-#                                cp.unk_char[1],
-#                                cp.unk_char[0],
-#                                cp.unk_char[2]]
-
-
-# for pl in motion.global_path_link_list:
-#     pl.global_unk_obj_index_list = pl.global_unk_obj_index_list
-
-# for unk_obj in motion.global_unk_obj_list:
-#     n = len(unk_obj.unk_tab1)
-#     unk_obj.unk_tab1 = [UChar(4)]*n
-#     unk_obj.unk_tab2 = [UChar(4)]*n
-
-
-# cp = motion[0][0][102][1]
-# cp.unk_char = [UChar(9), UChar(6), UChar(6)]
-# for w0, w1 in motion.w:
-#     print(f"{bin(w0)[2:].zfill(32)}   {bin(w1)[2:].zfill(32)}")
 
 level.insert_in_game()
-

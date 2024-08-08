@@ -8,29 +8,20 @@ config.json
 dvd/*/
 
 # tests
-q_tests/
+tests/
 ex_*.py
 
 # others
 dvd/_bidictmaps.py
 dvd/_bitmap.py
 dvd/_common.py
-dvd/ways.py
-dvd/elem.py
-dvd/fxbk.py
-dvd/msic.py
-dvd/snd.py
-dvd/pat.py
-dvd/bond.py
-dvd/mat.py
-dvd/lift.py
-dvd/ai.py
-dvd/buil.py
-dvd/scrp.py
-dvd/jump.py
-dvd/cart.py
-dvd/dlgs.py
+
 dvd/_sght.py
+dvd/_ways.py
+dvd/_elem.py
+dvd/_fxbk.py
+dvd/_msic.py
+
 old_main.py
 
 ### venv template

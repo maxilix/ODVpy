@@ -1,17 +1,17 @@
-
 from common import *
 
-from .section import Section, section_list
+from .section import Section
 
 
-class Sight(Section):
+class Sght(Section):
 
-    section_index = 3  # SGHT
+    _name = "SGHT"
+    _version = 6
 
-    def _load(self, substream):
+    def _load(self, substream: ReadStream) -> None:
         substream.read_raw()
 
-    def _save(self, substream):
+    def _save(self, substream: WriteStream) -> None:
         pass
 
 

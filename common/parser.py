@@ -12,6 +12,7 @@ extension_list = ["dvf", "dvm", "dvd"]
 class Parser(object):
 
 	ext = None   # must be defined by inheriting objects
+	modified = False
 
 	def __init__(self, filename):
 		assert extension(filename) == self.ext

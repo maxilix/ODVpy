@@ -102,13 +102,10 @@ class UInt(LittleEndianInteger):
     signed = False
 
 
-class UFloat(float, RWStreamable):
+class Float(float, RWStreamable):
 
     def __new__(cls, value):
-        if value < 0:
-            raise NegativeUnsignedError(f"{cls.__name__} cannot be negative")
-        else:
-            return super().__new__(cls, value)
+        return super().__new__(cls, value)
 
     @classmethod
     def from_stream(cls, stream):

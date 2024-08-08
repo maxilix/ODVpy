@@ -183,40 +183,41 @@ L25 04000000 0200 1a00 0f
 
 from common import *
 
-from .section import Section, section_list
+from .section import Section
 
 
-class Masks(Section):
-    section_index = 4  # MASK
+class Mask(Section):
+    _name = "MASK"
+    _version = 4
 
-    def _load(self):
-        version = self._stream.read(UInt)
-        assert version == 4
-        nb_layer = self._stream.read(UShort)
+    def _load(self, substream: ReadStream) -> None:
+        assert substream.read(UInt) == self._version
+
+        nb_layer = substream.read(UShort)
         for layer_index in range(nb_layer):
-            nb_mask = self._stream.read(UShort)
+            nb_mask = substream.read(UShort)
             for mask_index in range(nb_mask):
-                flag = self._stream.read(Bytes, 1)[0]
+                flag = substream.read(Bytes, 1)[0]
                 if flag & 1:
-                    nb_coor = self._stream.read(UShort)
-                    coor_list1 = [self._stream.read(UPoint) for _ in range(nb_coor)]
+                    nb_coor = substream.read(UShort)
+                    coor_list1 = [substream.read(Point) for _ in range(nb_coor)]
                 if flag & 2:
-                    nb_coor = self._stream.read(UShort)
-                    coor_list2 = [self._stream.read(UPoint) for _ in range(nb_coor)]
+                    nb_coor = substream.read(UShort)
+                    coor_list2 = [substream.read(Point) for _ in range(nb_coor)]
                 if flag & 16:
-                    u4 = self._stream.read(UShort)
-                u5 = self._stream.read(UShort)
-                u6 = self._stream.read(UShort)
-                u7 = self._stream.read(UShort)
-                u8 = self._stream.read(UShort)
+                    u4 = substream.read(UShort)
+                u5 = substream.read(UShort)
+                u6 = substream.read(UShort)
+                u7 = substream.read(UShort)
+                u8 = substream.read(UShort)
 
-                count = self._stream.read(UShort)
-                d = self._stream.read(Bytes, count)
+                count = substream.read(UShort)
+                d = substream.read(Bytes, count)
 
-                self._stream.read_raw()
+                substream.read_raw()
                 return
 
-    def _save(self, substream):
+    def _save(self, substream: WriteStream) -> None:
         pass
 
     def p_build(self):

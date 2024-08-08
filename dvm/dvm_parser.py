@@ -91,38 +91,66 @@ class DvmParser(Parser):
 		self.compressed_data = self.stream.read(Bytes, compressed_data_length)
 		self._data = bz2.decompress(self.compressed_data)
 		self._level_map = None
-		self._draw = None
+		# self._draw = None
 
 	@property
-	def level_map(self):
+	def level_map(self) -> QImage:
 		if self._level_map is None:
 			self._level_map = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
 		return self._level_map
 
 	@property
-	def size(self):
-		return (self._width, self._height)
+	def data(self) -> list[int]:
+		return [self._data[i] + 256*self._data[i+1] for i in range(0, len(self._data), 2)]
 
-	def draw(self, poly, pen, brush):
-		if self._draw is None:
-			self._draw = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
+	@data.setter
+	def data(self, data: list[int]):
+		assert len(data)*2 == len(self._data)
+		self._data = b''.join([pixel.to_bytes(2, byteorder='little') for pixel in data])
+		self._level_map = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
+		self.modified = True
 
-		painter = QPainter(self._draw)
-		painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+	# def load_another_image(self, image_path):
+	# 	self._draw = QImage(image_path).convertedTo(QImage.Format.Format_RGB16)
 
-		painter.setPen(pen)
-		painter.setBrush(brush)
-		painter.drawPolygon(poly)
+	def change_dvm(self, image_path):
+		self._level_map = QImage(image_path).convertedTo(QImage.Format.Format_RGB16)
+		self._width = self._level_map.width()
+		self._height = self._level_map.height()
+		self.modified = True
 
-		painter.end()
-		# self._draw.save("test.png")
+
+
+
+	@property
+	def width(self):
+		return self._width
+
+	@property
+	def height(self):
+		return self._height
+
+	# def draw(self, poly, pen, brush):
+	# 	if self._draw is None:
+	# 		self._draw = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
+	#
+	# 	painter = QPainter(self._draw)
+	# 	painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+	#
+	# 	painter.setPen(pen)
+	# 	painter.setBrush(brush)
+	# 	painter.drawPolygon(poly)
+	#
+	# 	painter.end()
+	# 	# self._draw.save("test.png")
 
 	def save_to_file(self, filename):
-		if self._draw is None:
-			data = self._data
+		if self.modified:
+			s = self.level_map.sizeInBytes()
+			data = bytes(self.level_map.bits().asarray(s))
 		else:
-			s = self._draw.sizeInBytes()
-			data = bytes(self._draw.bits().asarray(s))
+			data = self._data
+
 		compressed_data = Bytes(bz2.compress(data))
 		compressed_data_length = UInt(len(compressed_data))
 
@@ -135,6 +163,11 @@ class DvmParser(Parser):
 		with open(filename, 'wb') as file:
 			file.write(stream.get_value())
 		print(f"Saved to {filename}")
+
+	def extract_to_bmp(self, filename):
+		self._level_map.save(filename)
+
+
 
 	# def save_to_file(self, filename):
 	# 	if self._draw is None:

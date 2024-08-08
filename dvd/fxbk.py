@@ -1,0 +1,14 @@
+from common import *
+
+from .section import Section
+
+
+class Fxbk(Section):
+    _name = "FXBK"
+    _version = 3
+
+    def _load(self, substream: ReadStream) -> None:
+        substream.read_raw()
+
+    def _save(self, substream: WriteStream) -> None:
+        pass
