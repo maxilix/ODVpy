@@ -14,8 +14,8 @@ class QViewport(QGraphicsView):
         self.dvm = dvm
         self.info_bar = info_bar
 
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
         self.horizontalScrollBar().valueChanged.connect(
             lambda: self.view_changed.emit(self.current_visible_scene_rect()))
@@ -30,19 +30,26 @@ class QViewport(QGraphicsView):
         self.zoom_max = 50
         self.zoom_min = 0.5
 
-        #
-        r = QRectF(-self.dvm.width / 2,
-                   -self.dvm.height / 2,
-                   2 * self.dvm.width,
-                   2 * self.dvm.height)
+        self.scene().addItem(QGraphicsRectItem(QRectF(0, 0, self.dvm.width, self.dvm.height)))
+        self.sceneRect()  # seems to have an initializing effect on the first call
+        self.setSceneRect(QRectF(-self.dvm.width, -self.dvm.height, 3*self.dvm.width, 3*self.dvm.height))
 
-        self.setSceneRect(r)
+        # === DYNAMIC MARGINS ===
+        # sceneRect (and margins) are adjusted during zooming according to the window size
+        # Each margin is half the window size
+        # But they cannot be set during __init__ because the viewport window is not yet the right size.
+        # x_margin = self.dvm.width / 2
+        # y_margin = self.dvm.height / 2
+        # r = QRectF(-x_margin, -y_margin, self.dvm.width + 2 * x_margin, self.dvm.height + 2 * y_margin)
+        # self.setSceneRect(r)
+        # === DYNAMIC MARGINS ===
 
-        # initial view position
-        self.zoom = 1  # set zoom first, as it defines the margins around the dvm
+
+        self.zoom = 1.5
         self.x = dvm.width // 2
         self.y = dvm.height // 2
 
+        # initial view position
         # self.zoom = 3.4
         # self.x = 700
         # self.y = 1700
@@ -113,12 +120,14 @@ class QViewport(QGraphicsView):
 
     @pyqtProperty(float)
     def zoom(self):
-        v = self.verticalScrollBar()
-        vertical_zoom = (v.maximum() - v.minimum() + v.pageStep()) / self.sceneRect().height()
-        h = self.horizontalScrollBar()
-        horizontal_zoom = (h.maximum() - h.minimum() + h.pageStep()) / self.sceneRect().width()
-        print(vertical_zoom, horizontal_zoom)
-        return vertical_zoom
+        if self.dvm.height >= self.dvm.width:
+            v = self.verticalScrollBar()
+            vertical_zoom = (v.maximum() - v.minimum() + v.pageStep()) / self.sceneRect().height()
+            return vertical_zoom
+        else:
+            h = self.horizontalScrollBar()
+            horizontal_zoom = (h.maximum() - h.minimum() + h.pageStep()) / self.sceneRect().width()
+            return horizontal_zoom
 
     @zoom.setter
     def zoom(self, new_zoom):
@@ -128,12 +137,12 @@ class QViewport(QGraphicsView):
             new_zoom = self.zoom_max
         current_zoom = self.zoom
         self.scale(new_zoom / current_zoom, new_zoom / current_zoom)
-        x_margin = self.horizontalScrollBar().pageStep() / new_zoom / 2  # + 10
-        y_margin = self.verticalScrollBar().pageStep() / new_zoom / 2  # + 10
-        r = QRectF(-x_margin, -y_margin, self.dvm.width + 2 * x_margin, self.dvm.height + 2 * y_margin)
-        # print(self.zoom, r)
-        self.setSceneRect(r)
-        # self.view_changed.emit(self.current_visible_scene_rect())
+        # === DYNAMIC MARGINS ===
+        # x_margin = self.horizontalScrollBar().pageStep() / new_zoom / 2  # + 10
+        # y_margin = self.verticalScrollBar().pageStep() / new_zoom / 2  # + 10
+        # r = QRectF(-x_margin, -y_margin, self.dvm.width + 2 * x_margin, self.dvm.height + 2 * y_margin)
+        # self.setSceneRect(r)
+        # === DYNAMIC MARGINS ===
         self.info_bar.set_info(zoom=self.zoom)
 
     @pyqtProperty(float)
@@ -145,7 +154,6 @@ class QViewport(QGraphicsView):
     def x(self, value):
         h = self.horizontalScrollBar()
         h.setValue(int(self.zoom * value - h.pageStep() / 2))
-        # self.view_changed.emit(self.current_visible_scene_rect())
 
     @pyqtProperty(float)
     def y(self):
@@ -156,7 +164,6 @@ class QViewport(QGraphicsView):
     def y(self, value):
         v = self.verticalScrollBar()
         v.setValue(int(self.zoom * value - v.pageStep() / 2))
-        # self.view_changed.emit(self.current_visible_scene_rect())
 
     def move_to_item(self, item: QGraphicsItem):
         self.move_to_rect(item.boundingRect())
@@ -195,7 +202,6 @@ class QViewport(QGraphicsView):
             # anim_zoom.setKeyValueAt(0.25, self.zoom)
             anim_zoom.setEndValue(zoom)
             anim_zoom.setEasingCurve(QEasingCurve.Type.InOutCubic)
-            # anim_zoom.
             anims.append(anim_zoom)
 
         group = QParallelAnimationGroup(self)
