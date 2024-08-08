@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QLabel, QVBoxLayout, Q
 
 from dvd.move import MovePolygon
 from qt.control.q_generic_tree import QODVTreeItem
-from qt.control.q_inspector import QDVDInspectorItem
+from qt.control.q_inspector import QODVInspectorItem
 from qt.control.q_odv_item import QODVItem
 from qt.control.q_tab_control import QTabControl, QTabControlGenericTree
 from qt.graphics.path import QCGPath
@@ -14,15 +14,15 @@ from qt.graphics.polygon import QCGPolygon
 
 class QMoveSectorGraphicItem(QCGPolygon):
     def __init__(self, q_move_sector):
-        super().__init__(q_move_sector, q_move_sector.odv_item.poly)
-        if q_move_sector.odv_item.main:
+        super().__init__(q_move_sector, q_move_sector.model.poly)
+        if q_move_sector.model.main:
             self.setBrush(q_move_sector.brushes[0])
             self.setPen(q_move_sector.pens[0])
         else:
             self.setBrush(q_move_sector.brushes[1])
             self.setPen(q_move_sector.pens[1])
 
-class QMoveSectorInspectorItem(QDVDInspectorItem):
+class QMoveSectorInspectorItem(QODVInspectorItem):
     def __init__(self, q_dvd_item):
         self.properties_layout = QGridLayout()
 
@@ -53,20 +53,20 @@ class QMoveSectorItem(QODVItem):
 
 class QSublayerGraphicItem(QCGPath):
     def __init__(self, q_sublayer):
-        super().__init__(q_sublayer, q_sublayer.odv_item.path)
+        super().__init__(q_sublayer, q_sublayer.model.path)
         self.setBrush(QBrush(Qt.GlobalColor.transparent))
 
 
 class QSublayerItem(QODVItem):
     colors = [QColor(180, 110, 30)]
     q_graphic_item_type = QSublayerGraphicItem
-    q_inspector_item_type = QDVDInspectorItem
+    q_inspector_item_type = QODVInspectorItem
     q_tree_item_type = QODVTreeItem
     editable = False
 
 
 class QLayerItem(QODVItem):
-    q_inspector_item_type = QDVDInspectorItem
+    q_inspector_item_type = QODVInspectorItem
     q_tree_item_type = QODVTreeItem
     editable = False
 

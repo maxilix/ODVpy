@@ -8,9 +8,8 @@ from qt.graphics.point import QCGPoint
 
 
 class QCGFixedLine(CustomGraphicsItem, QGraphicsLineItem):
-    def __init__(self, q_dvd_item, line: QLineF):
-        super().__init__(q_dvd_item, line.translated(0.5, 0.5))
-        self.setPen(q_dvd_item.pen)
+    # def __init__(self, line: QLineF):
+    #     super().__init__(line.translated(0.5, 0.5))
 
     def shape(self):
         # virtually extends the line width for click detection

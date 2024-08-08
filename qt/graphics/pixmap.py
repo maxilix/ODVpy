@@ -13,6 +13,7 @@ class QCGMap(QCGItemGroup):
         super().__init__(q_dvd_item)
 
         self.map = QCGPixmap(self.q_dvd_item, map_pixmap)
+        self.map.setVisible(True)
         self.map.setZValue(0.1)
         self.map_rect = QGraphicsRectItem(map_pixmap.rect().toRectF())
         self.map_rect.setZValue(0)

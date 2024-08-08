@@ -2,18 +2,19 @@ from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtWidgets import QScrollArea, QTabWidget, QMenu, QWidget, QVBoxLayout, QSizePolicy, \
     QStackedLayout
 
-from qt.control.q_odv_item import QODVItem
 from qt.control.q_generic_tree import QGenericTree, QODVTreeItem
-from qt.control.q_inspector import QDVDInspectorItem
 
 
 class QTabControl(QScrollArea):
-    def __init__(self, parent: QTabWidget, scene):
+    def __init__(self, parent: QTabWidget):
         super().__init__(parent)
         self.setWidgetResizable(True)
         self._scene_menu_priority = 2  # Nornal
         self._scene_menu_exclusive = False
-        self.scene = scene
+
+    @property
+    def scene(self):
+        return self.parent().scene
 
     def scene_menu_priority(self):
         return self._scene_menu_priority
@@ -60,23 +61,26 @@ class QTabControl(QScrollArea):
 
 
 class QTabControlGenericTree(QTabControl):
-    q_odv_item_types = [QODVItem]
+    inspector_types = []
 
-    def __init__(self, parent, scene, dvd_section):
-        super().__init__(parent, scene)
-        self.dvd_section = dvd_section
-        self.q_odv_items = []
+    def __init__(self, parent, ovd_section):
+        super().__init__(parent)
+        self.ovd_section = ovd_section
+        self.inspectors = dict()
+        self.tree_items = dict()
 
-        def build_tree_structure(q_tree_parent_item, dvd_root, depth):
+        def build_tree_structure(tree_parent_item, odv_root, depth):
             if depth == 0:
                 return
-            for odv_item in dvd_root:
-                q_odv_item = self.q_odv_item_types[-depth](self, self.scene, odv_item)
-                q_tree_parent_item.addChild(q_odv_item.q_tree_item)
-                self.inspector_stack_layout.addWidget(q_odv_item.q_inspector_item)
+            for odv_object in odv_root:
+                # q_odv_item = self.q_odv_item_types[-depth](self, self.scene, odv_item)
+                self.tree_items[odv_object] = QODVTreeItem(self, odv_object)
+                self.inspectors[odv_object] = self.inspector_types[-depth](self, odv_object)
 
-                self.q_odv_items.append(q_odv_item)
-                build_tree_structure(q_odv_item.q_tree_item, odv_item, depth - 1)
+                tree_parent_item.addChild(self.tree_items[odv_object])
+                self.inspector_stack_layout.addWidget(self.inspectors[odv_object])
+
+                build_tree_structure(self.tree_items[odv_object], odv_object, depth - 1)
 
         content = QWidget()
         layout = QVBoxLayout(content)
@@ -86,7 +90,8 @@ class QTabControlGenericTree(QTabControl):
         inspector_stack_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.inspector_stack_layout = QStackedLayout(inspector_stack_widget)
 
-        build_tree_structure(self.tree, self.dvd_section, len(self.q_odv_item_types))
+        build_tree_structure(self.tree, self.ovd_section, len(self.inspector_types))
+        assert len(self.tree_items) == len(self.inspectors)
         layout.addWidget(inspector_stack_widget)
         layout.addSpacing(50)
         layout.addWidget(self.tree)
@@ -96,23 +101,23 @@ class QTabControlGenericTree(QTabControl):
         self.tree.topLevelItem(0).setSelected(True)
 
     def item_selection_changed(self):
-        q_odv_item = self.tree.selectedItems()[0].q_odv_item
-        self.inspector_stack_layout.setCurrentWidget(q_odv_item.q_inspector_item)
+        active_odv_object = self.tree.selectedItems()[0].odv_object
+        self.inspector_stack_layout.setCurrentWidget(self.inspectors[active_odv_object])
 
-    def set_current_item(self, item=None):
-        if isinstance(item, QODVItem):
-            q_odv_item = item
-        elif isinstance(item, QDVDInspectorItem) or isinstance(item, QODVTreeItem):
-            q_odv_item = item.q_odv_item
-        else:
-            raise ValueError("item must be QDVDObject, QDVDInspectorItem or QDVDTreeItem")
-        self.tree.setCurrentItem(q_odv_item.q_tree_item)
-
-    def is_current_item(self, item):
-        if isinstance(item, QODVItem):
-            q_odv_item = item
-        elif isinstance(item, QDVDInspectorItem) or isinstance(item, QODVTreeItem):
-            q_odv_item = item.q_odv_item
-        else:
-            raise ValueError("item must be QDVDObject, QDVDInspectorItem or QDVDTreeItem")
-        return q_odv_item == self.tree.selectedItems()[0].q_odv_item
+    # def set_current_item(self, item=None):
+    #     if isinstance(item, QODVItem):
+    #         q_odv_item = item
+    #     elif isinstance(item, QODVInspectorItem) or isinstance(item, QODVTreeItem):
+    #         q_odv_item = item.odv_item
+    #     else:
+    #         raise ValueError("item must be QDVDObject, QDVDInspectorItem or QDVDTreeItem")
+    #     self.tree.setCurrentItem(q_odv_item.q_tree_item)
+    #
+    # def is_current_item(self, item):
+    #     if isinstance(item, QODVItem):
+    #         q_odv_item = item
+    #     elif isinstance(item, QODVInspectorItem) or isinstance(item, QODVTreeItem):
+    #         q_odv_item = item.odv_item
+    #     else:
+    #         raise ValueError("item must be QDVDObject, QDVDInspectorItem or QDVDTreeItem")
+    #     return q_odv_item == self.tree.selectedItems()[0].q_odv_item

@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt, QRectF
-from PyQt6.QtGui import QPainter
+from PyQt6.QtGui import QPainter, QPen
 from PyQt6.QtWidgets import QGraphicsItem
 
 from qt.control.q_scene_menu import QSceneMenuSection
@@ -13,12 +13,23 @@ from qt.control.q_scene_menu import QSceneMenuSection
 
 # TODO ZValue
 
+class QThinPen(QPen):
+    def __init__(self, color):
+        super().__init__(color)
+        self.setWidthF(0.3)
+        self.setCapStyle(Qt.PenCapStyle.FlatCap)
+        self.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+
+
 class CustomGraphicsItem(object):
 
-    def __init__(self, q_dvd_item, *args, **kwargs):
-        self.q_dvd_item = q_dvd_item
+    def __init__(self, odv_object, *args, **kwargs):
+        self.odv_object = odv_object
+        self._visible = False
         self._force_visibility = False
         super().__init__(*args, **kwargs)
+        super().setVisible(True)
+        self.update()
 
     def paint(self, painter: QPainter, option, widget=None):
         if self.visible:
@@ -27,7 +38,16 @@ class CustomGraphicsItem(object):
 
     @property
     def visible(self):
-        return self.q_dvd_item.visible or self._force_visibility
+        return self._visible or self._force_visibility
+
+    @visible.setter
+    def visible(self, value):
+        self._visible = value
+        if value:
+            self.update()
+
+    def setVisible(self, value):
+        self.visible = value
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
@@ -38,6 +58,9 @@ class CustomGraphicsItem(object):
 
     def scene_menu_local_actions(self, scene_position):
         return []
+
+    def localise(self):
+        self.scene().move_to_item(self)
 
 
 class QCGItemGroup(QGraphicsItem):

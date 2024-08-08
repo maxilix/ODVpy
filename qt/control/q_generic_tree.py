@@ -4,15 +4,16 @@ from PyQt6.QtWidgets import QAbstractItemView, QTreeWidget, QTreeWidgetItem, QMe
 
 
 class QODVTreeItem(QTreeWidgetItem):
-    def __init__(self, q_odv_item):
+    def __init__(self, tab_control, odv_object):
         super().__init__(None)
-
-        self.q_odv_item = q_odv_item
-        if self.q_odv_item.q_graphic_item is not None:
-            if self.q_odv_item.visible:
-                self.setCheckState(0, Qt.CheckState.Checked)
-            else:
-                self.setCheckState(0, Qt.CheckState.Unchecked)
+        self._tab_control = tab_control
+        self.odv_object = odv_object
+        # if self.odv_item.q_graphic_item is not None:
+        #     if self.odv_item.visible:
+        #         self.setCheckState(0, Qt.CheckState.Checked)
+        #     else:
+        #         self.setCheckState(0, Qt.CheckState.Unchecked)
+        self.update()
 
     def setBold(self, value):
         f = self.font(0)
@@ -20,28 +21,32 @@ class QODVTreeItem(QTreeWidgetItem):
         self.setFont(0, f)
 
     def update(self):
-        self.setText(0, self.q_odv_item.name)
+        self.setText(0, self.odv_object.name)
 
-    @property
-    def visible(self):
-        if self.q_odv_item.q_graphic_item is not None:
-            return self.checkState(0) == Qt.CheckState.Checked
-        else:
-            return False
+    def inspector(self):
+        return self._tab_control.inspectors[self.odv_object]
 
-    @visible.setter
-    def visible(self, state):
-        if self.q_odv_item.q_graphic_item is not None:
-            if state:
-                self.setCheckState(0, Qt.CheckState.Checked)
-            else:
-                self.setCheckState(0, Qt.CheckState.Unchecked)
 
-    def contextMenuEvent(self, event):
-        menu = QMenu()
-        menu.addAction(self.q_odv_item.a_localise)
-        menu.addActions(self.q_odv_item.scene_menu_common_actions())
-        menu.exec(QCursor.pos())
+    # @property
+    # def visible(self):
+    #     if self.odv_item.q_graphic_item is not None:
+    #         return self.checkState(0) == Qt.CheckState.Checked
+    #     else:
+    #         return False
+    #
+    # @visible.setter
+    # def visible(self, state):
+    #     if self.odv_item.q_graphic_item is not None:
+    #         if state:
+    #             self.setCheckState(0, Qt.CheckState.Checked)
+    #         else:
+    #             self.setCheckState(0, Qt.CheckState.Unchecked)
+
+    # def contextMenuEvent(self, event):
+    #     menu = QMenu()
+    #     menu.addAction(self.odv_item.a_localise)
+    #     menu.addActions(self.odv_item.scene_menu_common_actions())
+    #     menu.exec(QCursor.pos())
 
 
 class QGenericTree(QTreeWidget):
@@ -53,7 +58,7 @@ class QGenericTree(QTreeWidget):
         self.setColumnCount(1)
         self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.itemClicked.connect(self.tree_item_clicked)
+        # self.itemClicked.connect(self.tree_item_clicked)
 
     def addChild(self, child):
         self.addTopLevelItem(child)
@@ -72,11 +77,11 @@ class QGenericTree(QTreeWidget):
     #         index = self.indexBelow(index)
     #     return count
 
-    @staticmethod
-    def tree_item_clicked(tree_item, column):
-        if column == 0:
-            tree_item.q_odv_item.visible = tree_item.visible
-
-    def contextMenuEvent(self, event: QContextMenuEvent):
-        item = self.itemAt(event.pos())
-        item.contextMenuEvent(event)
+    # @staticmethod
+    # def tree_item_clicked(tree_item, column):
+    #     if column == 0:
+    #         tree_item.odv_item.visible = tree_item.visible
+    #
+    # def contextMenuEvent(self, event: QContextMenuEvent):
+    #     item = self.itemAt(event.pos())
+    #     item.contextMenuEvent(event)

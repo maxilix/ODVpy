@@ -5,37 +5,38 @@ from qt.scene import QScene
 
 class QODVItem(object):
     colors = []
-
-    editable = True
-
-    q_graphic_item_type = lambda *args: None
-    q_inspector_item_type = lambda *args: None
-    q_tree_item_type = lambda *args: None
+    graphic_type = lambda *args: None
+    graphic_edit_type = lambda *args: None
 
 
-    def __init__(self, q_tab_control, scene: QScene, odv_item):
+
+    def __init__(self, q_tab_control, scene: QScene, model):
         self.q_tab_control = q_tab_control
         self.scene = scene
-        self.odv_item = odv_item
+        self.model = model
 
-        self.name = str(odv_item)
-        self._edit = False
-        self._visible = False
+        self.name = str(model)
+        # self._edit = False
+        # self._visible = False
         self._local_exclusive = False
 
-        self.pens = []
-        self.brushes = []
-        self.init_graphic_tools()
-        self.init_actions()
+        # self.pens = []
+        # self.brushes = []
+        # self.graphics = []
+        # if self.model.has_graphic:
+        #     self.init_graphic_tools()
+        # self.init_graphics()
 
-        self.q_graphic_item = self.q_graphic_item_type(self)
-        self.q_inspector_item = self.q_inspector_item_type(self)
-        self.q_tree_item = self.q_tree_item_type(self)
+        # self.init_properties()
+        # self.init_actions()
+        #
+        # self.q_inspector_item = QODVInspectorItem(self)
+        # self.q_tree_item = QODVTreeItem(self)
 
-        if self.q_graphic_item is not None:
-            self.scene.addItem(self.q_graphic_item)
+        # if self.graphic is not None:
+        #     self.scene.addItem(self.graphic)
 
-        self.update()
+        # self.update()
 
     @property
     def visible(self):
@@ -47,26 +48,21 @@ class QODVItem(object):
     @visible.setter
     def visible(self, visible):
         self._visible = visible
-        if self.q_tree_item is not None:
-            self.q_tree_item.visible = visible
-        if self.q_inspector_item is not None:
-            self.q_inspector_item.visible = visible
-        if self.q_graphic_item is not None:
-            self.q_graphic_item.update()
+        self.q_tree_item.visible = visible
+        self.q_inspector_item.visible = visible
+        if self.graphic is not None:
+            self.graphic.update()
 
     def update(self):
-        if self.q_tree_item is not None:
-            self.q_tree_item.update()
-        if self.q_inspector_item is not None:
-            self.q_inspector_item.update()
-        if self.q_graphic_item is not None:
-            self.q_graphic_item.update()
+        self.q_tree_item.update()
+        self.q_inspector_item.update()
+        if self.graphic is not None:
+            self.graphic.update()
 
     def rename(self):
         pass
 
     def init_graphic_tools(self):
-
         for c in self.colors:
             temp_color = QColor(c)
             temp_color.setAlpha(255)
@@ -78,6 +74,7 @@ class QODVItem(object):
             temp_color.setAlpha(32)
             brush = QBrush(temp_color)
             self.brushes.append(brush)
+
 
     @property
     def pen(self):
@@ -154,7 +151,7 @@ class QODVItem(object):
 
     def localise(self):
         self.visible = True
-        self.scene.move_to_item(self.q_graphic_item)
+        self.scene.move_to_item(self.graphics)
 
     def take_focus(self):
         self.q_tab_control.take_focus()

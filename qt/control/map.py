@@ -9,8 +9,8 @@ from qt.scene import QScene
 
 
 class QMapTabControl(QTabControl):
-    def __init__(self, parent, scene: QScene, dvm, bgnd):
-        super().__init__(parent, scene)
+    def __init__(self, parent, dvm, bgnd):
+        super().__init__(parent)
         self.dvm = dvm
         self.bgnd = bgnd
         self.wf = self.dvm.level_map.size().width() / self.bgnd.minimap.size().width()
@@ -135,9 +135,9 @@ class QMapTabControl(QTabControl):
         if dialog.exec():
             filenames = dialog.selectedFiles()
             if len(filenames) == 1:
-                self.dvm.change_dvm(filenames[0])
+                self.dvm.change_level_map_image(filenames[0])
                 self.scene.removeItem(self.graphic)
-                self.graphic = QCGMap(self, QPixmap(self.dvm.level_map))
+                self.graphic = QCGMap(self, QPixmap(self.dvm.level_map_image))
                 self.scene.addItem(self.graphic)
                 self.update()
 

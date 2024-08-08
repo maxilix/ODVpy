@@ -27,9 +27,9 @@ class QWindow(QMainWindow):
         # self.setMinimumSize(800, 600)
         # self.setGeometry(0, 0, 500, 500)
 
-        # self.current_level = None
+        self.current_level = None
+        # self.current_level = BackupedLevel(3)
         # self.current_level = Level("./dev/empty_level/empty_level_19")
-        self.current_level = BackupedLevel(3)
 
         menu = self.menuBar()
         # ============================== File menu ==============================
@@ -179,6 +179,14 @@ class QWindow(QMainWindow):
             viewport = QViewport(scene, dvm, info_bar)
             control = QMainControl(main_widget, scene, self.current_level)
             info_bar.set_info(level_index=self.current_level.index)
+
+            # print(viewport.zoom)
+            # viewport.zoom = 0.5  # set zoom first, as it defines the margins around the dvm
+            # viewport.x = 100
+            # viewport.y = 100
+            # print("zoom", viewport.zoom)
+            # print("x", viewport.x)
+            # print("y", viewport.y)
 
 
             layout = QVBoxLayout(visualizer)

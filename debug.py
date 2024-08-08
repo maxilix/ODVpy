@@ -69,8 +69,8 @@ def cmp_obj_size(sprites):
 def print_level_map_size():
     for level in LEVEL:
         dvm = DvmParser(level.dvm)
-        w = dvm.level_map.width
-        h = dvm.level_map.height
+        w = dvm.level_map_image.width
+        h = dvm.level_map_image.height
         wb = w.to_bytes(2, 'little')
         hb = h.to_bytes(2, 'little')
         print(f"L{level.index:02} {wb.hex()} ({w}) x {hb.hex()} ({h})")
