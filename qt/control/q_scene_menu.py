@@ -6,16 +6,16 @@ class QSceneMenuSection(object):
     def __init__(self, graphics_item, event) -> None:
         scene_position = graphics_item.mapToScene(event.pos())
 
-        self.name = graphics_item.q_dvd_item.scene_menu_name()
-        self.exclusive = graphics_item.q_dvd_item.scene_menu_exclusive()
-        self.enabled = graphics_item.q_dvd_item.scene_menu_enabled()
-        self.priority = graphics_item.q_dvd_item.scene_menu_priority()
+        self.name = graphics_item.odv_object.scene_menu_name()
+        self.exclusive = graphics_item.odv_object.scene_menu_exclusive()
+        self.enabled = graphics_item.odv_object.scene_menu_enabled()
+        self.priority = graphics_item.odv_object.scene_menu_priority()
 
         self.action_list = []
         if graphics_item.visible:
             for action in graphics_item.scene_menu_local_actions(scene_position):
                 self.action_list.append(action)
-        for action in graphics_item.q_dvd_item.scene_menu_common_actions(scene_position):
+        for action in graphics_item.odv_object.scene_menu_common_actions(scene_position):
             self.action_list.append(action)
 
     @property

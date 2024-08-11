@@ -4,8 +4,8 @@ from .section import Section
 
 
 class Mat(Section):
-    _name = "MAT "
-    _version = 4
+    _section_name = "MAT "
+    _section_version = 4
 
     def _load(self, substream: ReadStream) -> None:
         substream.read_raw()

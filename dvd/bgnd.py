@@ -8,8 +8,8 @@ from .section import Section
 
 class Bgnd(Section):
 
-	_name = "BGND"
-	_version = 4
+	_section_name = "BGND"
+	_section_version = 4
 
 	def _load(self, substream: ReadStream) -> None:
 		filename_size = substream.read(UShort)

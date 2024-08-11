@@ -94,8 +94,8 @@ class Building(RWStreamable):
 
 
 class Buil(Section):
-    _name = "BUIL"
-    _version = 4
+    _section_name = "BUIL"
+    _section_version = 4
 
     def _load(self, substream: ReadStream) -> None:
         nb_building = substream.read(UShort)

@@ -60,27 +60,35 @@ WAYS        Loading waypoints       Chargement des chemins de rondes
 
 class Section(RWStreamable):
 
-    _name: str
-    _version: int
+    _section_name: str
+    _section_version: int
 
-    def __init__(self, data):
+    def __init__(self, data, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._data = data
         self._loaded = False
         # log.info(f"Section {self.section} initialized.")
+
+    def __str__(self):
+        return f"{self._section_name} Section"
+
+    @property
+    def version(self):
+        return self._section_version
 
     @classmethod
     def from_stream(cls, stream):
         name = stream.read(String, 4)
         try:
-            assert name == cls._name
+            assert name == cls._section_name
         except AssertionError:
-            raise ValueError(f"Name mismatch: {name} and {cls._name}")
+            raise ValueError(f"Name mismatch: {name} and {cls._section_name}")
         size = stream.read(UInt)
         version = stream.read(Version)
         try:
-            assert version == cls._version
+            assert version == cls._section_version
         except AssertionError:
-            raise ValueError(f"{cls._name} version mismatch: {version} and {cls._version}")
+            raise ValueError(f"{cls._section_name} version mismatch: {version} and {cls._section_version}")
         data = stream.read(Bytes, size - 4)  # minus version size
         return cls(data)
 
@@ -101,9 +109,9 @@ class Section(RWStreamable):
     def to_stream(self, stream):
         if self._loaded:
             self.save()  # update self._data
-        stream.write(String(self._name))
+        stream.write(String(self._section_name))
         stream.write(UInt(len(self._data) + 4))  # plus version size
-        stream.write(Version(self._version))
+        stream.write(Version(self._section_version))
         stream.write(Bytes(self._data))
 
     def save(self):

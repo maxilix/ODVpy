@@ -4,8 +4,8 @@ from .section import Section
 
 
 class Dlgs(Section):
-    _name = "DLGS"
-    _version = 4
+    _section_name = "DLGS"
+    _section_version = 4
 
     def _load(self, substream: ReadStream) -> None:
         substream.read_raw()

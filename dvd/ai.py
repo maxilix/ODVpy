@@ -4,8 +4,8 @@ from .section import Section
 
 
 class Ai(Section):
-    _name = "AI  "
-    _version = 2
+    _section_name = "AI  "
+    _section_version = 2
 
     def _load(self, substream: ReadStream) -> None:
         substream.read_raw()

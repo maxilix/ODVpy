@@ -60,8 +60,8 @@ class QGenericTree(QTreeWidget):
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         # self.itemClicked.connect(self.tree_item_clicked)
 
-    def addChild(self, child):
-        self.addTopLevelItem(child)
+    # def addChild(self, child):
+    #     self.addTopLevelItem(child)
 
     # def update_height(self):
     #

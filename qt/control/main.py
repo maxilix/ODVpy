@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QTabWidget
 
 from qt.control.bond import QBondTabControl
 from qt.control.map import QMapTabControl
+from qt.control.move import QMoveTabControl
 from qt.scene import QScene
 
 
@@ -33,7 +34,7 @@ class QMainControl(QTabWidget):
     def __init__(self, parent, scene, level):
         super().__init__(parent)
         self.scene = scene
-        # self.level = level
+        self.level = level
 
         self.setMinimumWidth(500)
 
@@ -41,16 +42,16 @@ class QMainControl(QTabWidget):
         self.setMovable(False)
 
         # Map
-        self.map_control = QMapTabControl(self, level.dvm, level.dvd.bgnd)
-        self.addTab(self.map_control, "Map")
+        # self.map_control = QMapTabControl(self, level.dvm, level.dvd.bgnd)
+        # self.addTab(self.map_control, "Map")
 
         # Miscellaneous
         # self.miscellaneous_control = QTabControl(self, scene)
         # self.addTab(self.miscellaneous_control, "MISC")
 
         # Motion
-        # self.motion_control = QMoveTabControl(self, scene, level.dvd.move)
-        # self.addTab(self.motion_control, "MOVE")
+        self.motion_control = QMoveTabControl(self, level.dvd.move)
+        self.addTab(self.motion_control, "MOVE")
 
         # Sights
         # self.sights_control = QTabControl(self, scene)
@@ -78,12 +79,12 @@ class QMainControl(QTabWidget):
         # ...
 
         # Bonds
-        self.bond_control = QBondTabControl(self, level.dvd.bond)
-        self.addTab(self.bond_control, "BOND")
+        # self.bond_control = QBondTabControl(self, level.dvd.bond)
+        # self.addTab(self.bond_control, "BOND")
 
         # self.update()
 
-        self.setCurrentWidget(self.bond_control)
+        # self.setCurrentWidget(self.bond_control)
 
         # button = scene.addWidget(QPushButton("Button 1"))
         # button.setFlag(button.GraphicsItemFlag.ItemIgnoresTransformations)

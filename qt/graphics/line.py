@@ -27,9 +27,9 @@ class QCGEditableLine(QCGItemGroup):
     def __init__(self, q_dvd_item, line: QLineF):
         super().__init__(q_dvd_item)
 
-        self.p1_item = QCGPoint(self.q_dvd_item, line.p1(), movable=True, deletable=False)
-        self.p2_item = QCGPoint(self.q_dvd_item, line.p2(), movable=True, deletable=False)
-        self.line_item = QCGLineElement(self.q_dvd_item, self.p1_item, self.p2_item, secable=False, deletable=True)
+        self.p1_item = QCGPoint(self.odv_object, line.p1(), movable=True, deletable=False)
+        self.p2_item = QCGPoint(self.odv_object, line.p2(), movable=True, deletable=False)
+        self.line_item = QCGLineElement(self.odv_object, self.p1_item, self.p2_item, secable=False, deletable=True)
         self.setZValue(1)
 
         self.add_child(self.p1_item)
@@ -45,6 +45,6 @@ class QCGEditableLine(QCGItemGroup):
         pass
 
     def line_deleted(self, line_item: QCGLineElement):
-        self.p1_item.delete()
-        self.p2_item.delete()
+        # self.p1_item.delete()
+        # self.p2_item.delete()
         self.delete()

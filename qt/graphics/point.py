@@ -8,10 +8,10 @@ from qt.graphics.common import CustomGraphicsItem
 class QCGPoint(CustomGraphicsItem, QGraphicsEllipseItem):
     size: float = 2.2
 
-    def __init__(self, q_dvd_item, position: QPointF, movable: bool = False, deletable: bool = False):
-        super().__init__(q_dvd_item, -self.size / 2, -self.size / 2, self.size, self.size)
-        self.setPen(q_dvd_item.pen)
-        self.setBrush(q_dvd_item.brush)
+    def __init__(self, inspector, position: QPointF, movable: bool = False, deletable: bool = False):
+        super().__init__(inspector, -self.size / 2, -self.size / 2, self.size, self.size)
+        self.setPen(self.inspector.thin_pen)
+        self.setBrush(self.inspector.light_brush)
         self.setPos(position)
         self._is_moving = False
         self.movable = movable
@@ -26,8 +26,8 @@ class QCGPoint(CustomGraphicsItem, QGraphicsEllipseItem):
             painter.setRenderHints(QPainter.RenderHint.Antialiasing)
             super().paint(painter, option, widget)
             if self.movable is False:
-                lock_pen = QPen(self.q_dvd_item.pen)
-                lock_pen.setWidthF(self.q_dvd_item.pen.widthF() / 2)
+                lock_pen = QPen(self.pen())
+                lock_pen.setWidthF(lock_pen.widthF() / 2)
                 lock_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
                 painter.setPen(lock_pen)
                 painter.setBrush(QBrush(Qt.GlobalColor.transparent))
@@ -46,14 +46,14 @@ class QCGPoint(CustomGraphicsItem, QGraphicsEllipseItem):
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         if self.visible and self.movable and event.button() == Qt.MouseButton.LeftButton:
             self._is_moving = True
-            self.setBrush(self.q_dvd_item.high_brush)
+            self.setBrush(self.inspector.high_brush)
         else:
             super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         if self.visible and self.movable:
             self._is_moving = False
-            self.setBrush(self.q_dvd_item.low_brush)
+            self.setBrush(self.inspector.light_brush)
         else:
             super().mouseReleaseEvent(event)
 

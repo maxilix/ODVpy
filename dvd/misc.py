@@ -4,8 +4,8 @@ from .section import Section
 
 
 class Misc(Section):
-    _name = "MISC"
-    _version = 6
+    _section_name = "MISC"
+    _section_version = 6
 
     def _load(self, substream: ReadStream) -> None:
         self.b0 = substream.read(Bytes, 1)

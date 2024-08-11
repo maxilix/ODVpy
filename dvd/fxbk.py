@@ -4,8 +4,8 @@ from .section import Section
 
 
 class Fxbk(Section):
-    _name = "FXBK"
-    _version = 3
+    _section_name = "FXBK"
+    _section_version = 3
 
     def _load(self, substream: ReadStream) -> None:
         substream.read_raw()

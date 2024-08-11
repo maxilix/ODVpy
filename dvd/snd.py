@@ -4,8 +4,8 @@ from .section import Section
 
 
 class Snd(Section):
-    _name = "SND "
-    _version = 7
+    _section_name = "SND "
+    _section_version = 7
 
     def _load(self, substream: ReadStream) -> None:
         substream.read_raw()

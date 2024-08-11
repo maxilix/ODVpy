@@ -38,6 +38,9 @@ QPointF.__str__ = QPointF___str__
 
 # QLineF monkey patch
 
+def QLineF_truncated(self: QLineF) -> QLineF:
+    return QLineF(self.p1().truncated(), self.p2().truncated())
+
 def QLineF_from_stream(cls, stream: ReadStream):
     p1 = stream.read(QPointF)
     p2 = stream.read(QPointF)
@@ -49,11 +52,15 @@ def QLineF_to_stream(self, stream):
     stream.write(self.p2())
 
 
+QLineF.truncated = QLineF_truncated
 QLineF.from_stream = classmethod(QLineF_from_stream)
 QLineF.to_stream = QLineF_to_stream
 
 
 # QPolygonF monkey patch
+
+def QPolygonF_truncated(self: QPolygonF) -> QPolygonF:
+    return QPolygonF([p.truncated() for p in self])
 
 def QPolygonF_from_stream(cls, stream: ReadStream):
     nb_point = stream.read(Short)
@@ -96,6 +103,8 @@ def QPolygonF_area(self: QPolygonF) -> float:
 #     for i in range(len(self)//2):
 #         self.swapItemAt(i, len(self) - 1 - i)
 
+
+QPolygonF.truncated = QPolygonF_truncated
 QPolygonF.from_stream = classmethod(QPolygonF_from_stream)
 QPolygonF.to_stream = QPolygonF_to_stream
 QPolygonF.signed_area = QPolygonF_signed_area

@@ -70,8 +70,8 @@ class LiftEntry(RWStreamable):
 
 
 class Lift(Section):
-    _name = "LIFT"
-    _version = 2
+    _section_name = "LIFT"
+    _section_version = 2
 
 
 

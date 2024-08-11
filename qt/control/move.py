@@ -1,78 +1,64 @@
-from PyQt6.QtCore import Qt, QRectF, QPointF
-from PyQt6.QtGui import QColor, QPen, QBrush, QAction, QCursor, QContextMenuEvent, QPolygonF
-from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QLabel, QVBoxLayout, QWidget, \
-    QGraphicsScene, QMenu, QGridLayout, QLineEdit
+from PyQt6.QtCore import QRectF
+from PyQt6.QtGui import QColor, QPolygonF
 
-from dvd.move import MovePolygon
-from qt.control.q_generic_tree import QODVTreeItem
-from qt.control.q_inspector import QODVInspectorItem
-from qt.control.q_odv_item import QODVItem
-from qt.control.q_tab_control import QTabControl, QTabControlGenericTree
-from qt.graphics.path import QCGPath
-from qt.graphics.polygon import QCGPolygon
+from dvd.move import Layer, MainArea, Obstacle
+from qt.control.q_inspector import Inspector, PolygonInspectorWidget
+from qt.control.q_tab_control import QTabControlGenericTree
 
 
-class QMoveSectorGraphicItem(QCGPolygon):
-    def __init__(self, q_move_sector):
-        super().__init__(q_move_sector, q_move_sector.model.poly)
-        if q_move_sector.model.main:
-            self.setBrush(q_move_sector.brushes[0])
-            self.setPen(q_move_sector.pens[0])
-        else:
-            self.setBrush(q_move_sector.brushes[1])
-            self.setPen(q_move_sector.pens[1])
-
-class QMoveSectorInspectorItem(QODVInspectorItem):
-    def __init__(self, q_dvd_item):
-        self.properties_layout = QGridLayout()
-
-        label = QLabel("Layer Id")
-        self.properties_layout.addWidget(label, 0, 0)
-        self.layer_id = QLineEdit()
-        self.properties_layout.addWidget(self.layer_id, 0, 1)
-
-        label = QLabel("Left Area Id")
-        self.properties_layout.addWidget(label, 1, 0)
-        self.left_id = QLineEdit()
-        self.properties_layout.addWidget(self.left_id, 1, 1)
-
-        label = QLabel("Right Area Id")
-        self.properties_layout.addWidget(label, 2, 0)
-        self.right_id = QLineEdit()
-        self.properties_layout.addWidget(self.right_id, 2, 1)
-
-        super().__init__(q_dvd_item)
+# class GraphicObstacle(QCGPolygonGroup):
+#     def __init__(self, obstacle):
+#         super().__init__(obstacle, obstacle.poly)
+#         c = QColor(255, 90, 40)
+#         # self.setPen(QThinPen(c))
+#         # self.setBrush(QLightBrush(c))
+#
+#     # def update(self, rect: QRectF = QRectF()):
+#     #     super().update(rect)
+#     #     self.setPolygon(self.odv_object.poly)
 
 
-class QMoveSectorItem(QODVItem):
-    colors = [QColor(160, 200, 40), QColor(255, 90, 40)]
-    q_graphic_item_type = QMoveSectorGraphicItem
-    q_inspector_item_type = QMoveSectorInspectorItem
-    q_tree_item_type = QODVTreeItem
+class ObstacleInspector(Inspector):
+    # path color QColor(180, 110, 30)
+    def init_prop_section(self):
+        # graphic = GraphicObstacle(self.odv_object)
+        # self.scene.addItem(graphic)
+        self.prop["Polygon"] = PolygonInspectorWidget(self, self.odv_object.poly, QColor(255, 90, 40))
+        self.prop["Polygon"].changed.connect(self.set_poly)
+
+    def set_poly(self, poly):
+        self.odv_object.poly = poly
 
 
-class QSublayerGraphicItem(QCGPath):
-    def __init__(self, q_sublayer):
-        super().__init__(q_sublayer, q_sublayer.model.path)
-        self.setBrush(QBrush(Qt.GlobalColor.transparent))
+# class GraphicMainArea(QCGPolygonGroup):
+#     def __init__(self, main_area):
+#         super().__init__(main_area, main_area.poly)
+#         c = QColor(160, 200, 40)
+#         # self.setPen(QThinPen(c))
+#         # self.setBrush(QLightBrush(c))
+#
+#     # def update(self, rect: QRectF = QRectF()):
+#     #     super().update(rect)
+#     #     self.setPolygon(self.odv_object.poly)
 
 
-class QSublayerItem(QODVItem):
-    colors = [QColor(180, 110, 30)]
-    q_graphic_item_type = QSublayerGraphicItem
-    q_inspector_item_type = QODVInspectorItem
-    q_tree_item_type = QODVTreeItem
-    editable = False
+class MainAreaInspector(Inspector):
+    # path color QColor(180, 110, 30)
+    def init_prop_section(self):
+        # graphic = GraphicMainArea(self.odv_object)
+        # self.scene.addItem(graphic)
+        self.prop["Polygon"] = PolygonInspectorWidget(self, self.odv_object.poly, QColor(160, 200, 40))
+        # self.prop["Polygon"].changed.connect(self.set_poly)
 
-
-class QLayerItem(QODVItem):
-    q_inspector_item_type = QODVInspectorItem
-    q_tree_item_type = QODVTreeItem
-    editable = False
+    # def set_poly(self, poly):
+    #     self.odv_object.poly = poly
 
 
 class QMoveTabControl(QTabControlGenericTree):
-    q_odv_item_types = [QLayerItem, QSublayerItem, QMoveSectorItem]
+    inspector_types = {Layer: Inspector,
+                       MainArea: MainAreaInspector,
+                       Obstacle: ObstacleInspector}
+
 
 
 # class QControlArea(QTreeWidgetItem):

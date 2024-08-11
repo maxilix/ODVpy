@@ -187,8 +187,8 @@ from .section import Section
 
 
 class Mask(Section):
-    _name = "MASK"
-    _version = 4
+    _section_name = "MASK"
+    _section_version = 4
 
     def _load(self, substream: ReadStream) -> None:
         assert substream.read(UInt) == self._version
