@@ -79,8 +79,8 @@ class QMainControl(QTabWidget):
         # ...
 
         # Bonds
-        # self.bond_control = QBondTabControl(self, level.dvd.bond)
-        # self.addTab(self.bond_control, "BOND")
+        self.bond_control = QBondTabControl(self, level.dvd.bond)
+        self.addTab(self.bond_control, "BOND")
 
         # self.update()
 

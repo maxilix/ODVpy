@@ -23,10 +23,14 @@ from qt.graphics.element import QCGPoint, QCGLineElement, QCGPolygonShapeElement
 #         super().hoverLeaveEvent(event)
 
 
-class QCGPolygonGroup(QCGItemGroup):
+class QCEGPolygon(QCGItemGroup):
 
-    def __init__(self, inspector):
-        super().__init__(inspector)
+    def __init__(self, sub_inspector):
+        super().__init__(sub_inspector)
+        # self.polygon = init_polygon
+
+        # self.sub_inspector = PolygonInspectorWidget()
+
         self.polygon_fix = None
         self.point_item = []
         self.line_item = []
@@ -37,21 +41,21 @@ class QCGPolygonGroup(QCGItemGroup):
 
     @property
     def polygon(self):
-        return self.inspector.polygon
+        return self.sub_inspector.current
 
     @polygon.setter
     def polygon(self, polygon):
-        self.inspector.polygon = polygon
+        self.sub_inspector.current = polygon
 
     def enter_edit_mode(self):
         self.remove_child(self.polygon_fix)
         self.polygon_fix = None
 
-        deletable = len(self.inspector.polygon) > 3
-        self.point_item = [QCGPoint(self.inspector, p, movable=True, deletable=deletable) for p in self.polygon]
-        self.line_item = [QCGLineElement(self.inspector, p1, p2, secable=True, deletable=False) for p1, p2 in
+        deletable = len(self.polygon) > 3
+        self.point_item = [QCGPoint(self.sub_inspector, p, movable=True, deletable=deletable) for p in self.polygon]
+        self.line_item = [QCGLineElement(self.sub_inspector, p1, p2, secable=True, deletable=False) for p1, p2 in
                           zip(self.point_item, self.point_item[1:] + [self.point_item[0]])]
-        self.polygon_shape = QCGPolygonShapeElement(self.inspector, self.point_item, movable=True)
+        self.polygon_shape = QCGPolygonShapeElement(self.sub_inspector, self.point_item, movable=True)
         self.add_child(self.polygon_shape)
         self.add_children(self.line_item)
         self.add_children(self.point_item)
@@ -69,7 +73,7 @@ class QCGPolygonGroup(QCGItemGroup):
         self.remove_children(self.point_item)
         self.point_item = []
 
-        self.polygon_fix = QCGPolygonFixElement(self.inspector, self.polygon)
+        self.polygon_fix = QCGPolygonFixElement(self.sub_inspector, self.polygon)
         self.add_child(self.polygon_fix)
 
         self.update()

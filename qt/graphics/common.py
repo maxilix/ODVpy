@@ -44,8 +44,8 @@ class QCGHighBrush(QCGBrush):
 
 class CustomGraphicsItem(object):
 
-    def __init__(self, inspector, *args, **kwargs):
-        self.inspector = inspector
+    def __init__(self, sub_inspector, *args, **kwargs):
+        self.sub_inspector = sub_inspector
         super().__init__(*args, **kwargs)
         self._force_visibility = False
         # super().setVisible(True)
@@ -58,7 +58,7 @@ class CustomGraphicsItem(object):
 
     @property
     def visible(self):
-        return self.inspector.visibility_checkbox.isChecked() or self._force_visibility
+        return self.sub_inspector.visibility_checkbox.isChecked() or self._force_visibility
 
     # @visible.setter
     # def visible(self, value):
@@ -83,8 +83,8 @@ class CustomGraphicsItem(object):
 
 
 class QCGItemGroup(QGraphicsItem):
-    def __init__(self, inspector, *args, **kwargs):
-        self.inspector = inspector
+    def __init__(self, sub_inspector, *args, **kwargs):
+        self.sub_inspector = sub_inspector
         super().__init__(*args, **kwargs)
         self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
 

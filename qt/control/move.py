@@ -1,57 +1,41 @@
-from PyQt6.QtCore import QRectF
-from PyQt6.QtGui import QColor, QPolygonF
+from PyQt6.QtCore import QRectF, Qt
+from PyQt6.QtGui import QColor, QPolygonF, QPen, QBrush
 
 from dvd.move import Layer, MainArea, Obstacle
-from qt.control.q_inspector import Inspector, PolygonInspectorWidget
+from qt.control.q_inspector import Inspector, GeometrySubInspector
 from qt.control.q_tab_control import QTabControlGenericTree
+from qt.graphics.polygon import QCEGPolygon
 
-
-# class GraphicObstacle(QCGPolygonGroup):
-#     def __init__(self, obstacle):
-#         super().__init__(obstacle, obstacle.poly)
-#         c = QColor(255, 90, 40)
-#         # self.setPen(QThinPen(c))
-#         # self.setBrush(QLightBrush(c))
-#
-#     # def update(self, rect: QRectF = QRectF()):
-#     #     super().update(rect)
-#     #     self.setPolygon(self.odv_object.poly)
 
 
 class ObstacleInspector(Inspector):
-    # path color QColor(180, 110, 30)
     def init_prop_section(self):
-        # graphic = GraphicObstacle(self.odv_object)
-        # self.scene.addItem(graphic)
-        self.prop["Polygon"] = PolygonInspectorWidget(self, self.odv_object.poly, QColor(255, 90, 40))
-        self.prop["Polygon"].changed.connect(self.set_poly)
+        self.prop["Polygon"] = GeometrySubInspector(self, "polygon", QColor(255, 90, 40))
 
-    def set_poly(self, poly):
+    @property
+    def polygon(self):
+        return self.odv_object.poly
+
+    @polygon.setter
+    def polygon(self, poly):
         self.odv_object.poly = poly
-
-
-# class GraphicMainArea(QCGPolygonGroup):
-#     def __init__(self, main_area):
-#         super().__init__(main_area, main_area.poly)
-#         c = QColor(160, 200, 40)
-#         # self.setPen(QThinPen(c))
-#         # self.setBrush(QLightBrush(c))
-#
-#     # def update(self, rect: QRectF = QRectF()):
-#     #     super().update(rect)
-#     #     self.setPolygon(self.odv_object.poly)
 
 
 class MainAreaInspector(Inspector):
     # path color QColor(180, 110, 30)
-    def init_prop_section(self):
-        # graphic = GraphicMainArea(self.odv_object)
-        # self.scene.addItem(graphic)
-        self.prop["Polygon"] = PolygonInspectorWidget(self, self.odv_object.poly, QColor(160, 200, 40))
-        # self.prop["Polygon"].changed.connect(self.set_poly)
 
-    # def set_poly(self, poly):
-    #     self.odv_object.poly = poly
+    def init_prop_section(self):
+        self.prop["Polygon"] = GeometrySubInspector(self, "polygon", QColor(160, 200, 40))
+
+    @property
+    def polygon(self):
+        return self.odv_object.poly
+
+    @polygon.setter
+    def polygon(self, poly):
+        self.odv_object.poly = poly
+
+
 
 
 class QMoveTabControl(QTabControlGenericTree):

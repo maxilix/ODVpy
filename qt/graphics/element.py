@@ -7,9 +7,9 @@ from qt.graphics.point import QCGPoint
 
 
 class QCGLineElement(CustomGraphicsItem, QGraphicsLineItem):
-    def __init__(self, inspector, p1: QCGPoint, p2: QCGPoint, secable: bool = False, deletable: bool = False):
-        super().__init__(inspector)
-        self.setPen(self.inspector.thin_pen)
+    def __init__(self, sub_inspector, p1: QCGPoint, p2: QCGPoint, secable: bool = False, deletable: bool = False):
+        super().__init__(sub_inspector)
+        self.setPen(self.sub_inspector.pen)
         self._p1 = p1
         self._p2 = p2
         self.secable = secable
@@ -105,16 +105,16 @@ class QCGLineElement(CustomGraphicsItem, QGraphicsLineItem):
 
 
 class QCGPolygonFixElement(CustomGraphicsItem, QGraphicsPolygonItem):
-    def __init__(self, inspector, polygon: QPolygonF):
-        super().__init__(inspector, polygon.truncated().translated(0.5, 0.5))
-        self.setPen(self.inspector.thin_pen)
-        self.setBrush(self.inspector.light_brush)
+    def __init__(self, sub_inspector, polygon: QPolygonF):
+        super().__init__(sub_inspector, polygon.truncated().translated(0.5, 0.5))
+        self.setPen(self.sub_inspector.pen)
+        self.setBrush(self.sub_inspector.light_brush)
 
 class QCGPolygonShapeElement(CustomGraphicsItem, QGraphicsPathItem):
     def __init__(self, inspector, p_list: list[QCGPoint], movable: bool = False):
         super().__init__(inspector)
         self.setPen(QPen(Qt.GlobalColor.transparent))
-        self.setBrush(self.inspector.light_brush)
+        self.setBrush(self.sub_inspector.light_brush)
         self.movable = movable
         self._p_list = p_list
         self._drag_position = None
