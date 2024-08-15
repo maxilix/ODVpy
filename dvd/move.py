@@ -10,6 +10,13 @@ from .section import Section
 class Obstacle(OdvLeaf):
     _poly: QPolygonF
 
+    def __str__(self):
+        return f"Obstacle {self.global_id}"
+
+    @property
+    def global_id(self):
+        return self.parent.global_id + self.i + 1
+
     @property
     def poly(self) -> QPolygonF:
         return self._poly
@@ -37,6 +44,18 @@ class Obstacle(OdvLeaf):
 class MainArea(OdvObject):
     _poly: QPolygonF
 
+    def __str__(self):
+        return f"Main area {self.global_id}"
+
+    @property
+    def global_id(self):
+        rop = 0
+        for layer_index in range(self.parent.i):
+            rop += self.parent.parent[layer_index].total_area()
+        for mainArea_index in range(self.i):
+            rop += 1 + len(self.parent[mainArea_index])
+        return rop
+
     @property
     def poly(self) -> QPolygonF:
         return self._poly
@@ -50,9 +69,6 @@ class MainArea(OdvObject):
         else:
             # counter-clockwise
             self._poly = QPolygonF(poly[::-1])
-
-    def global_id(self):
-        pass
 
     def add_obstacle(self, poly: QPolygonF, index: int = 0) -> Obstacle:
         self._path = None
@@ -150,10 +166,11 @@ class Layer(OdvObject):
 
 
 class Move(Section, OdvRoot):
+
     _section_name = "MOVE"
     _section_version = 1
 
-    def get_by_global(self, k: int) -> MainArea:
+    def get_by_global(self, k: int):
         i = 0
         while (ta_i := self[i].total_area()) <= k:
             i += 1

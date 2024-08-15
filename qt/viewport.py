@@ -9,9 +9,9 @@ from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraph
 class QViewport(QGraphicsView):
     view_changed = pyqtSignal(QRectF)
 
-    def __init__(self, scene, dvm, info_bar):
+    def __init__(self, scene, level_map, info_bar):
         super().__init__(scene)
-        self.dvm = dvm
+        self.level_map = level_map
         self.info_bar = info_bar
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -30,9 +30,9 @@ class QViewport(QGraphicsView):
         self.zoom_max = 50
         self.zoom_min = 0.5
 
-        self.scene().addItem(QGraphicsRectItem(QRectF(0, 0, self.dvm.width, self.dvm.height)))
+        self.scene().addItem(QGraphicsRectItem(QRectF(0, 0, self.level_map.width, self.level_map.height)))
         self.sceneRect()  # seems to have an initializing effect on the first call
-        self.setSceneRect(QRectF(-self.dvm.width, -self.dvm.height, 3*self.dvm.width, 3*self.dvm.height))
+        self.setSceneRect(QRectF(-self.level_map.width, -self.level_map.height, 3*self.level_map.width, 3*self.level_map.height))
 
         # === DYNAMIC MARGINS ===
         # sceneRect (and margins) are adjusted during zooming according to the window size
@@ -46,8 +46,8 @@ class QViewport(QGraphicsView):
 
 
         self.zoom = 1.5
-        self.x = dvm.width // 2
-        self.y = dvm.height // 2
+        self.x = self.level_map.width // 2
+        self.y = self.level_map.height // 2
 
         # initial view position
         # self.zoom = 3.4
@@ -118,9 +118,10 @@ class QViewport(QGraphicsView):
         # self.control.mousse_event(mouse_scene_pos, event)
         event.ignore()
 
+
     @pyqtProperty(float)
     def zoom(self):
-        if self.dvm.height >= self.dvm.width:
+        if self.level_map.height >= self.level_map.width:
             v = self.verticalScrollBar()
             vertical_zoom = (v.maximum() - v.minimum() + v.pageStep()) / self.sceneRect().height()
             return vertical_zoom
@@ -128,6 +129,7 @@ class QViewport(QGraphicsView):
             h = self.horizontalScrollBar()
             horizontal_zoom = (h.maximum() - h.minimum() + h.pageStep()) / self.sceneRect().width()
             return horizontal_zoom
+
 
     @zoom.setter
     def zoom(self, new_zoom):

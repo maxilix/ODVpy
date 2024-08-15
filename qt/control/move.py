@@ -1,39 +1,21 @@
-from PyQt6.QtCore import QRectF, Qt
-from PyQt6.QtGui import QColor, QPolygonF, QPen, QBrush
+from PyQt6.QtGui import QColor
 
 from dvd.move import Layer, MainArea, Obstacle
-from qt.control.q_inspector import Inspector, GeometrySubInspector
+from qt.control.graphic_sub_inspector import GeometrySubInspector
+from qt.control.inspector import Inspector
 from qt.control.q_tab_control import QTabControlGenericTree
-from qt.graphics.polygon import QCEGPolygon
-
 
 
 class ObstacleInspector(Inspector):
-    def init_prop_section(self):
-        self.prop["Polygon"] = GeometrySubInspector(self, "polygon", QColor(255, 90, 40))
-
-    @property
-    def polygon(self):
-        return self.odv_object.poly
-
-    @polygon.setter
-    def polygon(self, poly):
-        self.odv_object.poly = poly
+    def init_odv_prop(self):
+        self.prop["Polygon"] = GeometrySubInspector(self, "poly", QColor(255, 90, 40))
 
 
 class MainAreaInspector(Inspector):
     # path color QColor(180, 110, 30)
 
-    def init_prop_section(self):
-        self.prop["Polygon"] = GeometrySubInspector(self, "polygon", QColor(160, 200, 40))
-
-    @property
-    def polygon(self):
-        return self.odv_object.poly
-
-    @polygon.setter
-    def polygon(self, poly):
-        self.odv_object.poly = poly
+    def init_odv_prop(self):
+        self.prop["Polygon"] = GeometrySubInspector(self, "poly", QColor(160, 200, 40))
 
 
 

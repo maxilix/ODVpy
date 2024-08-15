@@ -56,7 +56,12 @@ class OdvLeaf(OdvBase, ABC):
         self._odv_parent = parent
 
     def __str__(self):
-        return f"{self.__class__.__name__} {self.i}"
+        indexes = ""
+        odv_leaf = self
+        while isinstance(odv_leaf, OdvLeaf):
+            indexes = f"{odv_leaf.i} {indexes}"
+            odv_leaf = odv_leaf.parent
+        return f"{self.__class__.__name__} {indexes}"
 
     @property
     def parent(self):

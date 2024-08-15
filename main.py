@@ -175,8 +175,7 @@ class QWindow(QMainWindow):
             visualizer = QWidget(main_widget)
             info_bar = QInfoBar(visualizer)
             scene = QScene(visualizer)
-            dvm = self.current_level.dvm
-            viewport = QViewport(scene, dvm, info_bar)
+            viewport = QViewport(scene, self.current_level.dvm.level_map, info_bar)
             control = QMainControl(main_widget, scene, self.current_level)
             info_bar.set_info(level_index=self.current_level.index)
 

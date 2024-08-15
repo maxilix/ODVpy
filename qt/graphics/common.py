@@ -47,7 +47,6 @@ class CustomGraphicsItem(object):
     def __init__(self, sub_inspector, *args, **kwargs):
         self.sub_inspector = sub_inspector
         super().__init__(*args, **kwargs)
-        self._force_visibility = False
         # super().setVisible(True)
         # self.update()
 
@@ -58,7 +57,7 @@ class CustomGraphicsItem(object):
 
     @property
     def visible(self):
-        return self.sub_inspector.visibility_checkbox.isChecked() or self._force_visibility
+        return self.sub_inspector.visibility_checkbox.isChecked()
 
     # @visible.setter
     # def visible(self, value):
@@ -94,6 +93,16 @@ class QCGItemGroup(QGraphicsItem):
     def add_child(self, item):
         item.setParentItem(self)
         # new child is automatically added to the scene
+
+    @property
+    def visible(self):
+        cv = [child.visible for child in self.childItems()]
+
+        if cv[0] is True:
+            assert all(cv)
+        else:
+            assert not any(cv)
+        return cv[0]
 
 
     def add_children(self, items):

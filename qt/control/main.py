@@ -42,8 +42,8 @@ class QMainControl(QTabWidget):
         self.setMovable(False)
 
         # Map
-        # self.map_control = QMapTabControl(self, level.dvm, level.dvd.bgnd)
-        # self.addTab(self.map_control, "Map")
+        self.dvm_control = QMapTabControl(self, level.dvm.level_map)
+        self.addTab(self.dvm_control, "DVM")
 
         # Miscellaneous
         # self.miscellaneous_control = QTabControl(self, scene)
@@ -98,3 +98,5 @@ class QMainControl(QTabWidget):
             self.currentWidget().exec_scene_menu()
 
         super().mousePressEvent(event)
+
+

@@ -15,6 +15,7 @@ class QODVTreeItem(QTreeWidgetItem):
         #         self.setCheckState(0, Qt.CheckState.Unchecked)
         self.update()
 
+
     def setBold(self, value):
         f = self.font(0)
         f.setBold(value)
@@ -23,8 +24,10 @@ class QODVTreeItem(QTreeWidgetItem):
     def update(self):
         self.setText(0, self.odv_object.name)
 
+    @property
     def inspector(self):
         return self._tab_control.inspectors[self.odv_object]
+
 
 
     # @property
@@ -50,8 +53,8 @@ class QODVTreeItem(QTreeWidgetItem):
 
 
 class QGenericTree(QTreeWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__()
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 

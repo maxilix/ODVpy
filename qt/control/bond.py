@@ -2,8 +2,10 @@ from PyQt6.QtCore import QLineF
 from PyQt6.QtGui import QColor
 
 from dvd.bond import BondLine
-from qt.control.q_inspector import Inspector, GeometrySubInspector, OdvObjectListSubInspector, UShortTwinBoxInspector
+from qt.control.graphic_sub_inspector import GeometrySubInspector
+from qt.control.inspector import Inspector
 from qt.control.q_tab_control import QTabControlGenericTree
+from qt.control.sub_inspector import OdvObjectListSubInspector, UShortTwinBoxInspector
 
 
 # class GraphicBondLine(QCGFixedLine):
@@ -40,7 +42,7 @@ from qt.control.q_tab_control import QTabControlGenericTree
 
 
 class BondLineInspector(Inspector):
-    def init_prop_section(self):
+    def init_odv_prop(self):
         self.prop["Line"] = GeometrySubInspector(self, "line", QColor(0, 180, 255))
         self.prop["Layer"] = OdvObjectListSubInspector(self, "layer")
         self.prop["Trigger"] = UShortTwinBoxInspector(self, "trigger_id")
@@ -54,13 +56,32 @@ class BondLineInspector(Inspector):
         self.odv_object.p1 = line.p1()
         self.odv_object.p2 = line.p2()
 
-    @property
-    def layer(self):
-        return self.odv_object.layer
 
-    @layer.setter
-    def layer(self, layer):
-        self.odv_object.layer = layer
+
+    # @property
+    # def layer(self):
+    #     return self.odv_object.layer
+    #
+    # @layer.setter
+    # def layer(self, layer):
+    #     self.odv_object.layer = layer
+
+    # def __getattr__(self, attr_name):
+    #     print("getattr", attr_name)
+    #     if hasattr(self.odv_object, attr_name):
+    #         return getattr(self.odv_object, attr_name)
+    #     else:
+    #         print(f"{self.odv_object} has no attribute {attr_name}")
+    #         raise AttributeError
+    #
+    # def __setattr__(self, attr_name, value):
+    #     print("setattr", attr_name)
+    #     if hasattr(self.odv_object, attr_name):
+    #         setattr(self.odv_object, attr_name, value)
+    #     else:
+    #         print(f"{self.odv_object} has no attribute {attr_name}")
+    #         raise AttributeError
+
 
     @property
     def trigger_id(self):
