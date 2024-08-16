@@ -2,18 +2,16 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QContextMenuEvent, QCursor
 from PyQt6.QtWidgets import QAbstractItemView, QTreeWidget, QTreeWidgetItem, QMenu
 
+from qt.control.inspector_graphic import GraphicSubInspector, GeometrySubInspector
+
 
 class QODVTreeItem(QTreeWidgetItem):
     def __init__(self, tab_control, odv_object):
         super().__init__(None)
         self._tab_control = tab_control
         self.odv_object = odv_object
-        # if self.odv_item.q_graphic_item is not None:
-        #     if self.odv_item.visible:
-        #         self.setCheckState(0, Qt.CheckState.Checked)
-        #     else:
-        #         self.setCheckState(0, Qt.CheckState.Unchecked)
-        self.update()
+        self.current_state = None
+        # self.update()
 
 
     def setBold(self, value):
@@ -21,12 +19,51 @@ class QODVTreeItem(QTreeWidgetItem):
         f.setBold(value)
         self.setFont(0, f)
 
+    def global_update(self):
+        self.inspector.update()
+
     def update(self):
-        self.setText(0, self.odv_object.name)
+        self.setBold(False)
+        title = self.odv_object.name
+        if any(self.inspector_edit_state_list()):
+            title += " -Edit-"
+            self.setBold(True)
+
+        self.setText(0, title)
+        if len((vl:=[v.isChecked() for v in self.inspector_visibility_checkbox_list()]))>0:
+            if all(vl):
+                self.current_state = Qt.CheckState.Checked
+            elif any(vl):
+                self.current_state = Qt.CheckState.PartiallyChecked
+            else:
+                self.current_state = Qt.CheckState.Unchecked
+            self.setCheckState(0, self.current_state)
 
     @property
     def inspector(self):
         return self._tab_control.inspectors[self.odv_object]
+
+    def inspector_visibility_checkbox_list(self):
+        rop = []
+        for sub_inspector in self.inspector.sub_inspector_list:
+            if isinstance(sub_inspector, GraphicSubInspector):
+                rop.append(sub_inspector.visibility_checkbox)
+        return rop
+
+    def inspector_edit_state_list(self):
+        rop = []
+        for sub_inspector in self.inspector.sub_inspector_list:
+            if isinstance(sub_inspector, GeometrySubInspector):
+                rop.append(sub_inspector.edit)
+        return rop
+
+    def clicked(self):
+        if self.current_state != self.checkState(0):
+            # current state is obsolete, checkbox has changed
+            # current state will be updated by the global update
+            for checkbox in self.inspector_visibility_checkbox_list():
+                checkbox.setCheckState(self.checkState(0))
+            self.global_update()
 
 
 
@@ -61,7 +98,7 @@ class QGenericTree(QTreeWidget):
         self.setColumnCount(1)
         self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        # self.itemClicked.connect(self.tree_item_clicked)
+        self.itemClicked.connect(self.item_clicked)
 
     # def addChild(self, child):
     #     self.addTopLevelItem(child)
@@ -80,10 +117,13 @@ class QGenericTree(QTreeWidget):
     #         index = self.indexBelow(index)
     #     return count
 
-    # @staticmethod
-    # def tree_item_clicked(tree_item, column):
-    #     if column == 0:
-    #         tree_item.odv_item.visible = tree_item.visible
+    @staticmethod
+    def item_clicked(item, column):
+        if column == 0:
+            item.clicked()
+
+
+
     #
     # def contextMenuEvent(self, event: QContextMenuEvent):
     #     item = self.itemAt(event.pos())

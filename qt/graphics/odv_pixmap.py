@@ -15,12 +15,13 @@ class OdvMap(OdvGraphic):
 
         self.map_item = None
         self.map_rect = None
+        self.rest_map()
 
     @property
     def map(self) -> QImage :
         return self.sub_inspector.current
 
-    def update(self):
+    def rest_map(self):
         self.remove_child(self.map_item)
         self.remove_child(self.map_rect)
 

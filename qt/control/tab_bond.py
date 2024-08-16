@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QLineF
+from PyQt6.QtCore import QLineF, QPointF
 from PyQt6.QtGui import QColor
 
 from dvd.bond import BondLine
@@ -43,9 +43,10 @@ from qt.control.inspector_generic import OdvObjectListSubInspector, UShortTwinBo
 
 class BondLineInspector(Inspector):
     def init_odv_prop(self):
-        self.prop["Line"] = GeometrySubInspector(self, "line", QColor(0, 180, 255))
-        self.prop["Layer"] = OdvObjectListSubInspector(self, "layer")
-        self.prop["Trigger"] = UShortTwinBoxInspector(self, "trigger_id")
+        self.sub_inspector_group["Line"] = [GeometrySubInspector(self, "line", QColor(0, 180, 255))]
+        self.sub_inspector_group["Line2"] = [GeometrySubInspector(self, "line2", QColor(0, 180, 255))]
+        self.sub_inspector_group["Properties"] = [OdvObjectListSubInspector(self, "layer"),
+                                                  UShortTwinBoxInspector(self, "trigger_id")]
 
     @property
     def line(self):
@@ -56,7 +57,13 @@ class BondLineInspector(Inspector):
         self.odv_object.p1 = line.p1()
         self.odv_object.p2 = line.p2()
 
+    @property
+    def line2(self):
+        return QLineF(QPointF(50,50), QPointF(200,200))
 
+    @line2.setter
+    def line2(self, line):
+        pass
 
     # @property
     # def layer(self):

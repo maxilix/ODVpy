@@ -14,7 +14,7 @@ class OdvObjectListSubInspector(SubInspector):
         self.main_layout.addWidget(self.combo_box)
 
         self.setLayout(self.main_layout)
-        self.update()
+        # self.update()
 
         self.combo_box.currentIndexChanged.connect(self.current_index_changed)
 
@@ -45,7 +45,7 @@ class UShortBoxInspector(SubInspector):
         self.main_layout.addWidget(self.spin_box)
 
         self.setLayout(self.main_layout)
-        self.update()
+        # self.update()
 
         self.spin_box.valueChanged.connect(self.value_changed)
 
@@ -79,7 +79,7 @@ class UShortTwinBoxInspector(SubInspector):
         self.main_layout.addLayout(l1)
 
         self.setLayout(self.main_layout)
-        self.update()
+        # self.update()
 
         self.spinbox0.valueChanged.connect(self.value_changed)
         self.spinbox1.valueChanged.connect(self.value_changed)
@@ -108,7 +108,7 @@ class InfoSubInspector(SubInspector):
         self.main_layout.addWidget(self.info)
 
         self.setLayout(self.main_layout)
-        self.update()
+        # self.update()
 
     def update(self):
         self.info.setText(self.current)

@@ -16,10 +16,11 @@ class GraphicSubInspector(SubInspector):
     def __init__(self, parent, prop_name):
         super().__init__(parent, prop_name)
         self.visibility_checkbox = QCheckBox()
-        self.visibility_checkbox.stateChanged.connect(self.visibility_checkbox_changed)
+        self.visibility_checkbox.clicked.connect(self.visibility_checkbox_clicked)
         self.opacity_slider = QSlider(Qt.Orientation.Horizontal)
         self.opacity_slider.setMinimum(0)
         self.opacity_slider.setMaximum(100)
+        self.opacity_slider.setValue(100)
         self.opacity_slider.valueChanged.connect(self.opacity_slider_changed)
         self.localise_button = QPushButton("Localise")
         self.localise_button.clicked.connect(self.localise_button_clicked)
@@ -61,16 +62,19 @@ class GraphicSubInspector(SubInspector):
     def scene(self):
         return self._inspector.scene
 
-    def visibility_checkbox_changed(self):
-        self.graphic.update()
+    def visibility_checkbox_clicked(self):
+        # self.graphic.update()
+        self.global_update()
 
     def opacity_slider_changed(self):
         self.graphic.setOpacity(self.opacity_slider.value() / 100)
-        self.graphic.update()
+        # self.update()
 
     def localise_button_clicked(self):
-        self.visibility_checkbox.setChecked(True)
         self.graphic.localise()
+        self.visibility_checkbox.setChecked(True)
+        self.global_update()
+
 
     def scene_menu_name(self):
         return self._inspector.scene_menu_name()
@@ -151,7 +155,7 @@ class GeometrySubInspector(GraphicSubInspector):
         self.init_actions()
 
         self.setLayout(self.main_layout)
-        self.update()
+        # self.update()
 
         self.edit_button.clicked.connect(self.edit_button_clicked)
         self.save_button.clicked.connect(self.save_button_clicked)
@@ -173,14 +177,17 @@ class GeometrySubInspector(GraphicSubInspector):
         self.visibility_checkbox.setChecked(True)
         self.edit_layout.setCurrentWidget(self.edit_out)
         self.graphic.enter_edit_mode()
+        self.global_update()
 
     def save_button_clicked(self):
         self.edit_layout.setCurrentWidget(self.edit_in)
         self.graphic.exit_edit_mode(save=True)
+        self.global_update()
 
     def cancel_button_clicked(self):
         self.edit_layout.setCurrentWidget(self.edit_in)
         self.graphic.exit_edit_mode(save=False)
+        self.global_update()
 
 
 class PixmapSubInspector(GraphicSubInspector):
@@ -213,7 +220,7 @@ class PixmapSubInspector(GraphicSubInspector):
         self.init_actions()
 
         self.setLayout(main_layout)
-        self.update()
+        # self.update()
 
     def init_graphic(self):
         color = QColor(64, 64, 64)
@@ -233,4 +240,7 @@ class PixmapSubInspector(GraphicSubInspector):
             filenames = dialog.selectedFiles()
             if len(filenames) == 1:
                 self.current = QImage(filenames[0]).convertedTo(QImage.Format.Format_RGB16)
+                self.graphic.rest_map()
+                self.visibility_checkbox.setChecked(True)
+                self.opacity_slider.setValue(100)
                 self.global_update()

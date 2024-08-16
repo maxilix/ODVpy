@@ -8,14 +8,14 @@ from qt.control.tab_abstract import QTabControlGenericTree
 
 class ObstacleInspector(Inspector):
     def init_odv_prop(self):
-        self.prop["Polygon"] = GeometrySubInspector(self, "poly", QColor(255, 90, 40))
+        self.sub_inspector_group["Polygon"] = [GeometrySubInspector(self, "poly", QColor(255, 90, 40))]
 
 
 class MainAreaInspector(Inspector):
     # path color QColor(180, 110, 30)
 
     def init_odv_prop(self):
-        self.prop["Polygon"] = GeometrySubInspector(self, "poly", QColor(160, 200, 40))
+        self.sub_inspector_group["Polygon"] = [GeometrySubInspector(self, "poly", QColor(160, 200, 40))]
 
 
 

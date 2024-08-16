@@ -75,8 +75,8 @@ class QTabControlGenericTree(QTabControl):
             self.odv_section_list = list(odv_section_list)
         else:
             self.odv_section_list = [odv_section_list]
-        self.inspectors = dict()
         self.tree_items = dict()
+        self.inspectors = dict()
 
         def build_tree_structure(tree_parent_item, odv_root):
             if not isinstance(odv_root, OdvRoot):
@@ -84,10 +84,10 @@ class QTabControlGenericTree(QTabControl):
             for odv_object in odv_root:
                 # q_odv_item = self.q_odv_item_types[-depth](self, self.scene, odv_item)
                 self.tree_items[odv_object] = QODVTreeItem(self, odv_object)
-                self.inspectors[odv_object] = self.inspector_types.get(type(odv_object), Inspector)(self, odv_object)
-
                 tree_parent_item.addChild(self.tree_items[odv_object])
+                self.inspectors[odv_object] = self.inspector_types.get(type(odv_object), Inspector)(self, odv_object)
                 self.inspector_stack_layout.addWidget(self.inspectors[odv_object])
+
 
                 build_tree_structure(self.tree_items[odv_object], odv_object)
 
@@ -101,9 +101,9 @@ class QTabControlGenericTree(QTabControl):
         self.inspector_stack_layout = QStackedLayout(inspector_stack_widget)
 
         for odv_section in self.odv_section_list:
-            self.inspectors[odv_section] = self.inspector_types.get(type(odv_section), Inspector)(self, odv_section)
             self.tree_items[odv_section] = QODVTreeItem(self, odv_section)
             self.tree.addTopLevelItem(self.tree_items[odv_section])
+            self.inspectors[odv_section] = self.inspector_types.get(type(odv_section), Inspector)(self, odv_section)
             self.inspector_stack_layout.addWidget(self.inspectors[odv_section])
             if isinstance(odv_section, OdvRoot):
                 build_tree_structure(self.tree_items[odv_section], odv_section)
@@ -122,8 +122,12 @@ class QTabControlGenericTree(QTabControl):
         self.setWidget(content)
         self.tree.setCurrentItem(self.tree_items[self.odv_section_list[0]])
 
-        for odv_section in self.odv_section_list:
-            self.tree_items[odv_section].setExpanded(True)
+        # for odv_section in self.odv_section_list:
+        #     self.tree_items[odv_section].setExpanded(True)
+        self.tree.expandAll()
+
+        for inspector in self.inspectors.values():
+            inspector.update()
 
 
 
@@ -148,5 +152,6 @@ class QTabControlGenericTree(QTabControl):
     #     else:
     #         raise ValueError("item must be QDVDObject, QDVDInspectorItem or QDVDTreeItem")
     #     return q_odv_item == self.tree.selectedItems()[0].q_odv_item
+
 
 

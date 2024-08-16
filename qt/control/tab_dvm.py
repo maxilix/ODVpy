@@ -153,10 +153,9 @@ class LevelMapInspector(Inspector):
     _child_addable = False
 
     def init_odv_prop(self):
-        self.prop["Info"] = InfoSubInspector(self, "info")
-        self.prop["Map"] = PixmapSubInspector(self, "image")
-        self.prop["Map"].visibility_checkbox.setChecked(True)
-        self.prop["Map"].opacity_slider.setValue(100)
+        self.sub_inspector_group["Info"] = [InfoSubInspector(self, "info")]
+        self.sub_inspector_group["Map"] = [(gsi:=PixmapSubInspector(self, "image"))]
+        gsi.visibility_checkbox.setChecked(True)
 
     @property
     def info(self):

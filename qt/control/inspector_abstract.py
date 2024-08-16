@@ -36,7 +36,7 @@ class Inspector(QWidget):
         self._tab_control = tab_control
         self.odv_object = odv_object
         self.init_actions()
-        self.prop = dict()
+        self.sub_inspector_group = dict()
         self.main_layout = QVBoxLayout(self)
 
         header_layout = QHBoxLayout()
@@ -69,19 +69,22 @@ class Inspector(QWidget):
         sub_layout = QVBoxLayout()
         sub_layout.setSpacing(10)
         self.init_odv_prop()
-        for prop_label in self.prop:
-            prop_box = QGroupBox(prop_label)
-            prop_box.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            prop_box_layout = QVBoxLayout(prop_box)
-            prop_box_layout.addWidget(self.prop[prop_label])
-            sub_layout.addWidget(prop_box)
-        self.main_layout.addLayout(sub_layout)
+        for group_name in self.sub_inspector_group:
+            box = QGroupBox(group_name)
+            box.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            box_layout = QVBoxLayout(box)
+            for sub_inspector in self.sub_inspector_group[group_name]:
+                box_layout.addWidget(sub_inspector)
+            self.main_layout.addWidget(box)
+        # self.main_layout.addLayout(sub_layout)
         self.main_layout.addStretch(1)
+        # self.update()
 
     def update(self):
+        for sub_inspector in self.sub_inspector_list:
+            sub_inspector.update()
         super().update()
-        for prop_label in self.prop:
-            self.prop[prop_label].update()
+        self.tree_item.update()
 
     @property
     def scene(self):
@@ -94,6 +97,15 @@ class Inspector(QWidget):
     @property
     def tree_item(self):
         return self._tab_control.tree_items[self.odv_object]
+
+    @property
+    def sub_inspector_list(self):
+        rop = []
+        for group_name in self.sub_inspector_group:
+            for sub_inspector in self.sub_inspector_group[group_name]:
+                rop.append(sub_inspector)
+        return rop
+
 
     def init_odv_prop(self):
         # must define self.prop = {property_label : property_widget, ...}
