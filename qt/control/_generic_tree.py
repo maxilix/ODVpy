@@ -13,6 +13,8 @@ class QODVTreeItem(QTreeWidgetItem):
         self.current_state = None
         # self.update()
 
+        self.childCount()
+
 
     def setBold(self, value):
         f = self.font(0)
@@ -65,28 +67,10 @@ class QODVTreeItem(QTreeWidgetItem):
                 checkbox.setCheckState(self.checkState(0))
             self.global_update()
 
-
-
-    # @property
-    # def visible(self):
-    #     if self.odv_item.q_graphic_item is not None:
-    #         return self.checkState(0) == Qt.CheckState.Checked
-    #     else:
-    #         return False
-    #
-    # @visible.setter
-    # def visible(self, state):
-    #     if self.odv_item.q_graphic_item is not None:
-    #         if state:
-    #             self.setCheckState(0, Qt.CheckState.Checked)
-    #         else:
-    #             self.setCheckState(0, Qt.CheckState.Unchecked)
-
-    # def contextMenuEvent(self, event):
-    #     menu = QMenu()
-    #     menu.addAction(self.odv_item.a_localise)
-    #     menu.addActions(self.odv_item.scene_menu_common_actions())
-    #     menu.exec(QCursor.pos())
+    def contextMenuEvent(self, event):
+        menu = QMenu()
+        menu.addActions(self.inspector.tree_menu_common_actions())
+        menu.exec(QCursor.pos())
 
 
 class QGenericTree(QTreeWidget):
@@ -124,7 +108,7 @@ class QGenericTree(QTreeWidget):
 
 
 
-    #
-    # def contextMenuEvent(self, event: QContextMenuEvent):
-    #     item = self.itemAt(event.pos())
-    #     item.contextMenuEvent(event)
+
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        item = self.itemAt(event.pos())
+        item.contextMenuEvent(event)

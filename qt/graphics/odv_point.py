@@ -58,9 +58,7 @@ class OdvEditPointElement(OdvGraphicElement, QGraphicsEllipseItem):
         self.setPos(self.pos() + vector)
 
     def delete(self):
-        if self.parentItem() is not None:
-            self.parentItem().point_deleted(self)
-        self.scene().removeItem(self)
+        self.parentItem().point_deleted(self)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         if self.visible and self.movable and event.button() == Qt.MouseButton.LeftButton:

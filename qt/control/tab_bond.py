@@ -1,7 +1,8 @@
 from PyQt6.QtCore import QLineF, QPointF
 from PyQt6.QtGui import QColor
 
-from dvd.bond import BondLine
+from dvd.bond import BondLine, Bond
+from qt.control._generic_tree import QODVTreeItem
 from qt.control.inspector_graphic import GeometrySubInspector
 from qt.control.inspector_abstract import Inspector
 from qt.control.tab_abstract import QTabControlGenericTree
@@ -42,53 +43,13 @@ from qt.control.inspector_generic import OdvObjectListSubInspector, UShortTwinBo
 
 
 class BondLineInspector(Inspector):
+    deletable = True
+    child_name = ""  # cannot add child
+
     def init_odv_prop(self):
         self.sub_inspector_group["Line"] = [GeometrySubInspector(self, "line", QColor(0, 180, 255))]
-        self.sub_inspector_group["Line2"] = [GeometrySubInspector(self, "line2", QColor(0, 180, 255))]
         self.sub_inspector_group["Properties"] = [OdvObjectListSubInspector(self, "layer"),
                                                   UShortTwinBoxInspector(self, "trigger_id")]
-
-    @property
-    def line(self):
-        return QLineF(self.odv_object.p1, self.odv_object.p2)
-
-    @line.setter
-    def line(self, line):
-        self.odv_object.p1 = line.p1()
-        self.odv_object.p2 = line.p2()
-
-    @property
-    def line2(self):
-        return QLineF(QPointF(50,50), QPointF(200,200))
-
-    @line2.setter
-    def line2(self, line):
-        pass
-
-    # @property
-    # def layer(self):
-    #     return self.odv_object.layer
-    #
-    # @layer.setter
-    # def layer(self, layer):
-    #     self.odv_object.layer = layer
-
-    # def __getattr__(self, attr_name):
-    #     print("getattr", attr_name)
-    #     if hasattr(self.odv_object, attr_name):
-    #         return getattr(self.odv_object, attr_name)
-    #     else:
-    #         print(f"{self.odv_object} has no attribute {attr_name}")
-    #         raise AttributeError
-    #
-    # def __setattr__(self, attr_name, value):
-    #     print("setattr", attr_name)
-    #     if hasattr(self.odv_object, attr_name):
-    #         setattr(self.odv_object, attr_name, value)
-    #     else:
-    #         print(f"{self.odv_object} has no attribute {attr_name}")
-    #         raise AttributeError
-
 
     @property
     def trigger_id(self):
@@ -100,5 +61,21 @@ class BondLineInspector(Inspector):
         self.odv_object.left_id = trigger_id[1]
 
 
+class BondInspector(Inspector):
+    deletable = False
+    child_name = "Bond Line"
+
+    def new_odv_child(self):
+        new_bond_line = BondLine(self.odv_object)
+        new_bond_line.line = self._tab_control.scene.new_centered_line()
+        new_bond_line.left_id = 0
+        new_bond_line.right_id = 0
+        new_bond_line.layer = self.odv_object.move[0]
+        return new_bond_line
+
+
+
+
 class QBondTabControl(QTabControlGenericTree):
-    inspector_types = {BondLine: BondLineInspector}
+    inspector_types = {Bond: BondInspector,
+                       BondLine: BondLineInspector}

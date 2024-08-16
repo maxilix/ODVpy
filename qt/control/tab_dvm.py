@@ -149,21 +149,18 @@ from qt.control.inspector_generic import InfoSubInspector
 
 class LevelMapInspector(Inspector):
     # path color QColor(180, 110, 30)
-    _deletable = False
-    _child_addable = False
+    deletable = False
+    child_name = ""  # cannot add child
 
     def init_odv_prop(self):
         self.sub_inspector_group["Info"] = [InfoSubInspector(self, "info")]
-        self.sub_inspector_group["Map"] = [(gsi:=PixmapSubInspector(self, "image"))]
-        gsi.visibility_checkbox.setChecked(True)
+        self.sub_inspector_group["Map"] = [(psi:=PixmapSubInspector(self, "image"))]
+        psi.visibility_checkbox.setChecked(True)
 
     @property
     def info(self):
         return f"size: {self.odv_object.width} x {self.odv_object.height}"
 
-    # @property
-    # def map_image(self):
-    #     return self.odv_object.image
 
 class QMapTabControl(QTabControlGenericTree):
     inspector_types = {LevelMap: LevelMapInspector}

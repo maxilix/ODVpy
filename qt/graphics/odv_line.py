@@ -61,20 +61,15 @@ class OdvEditLineElement(OdvGraphicElement, QGraphicsLineItem):
         super().update(rect)
 
     def delete(self):
-        if self.parentItem() is not None:
-            self.parentItem().line_deleted(self)
-        self.scene().removeItem(self)
+        self.parentItem().line_deleted(self)
 
     def add_point(self, pos: QPointF):
         deletable = self.p1.deletable or self.p2.deletable
         new_point = OdvEditPointElement(self.sub_inspector, pos, movable=True, deletable=deletable)
-        self.scene().addItem(new_point)
         old_p2 = self.p2
         self.p2 = new_point
         new_line = OdvEditLineElement(self.sub_inspector, new_point, old_p2, secable=True)
-        self.scene().addItem(new_line)
-        if self.parentItem() is not None:
-            self.parentItem().point_added(self.p1, new_point, new_line)
+        self.parentItem().point_added(self.p1, new_point, new_line)
 
     def shape(self):
         # virtually extends the line width for click detection
@@ -169,9 +164,7 @@ class OdvLine(OdvGraphic):
         self.line_item.update()
 
     def point_deleted(self, point_item: OdvEditPointElement):
-        pass
+        raise
 
     def line_deleted(self, line_item: OdvEditLineElement):
-        # self.p1_item.delete()
-        # self.p2_item.delete()
         self.delete()

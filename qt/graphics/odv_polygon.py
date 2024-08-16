@@ -159,13 +159,14 @@ class QCEGPolygon(OdvGraphic):
                     new_line_item: OdvEditLineElement):
         index = self.point_item.index(previous_point_item)
         self.point_item.insert(index + 1, new_point_item)
-        new_point_item.setParentItem(self)
+        self.add_child(new_point_item)
         self.line_item.insert(index + 1, new_line_item)
-        new_line_item.setParentItem(self)
+        self.add_child(new_line_item)
 
         for p in self.point_item:
             p.deletable = True
         self.polygon_shape.p_list = self.point_item
+        self.update()
 
     def point_deleted(self, point_item: OdvEditPointElement):
         n = len(self.point_item)
@@ -174,13 +175,14 @@ class QCEGPolygon(OdvGraphic):
         self.line_item[index].delete()
         self.line_item.remove(self.line_item[index])
         self.point_item.remove(point_item)
+        self.remove_child(point_item)
         if len(self.point_item) <= 3:
             for p in self.point_item:
                 p.deletable = False
         self.polygon_shape.p_list = self.point_item
 
     def line_deleted(self, line_item: OdvEditLineElement):
-        pass
+        self.remove_child(line_item)
 
     def polygon_shape_deleted(self, polygon_shape: OdvEditPolygonShapeElement):
-        pass
+        self.delete()

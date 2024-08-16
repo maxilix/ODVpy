@@ -35,10 +35,10 @@ class GraphicSubInspector(SubInspector):
         self.a_localise.triggered.connect(self.localise_button_clicked)
 
         self.a_show = QAction("Show")
-        self.a_show.triggered.connect(lambda: self.visibility_checkbox.setChecked(True))
+        self.a_show.triggered.connect(self.show)
 
         self.a_hide = QAction("Hide")
-        self.a_hide.triggered.connect(lambda: self.visibility_checkbox.setChecked(False))
+        self.a_hide.triggered.connect(self.hide)
 
         if isinstance(self, GeometrySubInspector):
             self.a_edit = QAction("Edit")
@@ -53,6 +53,14 @@ class GraphicSubInspector(SubInspector):
     def init_graphic(self, *args, **kwargs):
         # must be overwritten
         self.graphic = None
+
+    def show(self):
+        self.visibility_checkbox.setChecked(True)
+        self.global_update()
+
+    def hide(self):
+        self.visibility_checkbox.setChecked(False)
+        self.global_update()
 
     def update(self):
         self.graphic.update()

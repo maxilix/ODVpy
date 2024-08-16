@@ -3,15 +3,14 @@ from typing import Self, Iterator
 from PyQt6.QtCore import QPoint
 
 from common import *
-from odv.odv_object import OdvObject, OdvRoot
+from odv.odv_object import OdvObject, OdvRoot, OdvLeaf
 from .move import Layer, Move
 
 from .section import Section
 
 
-class BondLine(OdvObject):
-    p1: QPointF
-    p2: QPointF
+class BondLine(OdvLeaf):
+    line: QLineF
     left_id: UShort
     right_id: UShort
     layer: Layer
@@ -35,16 +34,14 @@ class BondLine(OdvObject):
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
         rop = cls(parent)
-        rop.p1 = stream.read(QPointF)
-        rop.p2 = stream.read(QPointF)
+        rop.line = stream.read(QLineF)
         rop.left_id = stream.read(UShort)
         rop.right_id = stream.read(UShort)
         rop.layer = parent.move[stream.read(UShort)]
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
-        stream.write(self.p1)
-        stream.write(self.p2)
+        stream.write(self.line)
         stream.write(UShort(self.left_id))
         stream.write(UShort(self.right_id))
         stream.write(UShort(self.layer.i))

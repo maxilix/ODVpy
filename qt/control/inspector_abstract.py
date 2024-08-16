@@ -2,6 +2,7 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QWidget, QPushButton, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox
 
+import qt.control._generic_tree as generic_tree
 
 TITLE_SIZE = 22
 
@@ -28,8 +29,8 @@ class SubInspector(QWidget):
 
 
 class Inspector(QWidget):
-    _deletable = True
-    _child_addable = True
+    deletable = True
+    child_name = ""
 
     def __init__(self, tab_control, odv_object):
         super().__init__()
@@ -106,6 +107,21 @@ class Inspector(QWidget):
                 rop.append(sub_inspector)
         return rop
 
+    @property
+    def graphic_list(self):
+        rop = []
+        for sub_inspector in self.sub_inspector_list:
+            if hasattr(sub_inspector, 'graphic'):
+                rop.append(sub_inspector.graphic)
+        return rop
+
+    @property
+    def inspector_child_list(self):
+        rop = []
+        count = self.tree_item.childCount()
+        for i in range(count):
+            rop.append(self.tree_item.child(i).inspector)
+        return rop
 
     def init_odv_prop(self):
         # must define self.prop = {property_label : property_widget, ...}
@@ -137,11 +153,44 @@ class Inspector(QWidget):
         self.a_focus = QAction("Focus")
         self.a_focus.triggered.connect(self.take_focus)
 
-        self.a_add_child = QAction("Add child")
-        # self.a_add_obstacle.triggered.connect()
+        self.a_add_child = QAction(f"Add {self.child_name}")
+        self.a_add_child.triggered.connect(self.add_child)
 
         self.a_delete = QAction("Delete")
-        # self.a_delete_obstacle.triggered.connect()
+        self.a_delete.triggered.connect(self.delete)
+
+
+    def add_child(self):
+        odv_child = self.new_odv_child()
+        self.odv_object.add_child(odv_child)
+
+        self._tab_control.tree_items[odv_child] = generic_tree.QODVTreeItem(self._tab_control, odv_child)
+        self.tree_item.addChild(self._tab_control.tree_items[odv_child])
+
+        self._tab_control.inspectors[odv_child] = self._tab_control.inspector_types.get(type(odv_child), Inspector)(self._tab_control, odv_child)
+        self._tab_control.inspector_stack_layout.addWidget(self._tab_control.inspectors[odv_child])
+
+        self._tab_control.inspectors[odv_child].take_focus()  # take_focus finish with a global update
+
+    def new_odv_child(self):
+        raise NotImplementedError
+
+    def delete(self):
+        for inspector_child in self.inspector_child_list:
+            inspector_child.delete()
+        self.tree_item.parent().removeChild(self.tree_item)
+        self._tab_control.tree_items.pop(self.odv_object)
+
+        self._tab_control.inspector_stack_layout.removeWidget(self)
+        self._tab_control.inspectors.pop(self.odv_object)
+        for g in self.graphic_list:
+            self.scene.removeItem(g)
+        self.deleteLater()
+
+        self._tab_control.inspectors[self.odv_object.parent].take_focus()  # take_focus finish with a global update
+        self.odv_object.parent.remove_child(self.odv_object)
+
+        self._tab_control.update()
 
     def scene_menu_name(self):
         return self.odv_object.name
@@ -158,16 +207,16 @@ class Inspector(QWidget):
     def scene_menu_common_actions(self, scene_position):
         rop = []
         rop.append(self.a_focus)
-        if self._deletable:
+        if self.deletable:
             rop.append(self.a_delete)
         return rop
 
     def tree_menu_common_actions(self):
         rop = []
         rop.append(self.a_rename)
-        if self._child_addable:
+        if self.child_name != "":
             rop.append(self.a_add_child)
-        if self._deletable:
+        if self.deletable is True:
             rop.append(self.a_delete)
         return rop
 
@@ -177,6 +226,8 @@ class Inspector(QWidget):
     def take_focus(self):
         self._tab_control.take_focus()
         self._tab_control.tree.setCurrentItem(self.tree_item)
+        self.update()
+
 
 
 # class SectionInspector(Inspector):

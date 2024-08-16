@@ -38,6 +38,7 @@ class QMainControl(QTabWidget):
 
         self.setMinimumWidth(500)
 
+        self.currentChanged.connect(self.current_changed)
         self.setTabPosition(QTabWidget.TabPosition.East)
         self.setMovable(False)
 
@@ -98,5 +99,9 @@ class QMainControl(QTabWidget):
             self.currentWidget().exec_scene_menu()
 
         super().mousePressEvent(event)
+
+
+    def current_changed(self, index):
+        self.widget(index).update()
 
 

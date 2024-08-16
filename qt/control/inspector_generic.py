@@ -6,30 +6,32 @@ from qt.control.inspector_abstract import SubInspector
 
 class OdvObjectListSubInspector(SubInspector):
 
-    def __init__(self, inspector, prop_name: str, iterable_prop_name: str = ""):
+    def __init__(self, inspector, prop_name: str, iterable = None):
         super().__init__(inspector, prop_name)
-        self._iterable_prop_name = iterable_prop_name
+        # print(self.current, iterable_prop_name)
+        if iterable is None:
+            self.iterable = self.current.parent
+        else:
+            self.iterable = iterable
 
         self.combo_box = QComboBox()
         self.main_layout.addWidget(self.combo_box)
 
         self.setLayout(self.main_layout)
-        # self.update()
-
         self.combo_box.currentIndexChanged.connect(self.current_index_changed)
 
-    @property
-    def iterable(self):
-        if self._iterable_prop_name == "":
-            return self.current.parent
-        else:
-            return self._inspector.get_odv_prop(self._iterable_prop_name)
 
     def update(self):
+        self.combo_box.currentIndexChanged.disconnect()
         super().update()
         self.combo_box.clear()
         self.combo_box.addItems([str(e) for e in self.iterable])
-        self.combo_box.setCurrentIndex(self.iterable.index(self.current))
+        try:
+            self.combo_box.setCurrentIndex(self.iterable.index(self.current))
+        except ValueError:
+            self.combo_box.setCurrentIndex(-1)
+        self.combo_box.currentIndexChanged.connect(self.current_index_changed)
+
 
     def current_index_changed(self, index):
         self.current = self.iterable[index]
@@ -45,8 +47,6 @@ class UShortBoxInspector(SubInspector):
         self.main_layout.addWidget(self.spin_box)
 
         self.setLayout(self.main_layout)
-        # self.update()
-
         self.spin_box.valueChanged.connect(self.value_changed)
 
     def update(self):

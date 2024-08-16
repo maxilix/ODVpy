@@ -1,5 +1,5 @@
 from PyQt6.QtGui import QAction, QCursor
-from PyQt6.QtWidgets import QScrollArea, QTabWidget, QMenu, QWidget, QVBoxLayout, QSizePolicy, \
+from PyQt6.QtWidgets import QScrollArea, QMenu, QWidget, QVBoxLayout, QSizePolicy, \
     QStackedLayout
 
 from odv.odv_object import OdvRoot
@@ -8,19 +8,20 @@ from qt.control.inspector_abstract import Inspector
 
 
 class QTabControl(QScrollArea):
-    def __init__(self, parent: QTabWidget):
-        super().__init__(parent)
+    def __init__(self, main_control):
+        super().__init__(main_control)
+        self.main_control = main_control
         self.setWidgetResizable(True)
         self._scene_menu_priority = 2  # Nornal
         self._scene_menu_exclusive = False
 
     @property
     def scene(self):
-        return self.parent().scene
+        return self.main_control.scene
 
     @property
     def level(self):
-        return self.parent().level
+        return self.main_control.level
 
     def scene_menu_priority(self):
         return self._scene_menu_priority + 0.5 * self.has_focus()
@@ -59,11 +60,11 @@ class QTabControl(QScrollArea):
         menu.exec(QCursor.pos())
 
     def has_focus(self):
-        return self.parent().indexOf(self) == self.parent().currentIndex()
+        return self.main_control.indexOf(self) == self.main_control.currentIndex()
 
     def take_focus(self):
         if not self.has_focus():
-            self.parent().parent().setCurrentWidget(self)
+            self.main_control.setCurrentWidget(self)
 
 
 class QTabControlGenericTree(QTabControl):
@@ -100,6 +101,7 @@ class QTabControlGenericTree(QTabControl):
         inspector_stack_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.inspector_stack_layout = QStackedLayout(inspector_stack_widget)
 
+
         for odv_section in self.odv_section_list:
             self.tree_items[odv_section] = QODVTreeItem(self, odv_section)
             self.tree.addTopLevelItem(self.tree_items[odv_section])
@@ -126,10 +128,11 @@ class QTabControlGenericTree(QTabControl):
         #     self.tree_items[odv_section].setExpanded(True)
         self.tree.expandAll()
 
+        self.update()
+
+    def update(self):
         for inspector in self.inspectors.values():
             inspector.update()
-
-
 
     def item_selection_changed(self):
         active_odv_object = self.tree.selectedItems()[0].odv_object

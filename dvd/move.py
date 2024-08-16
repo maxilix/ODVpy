@@ -70,19 +70,19 @@ class MainArea(OdvObject):
             # counter-clockwise
             self._poly = QPolygonF(poly[::-1])
 
-    def add_obstacle(self, poly: QPolygonF, index: int = 0) -> Obstacle:
-        self._path = None
-        obstacle = Obstacle(self, poly)
-        if index <= 0:
-            self.area_list.append(obstacle)
-        else:
-            self.area_list.insert(index, obstacle)
-        return obstacle
+    # def add_obstacle(self, poly: QPolygonF, index: int = 0) -> Obstacle:
+    #     self._path = None
+    #     obstacle = Obstacle(self, poly)
+    #     if index <= 0:
+    #         self.area_list.append(obstacle)
+    #     else:
+    #         self.area_list.insert(index, obstacle)
+    #     return obstacle
 
-    def delete_obstacle(self, index: int):
-        self._path = None
-        assert 0 < index < len(self.area_list)
-        self.area_list.pop(index)
+    # def delete_obstacle(self, index: int):
+    #     self._path = None
+    #     assert 0 < index < len(self.area_list)
+    #     self.area_list.pop(index)
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
