@@ -30,57 +30,37 @@ class QViewport(QGraphicsView):
         self.zoom_max = 50
         self.zoom_min = 0.5
 
-        self.scene().addItem(QGraphicsRectItem(QRectF(0, 0, self.level_map.width, self.level_map.height)))
-        self.sceneRect()  # seems to have an initializing effect on the first call
+        # init a too large scene rectangle, to init position
         self.setSceneRect(QRectF(-self.level_map.width, -self.level_map.height, 3*self.level_map.width, 3*self.level_map.height))
-
-        # === DYNAMIC MARGINS ===
-        # sceneRect (and margins) are adjusted during zooming according to the window size
-        # Each margin is half the window size
-        # But they cannot be set during __init__ because the viewport window is not yet the right size.
-        # x_margin = self.dvm.width / 2
-        # y_margin = self.dvm.height / 2
-        # r = QRectF(-x_margin, -y_margin, self.dvm.width + 2 * x_margin, self.dvm.height + 2 * y_margin)
-        # self.setSceneRect(r)
-        # === DYNAMIC MARGINS ===
-
-
+        # init view position
         self.zoom = 1.5
         self.x = self.level_map.width // 2
         self.y = self.level_map.height // 2
 
-        # initial view position
-        # self.zoom = 3.4
-        # self.x = 700
-        # self.y = 1700
+    def adjust_margins(self):
+        cr = self.current_visible_scene_rect()
+        tr = self.scene().itemsBoundingRect()
+        r = QRectF(-cr.width() / 2, -cr.height() / 2, cr.width() + tr.width(), cr.height() + tr.height())
+        self.setSceneRect(r)
+
+    def resizeEvent(self, event):
+        self.adjust_margins()
+        super().resizeEvent(event)
 
     def mousePressEvent(self, event):
-        mouse_scene_pos = self.mapToScene(event.pos())
         if event.button() == Qt.MouseButton.MiddleButton:
             self.setCursor(Qt.CursorShape.DragMoveCursor)
             self.drag_position = event.pos()
-        # elif event.button() == Qt.MouseButton.LeftButton:
-        #     # self.move_to(QRectF(334, 162, 100, 100))
-        #     # self.move_to(649, 727)
-        #     # self.zoom = 10
-        #     pass
-        # elif event.button() == Qt.MouseButton.RightButton:
-        #     # self.move_to(QRectF(100, 300, 50, 50))
-        #     self.move_to(100, 100)
-        #     # self.zoom = 1
-        #     pass
-        # self.control.mousse_event(mouse_scene_pos, event)
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-        mouse_scene_pos = self.mapToScene(event.pos())
         if event.button() == Qt.MouseButton.MiddleButton and self.drag_position is not None:
             self.setCursor(Qt.CursorShape.ArrowCursor)
             self.drag_position = None
-        # self.control.mousse_event(mouse_scene_pos, event)
         super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
+        self.adjust_margins()
         mouse_scene_pos = self.mapToScene(event.pos())
         self.info_bar.set_info(x=mouse_scene_pos.x(), y=mouse_scene_pos.y())
         if self.drag_position is not None:
@@ -88,15 +68,7 @@ class QViewport(QGraphicsView):
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + delta.x())
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + delta.y())
             self.drag_position = event.pos()
-
         super().mouseMoveEvent(event)
-
-    # def mouseDoubleClickEvent(self, event):
-    #     event.ignore()
-    #     super().mouseDoubleClickEvent(event)
-
-    # def leaveEvent(self, event: QEvent):
-    #     super().leaveEvent(event)
 
     def wheelEvent(self, event):
         mouse_view_pos = event.position().toPoint()
@@ -109,6 +81,8 @@ class QViewport(QGraphicsView):
             self.zoom /= self.zoom_factor
         else:
             pass
+
+        self.adjust_margins()
 
         h = self.horizontalScrollBar()
         v = self.verticalScrollBar()
@@ -139,12 +113,6 @@ class QViewport(QGraphicsView):
             new_zoom = self.zoom_max
         current_zoom = self.zoom
         self.scale(new_zoom / current_zoom, new_zoom / current_zoom)
-        # === DYNAMIC MARGINS ===
-        # x_margin = self.horizontalScrollBar().pageStep() / new_zoom / 2  # + 10
-        # y_margin = self.verticalScrollBar().pageStep() / new_zoom / 2  # + 10
-        # r = QRectF(-x_margin, -y_margin, self.dvm.width + 2 * x_margin, self.dvm.height + 2 * y_margin)
-        # self.setSceneRect(r)
-        # === DYNAMIC MARGINS ===
         self.info_bar.set_info(zoom=self.zoom)
 
     @pyqtProperty(float)
@@ -213,3 +181,4 @@ class QViewport(QGraphicsView):
 
     def current_visible_scene_rect(self):
         return self.mapToScene(self.viewport().rect()).boundingRect()
+

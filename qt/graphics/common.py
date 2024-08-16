@@ -1,19 +1,13 @@
 from PyQt6.QtCore import Qt, QRectF
-from PyQt6.QtGui import QPainter, QPen, QBrush
+from PyQt6.QtGui import QPen, QBrush, QPainter
 from PyQt6.QtWidgets import QGraphicsItem
 
 from qt.control.q_scene_menu import QSceneMenuSection
 
 
-# CG : CustomGraphicsItem
-# QCG : QCustomGraphicsItem
-#
-# H : highlightable
-# M : movable
-
 # TODO ZValue
 
-class QCGPen(QPen):
+class OdvPen(QPen):
     def __init__(self, color, width):
         super().__init__(color)
         self.setWidthF(width)
@@ -21,34 +15,34 @@ class QCGPen(QPen):
         self.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
 
 
-class QCGThinPen(QCGPen):
+class OdvThinPen(OdvPen):
     def __init__(self, color):
         super().__init__(color, 0.3)
 
 
-class QCGBrush(QBrush):
+class OdvBrush(QBrush):
     def __init__(self, color, alpha):
         color.setAlpha(alpha)
         super().__init__(color)
 
 
-class QCGLightBrush(QCGBrush):
+class OdvLightBrush(OdvBrush):
     def __init__(self, color):
         super().__init__(color, 32)
 
 
-class QCGHighBrush(QCGBrush):
+class OdvHighBrush(OdvBrush):
     def __init__(self, color):
         super().__init__(color, 96)
 
 
-class CustomGraphicsItem(object):
+class OdvGraphicElement(object):
 
     def __init__(self, sub_inspector, *args, **kwargs):
         self.sub_inspector = sub_inspector
+        self.force_visible = False
         super().__init__(*args, **kwargs)
-        # super().setVisible(True)
-        # self.update()
+
 
     def paint(self, painter: QPainter, option, widget=None):
         if self.visible:
@@ -57,15 +51,7 @@ class CustomGraphicsItem(object):
 
     @property
     def visible(self):
-        return self.sub_inspector.visibility_checkbox.isChecked()
-
-    # @visible.setter
-    # def visible(self, value):
-    #     self._visible = value
-    #     self.update()
-    #
-    # def setVisible(self, value):
-    #     self.visible = value
+        return self.parentItem().visible or self.force_visible
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
@@ -81,9 +67,11 @@ class CustomGraphicsItem(object):
         self.scene().move_to_item(self)
 
 
-class QCGItemGroup(QGraphicsItem):
+class OdvGraphic(QGraphicsItem):
     def __init__(self, sub_inspector, *args, **kwargs):
+        # assert isinstance(sub_inspector, GraphicSubInspector)
         self.sub_inspector = sub_inspector
+        self._visible = False
         super().__init__(*args, **kwargs)
         self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
 
@@ -96,14 +84,7 @@ class QCGItemGroup(QGraphicsItem):
 
     @property
     def visible(self):
-        cv = [child.visible for child in self.childItems()]
-
-        if cv[0] is True:
-            assert all(cv)
-        else:
-            assert not any(cv)
-        return cv[0]
-
+        return self.sub_inspector.visibility_checkbox.isChecked()
 
     def add_children(self, items):
         for item in items:

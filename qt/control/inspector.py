@@ -57,6 +57,10 @@ class Inspector(QWidget):
         self.main_layout.addLayout(sub_layout)
         self.main_layout.addStretch(1)
 
+    def update(self):
+        super().update()
+        for prop_label in self.prop:
+            self.prop[prop_label].update()
 
     @property
     def scene(self):

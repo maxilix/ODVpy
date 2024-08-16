@@ -1,12 +1,14 @@
 from PyQt6.QtCore import Qt, QLineF
-from PyQt6.QtGui import QColor, QBrush, QPen, QPolygonF, QAction
+from PyQt6.QtGui import QColor, QBrush, QPen, QPolygonF, QAction, QImage
 from PyQt6.QtWidgets import QPushButton, QCheckBox, QWidget, QSlider, QHBoxLayout, QStackedLayout, QLabel, QVBoxLayout, \
     QFileDialog
 
+from common import extension
 from qt.control.sub_inspector import SubInspector
-from qt.graphics.line import QCEGLine
-from qt.graphics.pixmap import QCGMap
-from qt.graphics.polygon import QCEGPolygon
+from qt.graphics.common import OdvThinPen, OdvLightBrush, OdvHighBrush
+from qt.graphics.odv_line import OdvLine
+from qt.graphics.odv_pixmap import OdvMap
+from qt.graphics.odv_polygon import QCEGPolygon
 
 
 class GraphicSubInspector(SubInspector):
@@ -22,6 +24,10 @@ class GraphicSubInspector(SubInspector):
         self.localise_button = QPushButton("Localise")
         self.localise_button.clicked.connect(self.localise_button_clicked)
 
+        black = QColor(0, 0, 0)
+        self.pen = OdvThinPen(black)
+        self.light_brush = OdvLightBrush(black)
+        self.high_brush = OdvHighBrush(black)
 
     def init_actions(self):
         self.a_localise = QAction("Localise")
@@ -107,13 +113,11 @@ class GraphicSubInspector(SubInspector):
         return rop + self._inspector.tree_menu_common_actions()
 
 
-
-
 class GeometrySubInspector(GraphicSubInspector):
-    graphic_type = {QPolygonF : QCEGPolygon,
-                    QLineF : QCEGLine}
+    graphic_type = {QPolygonF: QCEGPolygon,
+                    QLineF: OdvLine}
 
-    def __init__(self, parent, prop_name, color: QColor = None):
+    def __init__(self, parent, prop_name, color: QColor):
         super().__init__(parent, prop_name)
 
         self.edit_button = QPushButton("Edit")
@@ -153,24 +157,10 @@ class GeometrySubInspector(GraphicSubInspector):
         self.save_button.clicked.connect(self.save_button_clicked)
         self.cancel_button.clicked.connect(self.cancel_button_clicked)
 
-
     def init_graphic(self, color: QColor):
-        if color is None:
-            self.pen = QPen(Qt.GlobalColor.transparent)
-            self.light_brush = QBrush(Qt.GlobalColor.transparent)
-            self.high_brush = QBrush(Qt.GlobalColor.transparent)
-        else:
-            color.setAlpha(255)
-            self.pen = QPen(color)
-            self.pen.setWidthF(0.3)
-            self.pen.setCapStyle(Qt.PenCapStyle.FlatCap)
-            self.pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
-
-            color.setAlpha(32)
-            self.light_brush = QBrush(color)
-
-            color.setAlpha(96)
-            self.high_brush = QBrush(color)
+        self.pen = OdvThinPen(color)
+        self.light_brush = OdvLightBrush(color)
+        self.high_brush = OdvHighBrush(color)
 
         self.graphic = self.graphic_type[type(self.current)](self)
         self.scene.addItem(self.graphic)
@@ -226,22 +216,22 @@ class PixmapSubInspector(GraphicSubInspector):
         self.update()
 
     def init_graphic(self):
-        self.graphic = QCGMap(self)
+        color = QColor(64, 64, 64)
+        self.pen = OdvThinPen(color)
+        self.light_brush = OdvLightBrush(color)
+        self.high_brush = QBrush(Qt.GlobalColor.transparent)
+
+        self.graphic = OdvMap(self)
         self.scene.addItem(self.graphic)
 
     def change_image_button_clicked(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
-        filters = ["BMP Image (*.bmp)",
-                   "PNG Image (*.png)",]
+        filters = ["PNG Image (*.png)", "BMP Image (*.bmp)"]
         dialog.setNameFilters(filters)
-        # dialog.setViewMode(QFileDialog.ViewMode.List)
         if dialog.exec():
             filenames = dialog.selectedFiles()
             if len(filenames) == 1:
-                # self.dvm.change_level_map_image(filenames[0])
-                # self.scene.removeItem(self.graphic)
-                # self.graphic = QCGMap(self, QPixmap(self.dvm.level_map_image))
-                # self.scene.addItem(self.graphic)
-                self.update()
-
+                self.current = QImage(filenames[0]).convertedTo(QImage.Format.Format_RGB16)
+                self._inspector.update()
+                # self.update()

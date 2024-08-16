@@ -154,7 +154,7 @@ class LevelMapInspector(Inspector):
 
     def init_odv_prop(self):
         self.prop["Info"] = InfoSubInspector(self, "info")
-        self.prop["Map"] = PixmapSubInspector(self, "map_image")
+        self.prop["Map"] = PixmapSubInspector(self, "image")
         self.prop["Map"].visibility_checkbox.setChecked(True)
         self.prop["Map"].opacity_slider.setValue(100)
 
@@ -162,9 +162,9 @@ class LevelMapInspector(Inspector):
     def info(self):
         return f"size: {self.odv_object.width} x {self.odv_object.height}"
 
-    @property
-    def map_image(self):
-        return self.odv_object.image
+    # @property
+    # def map_image(self):
+    #     return self.odv_object.image
 
 class QMapTabControl(QTabControlGenericTree):
     inspector_types = {LevelMap: LevelMapInspector}
