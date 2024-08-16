@@ -7,7 +7,7 @@ from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
 from qt.info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
-from qt.control.main import QMainControl
+from qt.control._main import QMainControl
 
 from config import CONFIG
 from common import *

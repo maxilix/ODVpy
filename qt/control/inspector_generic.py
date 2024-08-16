@@ -1,26 +1,7 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QSpinBox, QPushButton, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QComboBox, QSpinBox, QPushButton, QHBoxLayout, QLabel
 
 from common import UShort
-from qt.control.inspector import Inspector
-
-
-class SubInspector(QWidget):
-
-    def __init__(self, inspector, prop_name):
-        assert isinstance(inspector, Inspector)
-        super().__init__()
-        self._inspector = inspector
-        self._prop_name = prop_name
-        self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-
-    @property
-    def current(self):
-        return self._inspector.get_odv_prop(self._prop_name)
-
-    @current.setter
-    def current(self, value):
-        self._inspector.set_odv_prop(self._prop_name, value)
+from qt.control.inspector_abstract import SubInspector
 
 
 class OdvObjectListSubInspector(SubInspector):

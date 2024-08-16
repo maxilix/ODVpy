@@ -2,9 +2,9 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QMouseEvent
 from PyQt6.QtWidgets import QTabWidget
 
-from qt.control.bond import QBondTabControl
-from qt.control.map import QMapTabControl
-from qt.control.move import QMoveTabControl
+from qt.control.tab_bond import QBondTabControl
+from qt.control.tab_dvm import QMapTabControl
+from qt.control.tab_move import QMoveTabControl
 from qt.scene import QScene
 
 

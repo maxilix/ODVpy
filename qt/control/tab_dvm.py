@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import QVBoxLayout, QLabel
 
 from dvm.dvm_parser import LevelMap
-from qt.control.graphic_sub_inspector import PixmapSubInspector
-from qt.control.inspector import Inspector
-from qt.control.q_tab_control import QTabControlGenericTree
-from qt.control.sub_inspector import InfoSubInspector
+from qt.control.inspector_graphic import PixmapSubInspector
+from qt.control.inspector_abstract import Inspector
+from qt.control.tab_abstract import QTabControlGenericTree
+from qt.control.inspector_generic import InfoSubInspector
 
 
 #

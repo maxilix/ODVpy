@@ -1,9 +1,9 @@
 from PyQt6.QtGui import QColor
 
 from dvd.move import Layer, MainArea, Obstacle
-from qt.control.graphic_sub_inspector import GeometrySubInspector
-from qt.control.inspector import Inspector
-from qt.control.q_tab_control import QTabControlGenericTree
+from qt.control.inspector_graphic import GeometrySubInspector
+from qt.control.inspector_abstract import Inspector
+from qt.control.tab_abstract import QTabControlGenericTree
 
 
 class ObstacleInspector(Inspector):

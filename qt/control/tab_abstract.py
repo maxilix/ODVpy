@@ -3,8 +3,8 @@ from PyQt6.QtWidgets import QScrollArea, QTabWidget, QMenu, QWidget, QVBoxLayout
     QStackedLayout
 
 from odv.odv_object import OdvRoot
-from qt.control.q_generic_tree import QGenericTree, QODVTreeItem
-from qt.control.inspector import Inspector
+from qt.control._generic_tree import QGenericTree, QODVTreeItem
+from qt.control.inspector_abstract import Inspector
 
 
 class QTabControl(QScrollArea):
@@ -101,8 +101,8 @@ class QTabControlGenericTree(QTabControl):
         self.inspector_stack_layout = QStackedLayout(inspector_stack_widget)
 
         for odv_section in self.odv_section_list:
-            self.tree_items[odv_section] = QODVTreeItem(self, odv_section)
             self.inspectors[odv_section] = self.inspector_types.get(type(odv_section), Inspector)(self, odv_section)
+            self.tree_items[odv_section] = QODVTreeItem(self, odv_section)
             self.tree.addTopLevelItem(self.tree_items[odv_section])
             self.inspector_stack_layout.addWidget(self.inspectors[odv_section])
             if isinstance(odv_section, OdvRoot):

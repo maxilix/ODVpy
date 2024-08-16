@@ -2,10 +2,10 @@ from PyQt6.QtCore import QLineF
 from PyQt6.QtGui import QColor
 
 from dvd.bond import BondLine
-from qt.control.graphic_sub_inspector import GeometrySubInspector
-from qt.control.inspector import Inspector
-from qt.control.q_tab_control import QTabControlGenericTree
-from qt.control.sub_inspector import OdvObjectListSubInspector, UShortTwinBoxInspector
+from qt.control.inspector_graphic import GeometrySubInspector
+from qt.control.inspector_abstract import Inspector
+from qt.control.tab_abstract import QTabControlGenericTree
+from qt.control.inspector_generic import OdvObjectListSubInspector, UShortTwinBoxInspector
 
 
 # class GraphicBondLine(QCGFixedLine):

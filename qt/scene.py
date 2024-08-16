@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent
 
-from qt.control.q_scene_menu import QSceneMenu
+from qt.control._scene_menu import QSceneMenu
 
 
 class QScene(QGraphicsScene):

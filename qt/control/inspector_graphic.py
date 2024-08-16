@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QPushButton, QCheckBox, QWidget, QSlider, QHBoxLayou
     QFileDialog
 
 from common import extension
-from qt.control.sub_inspector import SubInspector
+from qt.control.inspector_generic import SubInspector
 from qt.graphics.common import OdvThinPen, OdvLightBrush, OdvHighBrush
 from qt.graphics.odv_line import OdvLine
 from qt.graphics.odv_pixmap import OdvMap
@@ -233,5 +233,4 @@ class PixmapSubInspector(GraphicSubInspector):
             filenames = dialog.selectedFiles()
             if len(filenames) == 1:
                 self.current = QImage(filenames[0]).convertedTo(QImage.Format.Format_RGB16)
-                self._inspector.update()
-                # self.update()
+                self.global_update()
