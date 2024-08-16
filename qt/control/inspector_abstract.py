@@ -7,6 +7,7 @@ import qt.control._generic_tree as generic_tree
 TITLE_SIZE = 22
 
 class SubInspector(QWidget):
+    valid_state = True
 
     def __init__(self, inspector, prop_name):
         assert isinstance(inspector, Inspector)
@@ -108,12 +109,12 @@ class Inspector(QWidget):
         return rop
 
     @property
+    def valid_state(self):
+        return all([sub_inspector.valid_state for sub_inspector in self.sub_inspector_list])
+
+    @property
     def graphic_list(self):
-        rop = []
-        for sub_inspector in self.sub_inspector_list:
-            if hasattr(sub_inspector, 'graphic'):
-                rop.append(sub_inspector.graphic)
-        return rop
+        return [sub_inspector.graphic for sub_inspector in self.sub_inspector_list if hasattr(sub_inspector, 'graphic')]
 
     @property
     def inspector_child_list(self):

@@ -20,7 +20,6 @@ class OdvObjectListSubInspector(SubInspector):
         self.setLayout(self.main_layout)
         self.combo_box.currentIndexChanged.connect(self.current_index_changed)
 
-
     def update(self):
         self.combo_box.currentIndexChanged.disconnect()
         super().update()
@@ -30,11 +29,13 @@ class OdvObjectListSubInspector(SubInspector):
             self.combo_box.setCurrentIndex(self.iterable.index(self.current))
         except ValueError:
             self.combo_box.setCurrentIndex(-1)
+            self.valid_state = False
         self.combo_box.currentIndexChanged.connect(self.current_index_changed)
-
 
     def current_index_changed(self, index):
         self.current = self.iterable[index]
+        self.valid_state = True
+        self.global_update()
 
 
 class UShortBoxInspector(SubInspector):
@@ -79,8 +80,6 @@ class UShortTwinBoxInspector(SubInspector):
         self.main_layout.addLayout(l1)
 
         self.setLayout(self.main_layout)
-        # self.update()
-
         self.spinbox0.valueChanged.connect(self.value_changed)
         self.spinbox1.valueChanged.connect(self.value_changed)
         self.swap_button.clicked.connect(self.swap_button_clicked)
@@ -100,15 +99,15 @@ class UShortTwinBoxInspector(SubInspector):
 
 
 class InfoSubInspector(SubInspector):
+
     def __init__(self, parent, prop_name):
         super().__init__(parent, prop_name)
-        # current = (width, height)
         self.info = QLabel()
 
         self.main_layout.addWidget(self.info)
 
         self.setLayout(self.main_layout)
-        # self.update()
+
 
     def update(self):
         self.info.setText(self.current)

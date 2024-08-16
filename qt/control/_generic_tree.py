@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QContextMenuEvent, QCursor
+from PyQt6.QtGui import QContextMenuEvent, QCursor, QBrush, QColor
 from PyQt6.QtWidgets import QAbstractItemView, QTreeWidget, QTreeWidgetItem, QMenu
 
 from qt.control.inspector_graphic import GraphicSubInspector, GeometrySubInspector
@@ -11,25 +11,29 @@ class QODVTreeItem(QTreeWidgetItem):
         self._tab_control = tab_control
         self.odv_object = odv_object
         self.current_state = None
-        # self.update()
-
-        self.childCount()
-
 
     def setBold(self, value):
         f = self.font(0)
         f.setBold(value)
         self.setFont(0, f)
 
+    def setColor(self, color = QColor('black')):
+        self.setForeground(0, color)
+
     def global_update(self):
         self.inspector.update()
 
     def update(self):
         self.setBold(False)
+        self.setColor()
         title = self.odv_object.name
         if any(self.inspector_edit_state_list()):
             title += " -Edit-"
             self.setBold(True)
+        if self.inspector.valid_state is False:
+            title += " -INVALID-"
+            self.setBold(True)
+            self.setColor(QColor('red'))
 
         self.setText(0, title)
         if len((vl:=[v.isChecked() for v in self.inspector_visibility_checkbox_list()]))>0:
@@ -84,15 +88,12 @@ class QGenericTree(QTreeWidget):
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.itemClicked.connect(self.item_clicked)
 
-    # def addChild(self, child):
-    #     self.addTopLevelItem(child)
-
     # def update_height(self):
     #
     #     h = 18 * self.count() + 2
     #     self.setMinimumHeight(h)
     #     self.setMaximumHeight(h)
-
+    #
     # def count_visible_item(self):
     #     count = 0
     #     index = self.model().index(0, 0)
@@ -105,9 +106,6 @@ class QGenericTree(QTreeWidget):
     def item_clicked(item, column):
         if column == 0:
             item.clicked()
-
-
-
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         item = self.itemAt(event.pos())
