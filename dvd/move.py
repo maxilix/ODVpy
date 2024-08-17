@@ -1,3 +1,4 @@
+from profile import runctx
 from typing import Self
 
 from common import *
@@ -167,6 +168,9 @@ class Layer(OdvObject):
 
 class Move(Section, OdvRoot):
 
+
+
+
     _section_name = "MOVE"
     _section_version = 1
 
@@ -176,12 +180,23 @@ class Move(Section, OdvRoot):
             i += 1
             k -= ta_i
         j = 0
-        while (ta_j := len(self[i][j])) <= k:
+        while (ta_j := (1+len(self[i][j]))) <= k:
             j += 1
             k -= ta_j
-        rop = self[i][j][k]
+        assert k == 0
+        rop = self[i][j]
         # assert isinstance(rop, MainArea)
         return rop
+
+    def main_area_iterator(self):
+        class MAI:
+            def __iter__(subself):
+                return iter(ma for layer in self for ma in layer)
+            def __getitem__(self, item):
+                return list(iter(self))[item]
+            def __len__(self):
+                return len(list(iter(self)))
+        return MAI()
 
     def _load(self, substream: ReadStream) -> None:
         nb_layer = substream.read(UShort)

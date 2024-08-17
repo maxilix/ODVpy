@@ -1,12 +1,13 @@
 from PyQt6.QtCore import QLineF, QPointF
 from PyQt6.QtGui import QColor
 
+from common import UShort
 from dvd.bond import BondLine, Bond
 from qt.control._generic_tree import QODVTreeItem
 from qt.control.inspector_graphic import GeometrySubInspector
 from qt.control.inspector_abstract import Inspector
 from qt.control.tab_abstract import QTabControlGenericTree
-from qt.control.inspector_generic import OdvObjectListSubInspector, UShortTwinBoxInspector
+from qt.control.inspector_generic import OdvObjectListSubInspector, IntegerTwinBoxInspector
 
 
 # class GraphicBondLine(QCGFixedLine):
@@ -47,9 +48,9 @@ class BondLineInspector(Inspector):
     child_name = ""  # cannot add child
 
     def init_odv_prop(self):
-        self.sub_inspector_group["Line"] = [GeometrySubInspector(self, "line", QColor(0, 180, 255))]
-        self.sub_inspector_group["Properties"] = [OdvObjectListSubInspector(self, "layer"),
-                                                  UShortTwinBoxInspector(self, "trigger_id")]
+        self.sub_inspector_group["Line"] = [GeometrySubInspector(self, "line", color=QColor(0, 180, 255))]
+        self.sub_inspector_group["Properties"] = [OdvObjectListSubInspector(self, "layer", "Layer"),
+                                                  IntegerTwinBoxInspector(self, "trigger_id", "Trigger", int_type=UShort)]
 
     @property
     def trigger_id(self):

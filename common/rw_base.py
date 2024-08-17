@@ -19,7 +19,7 @@ class Bytes(bytes, RWStreamable):
         stream.write_raw(self)
 
 
-# class Bool(bool, RWStreamable):
+# class Bool(int, RWStreamable):
 #
 #     @classmethod
 #     def from_stream(cls, stream):

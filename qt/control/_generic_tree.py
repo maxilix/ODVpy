@@ -35,8 +35,8 @@ class QODVTreeItem(QTreeWidgetItem):
             self.setBold(True)
             self.setColor(QColor('red'))
 
-        self.setText(0, title)
         if len((vl:=[v.isChecked() for v in self.inspector_visibility_checkbox_list()]))>0:
+            self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             if all(vl):
                 self.current_state = Qt.CheckState.Checked
             elif any(vl):
@@ -44,6 +44,18 @@ class QODVTreeItem(QTreeWidgetItem):
             else:
                 self.current_state = Qt.CheckState.Unchecked
             self.setCheckState(0, self.current_state)
+        else:
+            self.current_state = None
+            # title = "      " + title
+            # self.setFlags(self.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
+            # self.current_state = Qt.CheckState.Unchecked
+
+
+
+        self.setText(0, title)
+
+
+
 
     @property
     def inspector(self):
@@ -88,6 +100,12 @@ class QGenericTree(QTreeWidget):
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.itemClicked.connect(self.item_clicked)
 
+        # self.setStyleSheet("""
+        #     QTreeWidget::indicator[data="no_checkable"] {
+        #         background-color: green;
+        #         border: 1px solid darkgreen;
+        #     }
+        # """)
     # def update_height(self):
     #
     #     h = 18 * self.count() + 2

@@ -169,7 +169,7 @@ class DvdParser(Parser):
     @property
     def buil(self):
         if self._buil.loaded is False:
-            self._buil.load()
+            self._buil.load(move=self.move)
         return self._buil
 
     @property

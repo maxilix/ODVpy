@@ -13,8 +13,7 @@ from qt.graphics.odv_polygon import QCEGPolygon
 
 class GraphicSubInspector(SubInspector):
 
-    def __init__(self, parent, prop_name):
-        super().__init__(parent, prop_name)
+    def sub_init(self):
         self.visibility_checkbox = QCheckBox()
         self.visibility_checkbox.clicked.connect(self.visibility_checkbox_clicked)
         self.opacity_slider = QSlider(Qt.Orientation.Horizontal)
@@ -129,8 +128,8 @@ class GeometrySubInspector(GraphicSubInspector):
     graphic_type = {QPolygonF: QCEGPolygon,
                     QLineF: OdvLine}
 
-    def __init__(self, parent, prop_name, color: QColor):
-        super().__init__(parent, prop_name)
+    def sub_init(self, *, color):
+        super().sub_init()
 
         self.edit_button = QPushButton("Edit")
         self.save_button = QPushButton("Save")
@@ -199,8 +198,8 @@ class GeometrySubInspector(GraphicSubInspector):
 
 
 class PixmapSubInspector(GraphicSubInspector):
-    def __init__(self, parent, prop_name):
-        super().__init__(parent, prop_name)
+    def sub_init(self):
+        super().sub_init()
 
         self.visibility_label = QLabel("Visibility ")
 

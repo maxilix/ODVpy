@@ -3,6 +3,7 @@ from PyQt6.QtGui import QMouseEvent
 from PyQt6.QtWidgets import QTabWidget
 
 from qt.control.tab_bond import QBondTabControl
+from qt.control.tab_buil import QBuilTabControl
 from qt.control.tab_dvm import QMapTabControl
 from qt.control.tab_move import QMoveTabControl
 from qt.scene import QScene
@@ -36,54 +37,61 @@ class QMainControl(QTabWidget):
         self.scene = scene
         self.level = level
 
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(400)
 
         self.currentChanged.connect(self.current_changed)
         self.setTabPosition(QTabWidget.TabPosition.East)
         self.setMovable(False)
 
         # Map
-        self.dvm_control = QMapTabControl(self, level.dvm.level_map)
-        self.addTab(self.dvm_control, "DVM")
+        self.dvm_tab = QMapTabControl(self, level.dvm.level_map)
+        self.addTab(self.dvm_tab, "DVM")
 
         # Miscellaneous
-        # self.miscellaneous_control = QTabControl(self, scene)
-        # self.addTab(self.miscellaneous_control, "MISC")
+
+        # Background
 
         # Motion
-        self.motion_control = QMoveTabControl(self, level.dvd.move)
-        self.addTab(self.motion_control, "MOVE")
+        self.move_tab = QMoveTabControl(self, level.dvd.move)
+        self.addTab(self.move_tab, "MOVE")
 
         # Sights
-        # self.sights_control = QTabControl(self, scene)
-        # self.addTab(self.sights_control, "Sights")
 
         # Masks
-        # self.masks_control = QTabControl(self, scene)
-        # self.addTab(self.masks_control, "Masks")
 
         # Ways
-        # self.ways_control = QTabControl(self, scene)
-        # self.addTab(self.ways_control, "Ways")
 
         # Elements
-        # self.elements_control = QTabControl(self, scene)
-        # self.addTab(self.elements_control, "Elements")
 
-        # Sounds
-        # self.sounds_control = QTabControl(self, scene)
-        # self.addTab(self.sounds_control, "Sounds")
+        # FX Bank
 
         # Music
-        # self.addTab(QLabel(section_list[8]), section_list[8])
 
-        # ...
+        # Sounds
+
+        # Patches
 
         # Bonds
-        self.bond_control = QBondTabControl(self, level.dvd.bond)
-        self.addTab(self.bond_control, "BOND")
+        self.bond_tab = QBondTabControl(self, level.dvd.bond)
+        self.addTab(self.bond_tab, "BOND")
 
-        # self.update()
+        # Materials
+
+        # Lifts
+
+        # AI
+
+        # Buildings
+        self.buil_tab = QBuilTabControl(self, [level.dvd.buil.buildings, level.dvd.buil.special_doors])
+        self.addTab(self.buil_tab, "BUIL")
+
+        # Scripts
+
+        # Jumps
+
+        # Carts
+
+        # Dialogues
 
         # self.setCurrentWidget(self.bond_control)
 

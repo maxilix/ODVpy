@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QWidget, QPushButton, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox
+from PyQt6.QtWidgets import QWidget, QPushButton, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QFormLayout
 
 import qt.control._generic_tree as generic_tree
 
@@ -9,13 +9,18 @@ TITLE_SIZE = 22
 class SubInspector(QWidget):
     valid_state = True
 
-    def __init__(self, inspector, prop_name):
+    def __init__(self, inspector, prop_name, inspector_name="", **kwargs):
         assert isinstance(inspector, Inspector)
         super().__init__()
         self._inspector = inspector
+        self.inspector_name = inspector_name
         self._prop_name = prop_name
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.sub_init(**kwargs)
+
+    def sub_init(self, **kwargs):
+        pass
 
     def global_update(self):
         self._inspector.update()
@@ -54,7 +59,7 @@ class Inspector(QWidget):
             QPushButton:hover {
                 background: #f0f0f0;
             }
-        """)
+            """)
         header_layout.addWidget(self.settings_button)
 
         self.title = QLabel(self)
@@ -73,10 +78,21 @@ class Inspector(QWidget):
         self.init_odv_prop()
         for group_name in self.sub_inspector_group:
             box = QGroupBox(group_name)
-            box.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            box_layout = QVBoxLayout(box)
-            for sub_inspector in self.sub_inspector_group[group_name]:
-                box_layout.addWidget(sub_inspector)
+            box.setStyleSheet("""
+                QGroupBox::title {
+                    subcontrol-position: top left;
+                    padding: 0 30px;
+                }
+                """)
+            sub_inspector_name_list = [si.inspector_name for si in self.sub_inspector_group[group_name]]
+            if all([name=="" for name in sub_inspector_name_list]):
+                box_layout = QVBoxLayout(box)
+                for sub_inspector in self.sub_inspector_group[group_name]:
+                    box_layout.addWidget(sub_inspector)
+            else:
+                box_layout = QFormLayout(box)
+                for sub_inspector in self.sub_inspector_group[group_name]:
+                    box_layout.addRow(sub_inspector.inspector_name, sub_inspector)
             self.main_layout.addWidget(box)
         # self.main_layout.addLayout(sub_layout)
         self.main_layout.addStretch(1)
