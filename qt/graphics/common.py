@@ -11,7 +11,7 @@ class OdvPen(QPen):
     def __init__(self, color, width):
         super().__init__(color)
         self.setWidthF(width)
-        self.setCapStyle(Qt.PenCapStyle.FlatCap)
+        self.setCapStyle(Qt.PenCapStyle.RoundCap)
         self.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
 
 
@@ -71,7 +71,6 @@ class OdvGraphic(QGraphicsItem):
     def __init__(self, sub_inspector, *args, **kwargs):
         # assert isinstance(sub_inspector, GraphicSubInspector)
         self.sub_inspector = sub_inspector
-        self._visible = False
         super().__init__(*args, **kwargs)
         self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
 

@@ -19,7 +19,6 @@ class OdvFixPointElement(OdvGraphicElement, QGraphicsItem):
         super().setPos(position.truncated() + QPointF(0.5, 0.5))
 
     def paint(self, painter: QPainter, option, widget=None):
-        super().paint(painter, option, widget)
         if self.visible:
             painter.setRenderHints(QPainter.RenderHint.Antialiasing)
             painter.drawLine(QPointF(-self.size / 2, -self.size / 2), QPointF(self.size / 2, self.size / 2))
@@ -125,7 +124,7 @@ class OdvPoint(OdvGraphic):
 
     @position.setter
     def position(self, position: QPointF):
-        self.sub_inspector.current = self.position.trunated()
+        self.sub_inspector.current = position.truncated()
 
     def enter_edit_mode(self):
         self.remove_child(self.point_fix)

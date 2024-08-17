@@ -1,10 +1,57 @@
 from PyQt6.QtCore import QLineF, QRectF, QPointF
-from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QGraphicsLineItem
+from PyQt6.QtGui import QAction, QTransform, QPainter
+from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem
 
 from qt.graphics.common import OdvGraphicElement, OdvGraphic
 from qt.graphics.odv_point import OdvEditPointElement
 
+class OdvArrowElement(OdvGraphicElement, QGraphicsItem):
+    def __init__(self, sub_inspector, base_line: QLineF):
+        super().__init__(sub_inspector)
+        self.r_branch = QLineF()
+        self.l_branch = QLineF()
+        self.base_line = base_line
+
+    @property
+    def base_line(self):
+        return self._base_line
+
+    @base_line.setter
+    def base_line(self, base_line: QLineF):
+        self._base_line = base_line.truncated().translated(0.5, 0.5)
+        self.update()
+
+    def update(self, rect: QRectF = QRectF()):
+        length = self.base_line.length()
+        size = 1.5
+        vector = (self.base_line.p2() - self.base_line.p1()) / length * size
+        center = (self.base_line.p1() + self.base_line.p2()) / 2
+        rot90 = QTransform(0, 1, -1, 0, 0, 0)
+        rp = center + rot90.map(vector) - 0.8 * vector
+        lp = center - rot90.map(vector) - 0.8 * vector
+        cp = center + 0.8 * vector
+        self.r_branch = QLineF(rp, cp)
+        self.l_branch = QLineF(lp, cp)
+        super().update(rect)
+
+
+    def paint(self, painter: QPainter, option, widget=None):
+        if self.visible:
+            painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+            painter.setPen(self.sub_inspector.pen)
+            painter.drawLine(self.r_branch)
+            painter.drawLine(self.l_branch)
+
+
+    def shape(self):
+        temp_r_branch = QGraphicsLineItem(self.r_branch)
+        temp_r_branch.setPen(self.sub_inspector.pen)
+        temp_l_branch = QGraphicsLineItem(self.l_branch)
+        temp_l_branch.setPen(self.sub_inspector.pen)
+        return temp_r_branch.shape() + temp_l_branch.shape()
+
+    def boundingRect(self):
+        return self.shape().boundingRect()
 
 class OdvFixLineElement(OdvGraphicElement, QGraphicsLineItem):
     def __init__(self, sub_inspector, line: QLineF):
