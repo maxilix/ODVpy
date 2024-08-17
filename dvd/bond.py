@@ -10,34 +10,20 @@ from .section import Section
 
 
 class BondLine(OdvLeaf):
+    move: Move
     line: QLineF
     left_id: UShort
     right_id: UShort
     layer: Layer
 
-    # def __init__(self, parent), p1: QPointF, p2: QPointF, left_id, right_id, layer) -> None:
-    #     super().__init__(parent)
-    #     self.p1 = p1
-    #     self.p2 = p2
-    #     self.left_id = left_id
-    #     self.right_id = right_id
-    #     self.layer = layer
-
-    # @property
-    # def layer(self):
-    #     return self._layer.i
-    #
-    # @layer_id.setter
-    # def layer_id(self, layer_id):
-    #     self._layer = self.parent.move[layer_id]
-
     @classmethod
-    def from_stream(cls, stream: ReadStream, *, parent) -> Self:
+    def from_stream(cls, stream: ReadStream, *, parent, move) -> Self:
         rop = cls(parent)
+        rop.move = move
         rop.line = stream.read(QLineF)
         rop.left_id = stream.read(UShort)
         rop.right_id = stream.read(UShort)
-        rop.layer = parent.move[stream.read(UShort)]
+        rop.layer = move[stream.read(UShort)]
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
@@ -51,17 +37,13 @@ class Bond(Section, OdvRoot):
     _section_name = "BOND"
     _section_version = 2
 
-    _move: Move
-
-    @property
-    def move(self):
-        return self._move
+    move: Move
 
     def _load(self, substream: ReadStream, *, move) -> None:
-        self._move = move
+        self.move = move
         nb_bond_line = substream.read(UShort)
         for _ in range(nb_bond_line):
-            self.add_child(substream.read(BondLine, parent=self))
+            self.add_child(substream.read(BondLine, parent=self, move=move))
 
     def _save(self, substream: WriteStream) -> None:
         nb_bond_line = len(self)

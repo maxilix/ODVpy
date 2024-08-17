@@ -1,9 +1,6 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QContextMenuEvent, QCursor, QBrush, QColor
+from PyQt6.QtGui import QContextMenuEvent, QCursor, QColor
 from PyQt6.QtWidgets import QAbstractItemView, QTreeWidget, QTreeWidgetItem, QMenu
-
-from qt.control.inspector_graphic import GraphicSubInspector, GeometrySubInspector
-
 
 class QODVTreeItem(QTreeWidgetItem):
     def __init__(self, tab_control, odv_object):
@@ -64,14 +61,14 @@ class QODVTreeItem(QTreeWidgetItem):
     def inspector_visibility_checkbox_list(self):
         rop = []
         for sub_inspector in self.inspector.sub_inspector_list:
-            if isinstance(sub_inspector, GraphicSubInspector):
+            if hasattr(sub_inspector, "visibility_checkbox"):
                 rop.append(sub_inspector.visibility_checkbox)
         return rop
 
     def inspector_edit_state_list(self):
         rop = []
         for sub_inspector in self.inspector.sub_inspector_list:
-            if isinstance(sub_inspector, GeometrySubInspector):
+            if hasattr(sub_inspector, "edit"):
                 rop.append(sub_inspector.edit)
         return rop
 

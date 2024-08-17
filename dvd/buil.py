@@ -7,131 +7,98 @@ from .move import Move, MainArea
 from .section import Section
 
 
-# class DoorAccess(RWStreamable):
-#     def __init__(self, point: QPointF, area_global_id: int | UShort, layer_id: int | UShort) -> None:
-#         self.point = point
-#         self.area_global_id = area_global_id
-#         self.layer_id = layer_id
-#
-#     @classmethod
-#     def from_stream(cls, stream: ReadStream) -> Self:
-#         point = stream.read(QPointF)
-#         area_global_id = stream.read(UShort)
-#         layer_id = stream.read(UShort)
-#         return cls(point, area_global_id, layer_id)
-#
-#     def to_stream(self, stream: WriteStream) -> None:
-#         stream.write(self.point)
-#         stream.write(UShort(self.area_global_id))
-#         stream.write(UShort(self.layer_id))
-#
-#     def __str__(self):
-#         return f"{self.point} {self.layer_id}:{self.area_global_id}"
-
 class Door(OdvLeaf):
     move: Move
     door_type: UChar
-    unk0: UChar
+    unk_bool_0: UChar
     locked: UChar
     unlockable: UChar
-    unk1: UChar
-    unk2: UChar
-    unk3: UChar
-    unk4: UChar
-    unk5: UChar
-    unk6: UChar
+    unk_bool_3: UChar
+    unk_bool_4: UChar
+    unk_bool_5: UChar
+    unk_bool_6: UChar
+    unk_bool_7: UChar
+    unk_bool_8: UChar
     shape: QPolygonF
-    p_in: QPointF
-    main_area_in: MainArea
-    p_mid: QPointF
-    p_out: QPointF
-    main_area_out: MainArea
-    unk7: UShort
-    unk8: None or (UChar, UChar)
+    gateway: Gateway
+    main_area_1: MainArea
+    main_area_3: MainArea
+    anim_id: UShort
+    allowed_sens: None or (UChar, UChar)
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent, move) -> Self:
         rop = cls(parent)
         rop.move = move
         rop.door_type = stream.read(UChar)
-        # print(f"{rop.door_type=}")
-        rop.unk0 = stream.read(UChar)
-        # print(f"{rop.unk0=}")
+        rop.unk_bool_0 = stream.read(UChar)
         rop.locked = stream.read(UChar)
-        # print(f"{rop.locked=}")
         rop.unlockable = stream.read(UChar)
-        # print(f"{rop.unlockable=}")
-        rop.unk1 = stream.read(UChar)
-        # print(f"{rop.unk1=}")
-        rop.unk2 = stream.read(UChar)
-        # print(f"{rop.unk2=}")
-        rop.unk3 = stream.read(UChar)
-        # print(f"{rop.unk3=}")
-        rop.unk4 = stream.read(UChar)
-        # print(f"{rop.unk4=}")
-        rop.unk5 = stream.read(UChar)
-        # print(f"{rop.unk5=}")
-        rop.unk6 = stream.read(UChar)
-        # print(f"{rop.unk6=}")
+        rop.unk_bool_3 = stream.read(UChar)
+        rop.unk_bool_4 = stream.read(UChar)
+        rop.unk_bool_5 = stream.read(UChar)
+        rop.unk_bool_6 = stream.read(UChar)
+        rop.unk_bool_7 = stream.read(UChar)
+        rop.unk_bool_8 = stream.read(UChar)
         rop.shape = stream.read(QPolygonF)
-        # print(f"{rop.shape=}")
         nb_access = stream.read(UShort)
         assert nb_access == 3
 
-        rop.p_in = stream.read(QPointF)
-        rop.main_area_in = move.get_by_global(stream.read(UShort))
-        layer_id_in = stream.read(UShort)
-        assert rop.main_area_in.parent.i == layer_id_in
+        p1 = stream.read(QPointF)
+        rop.main_area_1 = move.get_by_global(stream.read(UShort))
+        layer_id_1 = stream.read(UShort)
+        assert rop.main_area_1.parent.i == layer_id_1
 
-        rop.p_mid = stream.read(QPointF)
-        main_area_mid = move.get_by_global(stream.read(UShort))
-        layer_id_mid = stream.read(UShort)
-        assert main_area_mid.parent.i == layer_id_mid
+        p2 = stream.read(QPointF)
+        main_area_3 = move.get_by_global(stream.read(UShort))
+        layer_id_3 = stream.read(UShort)
+        assert main_area_3.parent.i == layer_id_3
 
-        rop.p_out = stream.read(QPointF)
-        rop.main_area_out = move.get_by_global(stream.read(UShort))
-        layer_id_out = stream.read(UShort)
-        assert rop.main_area_out.parent.i == layer_id_out
+        p3 = stream.read(QPointF)
+        rop.main_area_3 = move.get_by_global(stream.read(UShort))
+        layer_id_3 = stream.read(UShort)
+        assert rop.main_area_3.parent.i == layer_id_3
 
-        rop.unk7 = stream.read(UShort)
-        if rop.unk7 != 0xffff:
-            rop.unk8 = (stream.read(UChar), stream.read(UChar))
-            assert rop.unk8[0] in [0,1]
-            assert rop.unk8[1] in [0,1]
-            assert sum(rop.unk8) == 1
+        rop.gateway = Gateway(p1, p2, p3)
+
+        rop.anim_id = stream.read(UShort)
+        if rop.anim_id != 0xffff:
+            rop.allowed_sens = (stream.read(UChar), stream.read(UChar))
+            assert rop.allowed_sens[0] in [0, 1]
+            assert rop.allowed_sens[1] in [0, 1]
+            assert sum(rop.allowed_sens) == 1
         else:
-            rop.unk8 = (0, 0)
+            rop.allowed_sens = (0, 0)
 
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
         stream.write(UChar(self.door_type))
-        stream.write(UChar(self.unk0))
+        stream.write(UChar(self.unk_bool_0))
         stream.write(UChar(self.locked))
         stream.write(UChar(self.unlockable))
-        stream.write(UChar(self.unk1))
-        stream.write(UChar(self.unk2))
-        stream.write(UChar(self.unk3))
-        stream.write(UChar(self.unk4))
-        stream.write(UChar(self.unk5))
-        stream.write(UChar(self.unk6))
+        stream.write(UChar(self.unk_bool_3))
+        stream.write(UChar(self.unk_bool_4))
+        stream.write(UChar(self.unk_bool_5))
+        stream.write(UChar(self.unk_bool_6))
+        stream.write(UChar(self.unk_bool_7))
+        stream.write(UChar(self.unk_bool_8))
         stream.write(self.shape)
         stream.write(UShort(3))  # nb access
-        stream.write(self.p_in)
-        stream.write(UShort(self.main_area_in.global_id))
-        stream.write(UShort(self.main_area_in.parent.i))
-        stream.write(self.p_mid)
-        stream.write(UShort(self.main_area_in.global_id))  # rewrite main_area in global_id
-        stream.write(UShort(self.main_area_in.parent.i))  # rewrite layer id of main_area in
-        stream.write(self.p_out)
-        stream.write(UShort(self.main_area_out.global_id))
-        stream.write(UShort(self.main_area_out.parent.i))
+        stream.write(self.gateway.p1)
+        stream.write(UShort(self.main_area_1.global_id))
+        stream.write(UShort(self.main_area_1.parent.i))
+        stream.write(self.gateway.p2)
+        stream.write(UShort(self.main_area_1.global_id))  # rewrite main_area in global_id
+        stream.write(UShort(self.main_area_1.parent.i))  # rewrite layer id of main_area in
+        stream.write(self.gateway.p3)
+        stream.write(UShort(self.main_area_3.global_id))
+        stream.write(UShort(self.main_area_3.parent.i))
 
-
-        stream.write(UShort(self.unk7))
-        if self.unk7 != 0xffff:
-            stream.write(UChar(self.unk8[0]))
-            stream.write(UChar(self.unk8[1]))
+        stream.write(UShort(self.anim_id))
+        if self.anim_id != 0xffff:
+            stream.write(UChar(self.allowed_sens[0]))
+            stream.write(UChar(self.allowed_sens[1]))
 
 
 class Building(OdvObject):

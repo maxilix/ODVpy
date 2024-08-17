@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QComboBox, QSpinBox, QPushButton, QHBoxLayout, QLabel, QCheckBox, QGridLayout
 
-from common import UShort
+
 from qt.control.inspector_abstract import SubInspector
 
 
