@@ -109,4 +109,5 @@ class QGenericTree(QTreeWidget):
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         item = self.itemAt(event.pos())
-        item.contextMenuEvent(event)
+        if item is not None:
+            item.contextMenuEvent(event)

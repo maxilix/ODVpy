@@ -125,11 +125,11 @@ class MainArea(OdvObject):
     @timeit
     def contains(self, poly: QPolygonF) -> bool:
         poly_area = poly.area()
-        inter = self.main.poly.intersected(poly)
+        inter = self.poly.intersected(poly)
         inter_area = inter.area()
         if (poly_area - inter_area) <= 0.1:
             # poly is in main
-            for obstacle in self.obstacles:
+            for obstacle in self :
                 inter = obstacle.poly.intersected(poly)
                 if inter.isEmpty():
                     continue

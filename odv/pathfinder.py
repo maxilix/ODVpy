@@ -514,12 +514,13 @@ class PathFinder(RWStreamable):
 
     @timeit
     def rebuild_crossing_point_of(self, i, j, k):
-        move_area = self._motion[i][j][k]
         self.crossing_point_list[i][j][k] = []
 
-        point_list = [p for p in move_area]
-        if move_area.main is True:
+        if k == 0:  # main area
+            point_list = [p for p in self._motion[i][j].poly]
             point_list.reverse()
+        else:
+            point_list = [p for p in self._motion[i][j][k-1].poly]
 
         n = len(point_list)
         for m, p in enumerate(point_list):

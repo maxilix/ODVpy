@@ -85,9 +85,13 @@ class UShortTwinBoxInspector(SubInspector):
         self.swap_button.clicked.connect(self.swap_button_clicked)
 
     def update(self):
+        self.spinbox0.valueChanged.disconnect()
+        self.spinbox1.valueChanged.disconnect()
+        super().update()
         self.spinbox0.setValue(self.current[0])
         self.spinbox1.setValue(self.current[1])
-        super().update()
+        self.spinbox0.valueChanged.connect(self.value_changed)
+        self.spinbox1.valueChanged.connect(self.value_changed)
 
     def value_changed(self):
         self.current = (self.spinbox0.value(), self.spinbox1.value())

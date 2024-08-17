@@ -60,14 +60,14 @@ class LevelMap(OdvBase):
 		else:
 			data = self._data
 
-		compressed_data = Bytes(bz2.compress(data))
-		compressed_data_length = UInt(len(compressed_data))
+		compressed_data = bz2.compress(data)
+		compressed_data_length = len(compressed_data)
 
-		stream.write(self._width)
-		stream.write(self._height)
+		stream.write(UShort(self._width))
+		stream.write(UShort(self._height))
 		stream.write(UInt(2))  # compression type
-		stream.write(compressed_data_length)
-		stream.write(compressed_data)
+		stream.write(UInt(compressed_data_length))
+		stream.write(Bytes(compressed_data))
 
 
 
