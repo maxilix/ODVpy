@@ -3,10 +3,8 @@ from PyQt6.QtGui import QColor, QBrush, QPolygonF, QAction, QImage
 from PyQt6.QtWidgets import QPushButton, QCheckBox, QWidget, QSlider, QHBoxLayout, QStackedLayout, QLabel, QVBoxLayout, \
     QFileDialog
 
-from common import Gateway
 from qt.control.inspector_abstract import SubInspector
 from qt.graphics.common import OdvThinPen, OdvLightBrush, OdvHighBrush
-from qt.graphics.odv_gatway import OdvGraphicGateway
 from qt.graphics.odv_line import OdvLine
 from qt.graphics.odv_pixmap import OdvMap
 from qt.graphics.odv_polygon import QCEGPolygon
@@ -127,8 +125,7 @@ class GraphicSubInspector(SubInspector):
 
 class GeometrySubInspector(GraphicSubInspector):
     graphic_type = {QPolygonF: QCEGPolygon,
-                    QLineF: OdvLine,
-                    Gateway: OdvGraphicGateway}
+                    QLineF: OdvLine}
 
     def sub_init(self, *, color):
         super().sub_init()
