@@ -10,7 +10,7 @@ from .section import Section
 class Door(OdvLeaf):
     move: Move
     door_type: UChar
-    unk_bool_0: UChar
+    enable: UChar
     locked: UChar
     unlockable: UChar
     unk_bool_3: UChar
@@ -31,7 +31,7 @@ class Door(OdvLeaf):
         rop = cls(parent)
         rop.move = move
         rop.door_type = stream.read(UChar)
-        rop.unk_bool_0 = stream.read(UChar)
+        rop.enable = stream.read(UChar)
         rop.locked = stream.read(UChar)
         rop.unlockable = stream.read(UChar)
         rop.unk_bool_3 = stream.read(UChar)
@@ -74,7 +74,7 @@ class Door(OdvLeaf):
 
     def to_stream(self, stream: WriteStream) -> None:
         stream.write(UChar(self.door_type))
-        stream.write(UChar(self.unk_bool_0))
+        stream.write(UChar(self.enable))
         stream.write(UChar(self.locked))
         stream.write(UChar(self.unlockable))
         stream.write(UChar(self.unk_bool_3))
@@ -105,8 +105,6 @@ class Building(OdvObject):
     move: Move
     unk1: UShort
     character_id_list: list[UShort]
-
-    # door_list: list[Door] is child
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent, move) -> Self:

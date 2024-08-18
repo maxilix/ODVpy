@@ -46,10 +46,13 @@ class BondLineInspector(Inspector):
     child_name = ""  # cannot add child
 
     def init_odv_prop(self):
-        self.sub_inspector_group["Line"] = [GeometrySubInspector(self, "line", color=QColor(0, 180, 255))]
-        self.sub_inspector_group["Properties"] = [OdvObjectListSubInspector(self, "layer", "Layer"),
-                                                  IntegerTwinBoxInspector(self, "trigger_id", "Trigger",
-                                                                          int_type=UShort)]
+        self.sub_inspector_group["Line"] = [
+            GeometrySubInspector(self, "line", color=QColor(0, 180, 255)),
+        ]
+        self.sub_inspector_group["Properties"] = [
+            OdvObjectListSubInspector(self, "layer", "Layer", iterable=self.odv_object.move),
+            IntegerTwinBoxInspector(self, "trigger_id", "Trigger", int_type=UShort),
+        ]
 
     @property
     def trigger_id(self):
@@ -67,10 +70,11 @@ class BondInspector(Inspector):
 
     def new_odv_child(self):
         new_bond_line = BondLine(self.odv_object)
-        new_bond_line.line = self._tab_control.scene.new_centered_line()
+        new_bond_line.move = self.odv_object.move
+        new_bond_line.line = self._tab_control.scene.new_centered_line(scale=0.25)
         new_bond_line.left_id = 0
         new_bond_line.right_id = 0
-        new_bond_line.layer = self.odv_object.move[0]
+        new_bond_line.layer = None
         return new_bond_line
 
 

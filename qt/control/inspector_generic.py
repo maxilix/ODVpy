@@ -6,11 +6,8 @@ from qt.control.inspector_abstract import SubInspector
 
 class OdvObjectListSubInspector(SubInspector):
 
-    def sub_init(self, *, iterable=None):
-        if iterable is None:
-            self.iterable = self.current.parent
-        else:
-            self.iterable = iterable
+    def sub_init(self, *, iterable):
+        self.iterable = iterable
 
         self.combo_box = QComboBox()
         self.main_layout.addWidget(self.combo_box)
@@ -22,7 +19,6 @@ class OdvObjectListSubInspector(SubInspector):
         self.combo_box.currentIndexChanged.disconnect()
         super().update()
         self.combo_box.clear()
-        # print(len(self.iterable))
         self.combo_box.addItems([str(e) for e in self.iterable])
         try:
             self.combo_box.setCurrentIndex(list(self.iterable).index(self.current))

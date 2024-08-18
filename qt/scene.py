@@ -1,7 +1,7 @@
-from PyQt6.QtCore import QRectF, QLineF, QPointF
-from PyQt6.QtGui import QPolygonF
+from PyQt6.QtCore import QRectF
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent
 
+from common import *
 from qt.control._scene_menu import QSceneMenu
 
 
@@ -27,17 +27,31 @@ class QScene(QGraphicsScene):
         super().mouseDoubleClickEvent(event)
         event.shared_menu.exec()
 
-    def new_centered_line(self):
+    def new_centered_line(self, scale:float):
         r: QRectF = self.viewport().current_visible_scene_rect()
-        p1 = QPointF(0.7 * r.left() + 0.3 * r.right(), 0.5*r.top() + 0.5*r.bottom()).truncated()
-        p2 = QPointF(0.7 * r.right() + 0.3 * r.left(), 0.5*r.top() + 0.5*r.bottom()).truncated()
+        length = r.width() * scale
+        c = r.center()
+        p1 = QPointF(c.x() - length/2, c.y()).truncated()
+        p2 = QPointF(c.x() + length/2, c.y()).truncated()
         return QLineF(p1, p2)
 
 
-    def new_centered_polygon(self):
+    def new_centered_polygon(self, scale:float):
         r: QRectF = self.viewport().current_visible_scene_rect()
-        p1 = (0.7 * r.topLeft() + 0.3 * r.bottomRight()).truncated()
-        p2 = (0.7 * r.topRight() + 0.3 * r.bottomLeft()).truncated()
-        p3 = (0.7 * r.bottomRight() + 0.3 * r.topLeft()).truncated()
-        p4 = (0.7 * r.bottomLeft() + 0.3 * r.topRight()).truncated()
-        return QPolygonF([0.5*p1 + 0.5*p2, p3, p4])
+        width = r.width() * scale
+        height = r.height() * scale
+        c = r.center()
+        p1 = QPointF(c.x() - width/2, c.y() - height/2).truncated()
+        p2 = QPointF(c.x() + width/2, c.y() - height/2).truncated()
+        p3 = QPointF(c.x() + width/2, c.y() + height/2).truncated()
+        p4 = QPointF(c.x() - width/2, c.y() + height/2).truncated()
+        return QPolygonF([p1, p2, p3, p4])
+
+    def new_centered_gateway(self, scale:float):
+        r: QRectF = self.viewport().current_visible_scene_rect()
+        width = r.width() * scale
+        height = r.height() * scale
+        c = r.center()
+        p1 = QPointF(c.x() - width/2, c.y() - height/8).truncated()
+        p3 = QPointF(c.x() + width/2, c.y() - height/8).truncated()
+        return Gateway(p1, c, p3)
