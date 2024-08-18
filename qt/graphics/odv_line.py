@@ -23,7 +23,7 @@ class OdvArrowElement(OdvGraphicElement, QGraphicsItem):
 
     def update(self, rect: QRectF = QRectF()):
         length = self.base_line.length()
-        size = 1.5
+        size = 1.3
         vector = (self.base_line.p2() - self.base_line.p1()) / length * size
         center = (self.base_line.p1() + self.base_line.p2()) / 2
         rot90 = QTransform(0, 1, -1, 0, 0, 0)

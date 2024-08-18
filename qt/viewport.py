@@ -138,12 +138,12 @@ class QViewport(QGraphicsView):
     def move_to_item(self, item: QGraphicsItem):
         self.move_to_rect(item.boundingRect())
 
-    def move_to_rect(self, r: QRectF, marge_factor: float = 1.2):
+    def move_to_rect(self, r: QRectF, max_zoom:float = 6):
         c = r.center()
         r_v = self.viewport().rect()
         zoom_w = r_v.width() / r.width()
         zoom_h = r_v.height() / r.height()
-        self.move_to(c.x(), c.y(), min(zoom_w, zoom_h) / marge_factor)
+        self.move_to(c.x(), c.y(), min(zoom_w, zoom_h, max_zoom))
 
     def move_to(self, x, y, zoom=None):
         duration = 600
@@ -166,6 +166,10 @@ class QViewport(QGraphicsView):
         anims.append(anim_y)
 
         if zoom is not None:
+            if zoom < self.zoom_min:
+                zoom = self.zoom_min
+            if zoom > self.zoom_max:
+                zoom = self.zoom_max
             anim_zoom = QPropertyAnimation(self, b'zoom')
             anim_zoom.setDuration(int(1.5 * duration))
             anim_zoom.setStartValue(self.zoom)
@@ -181,4 +185,5 @@ class QViewport(QGraphicsView):
 
     def current_visible_scene_rect(self):
         return self.mapToScene(self.viewport().rect()).boundingRect()
+
 
