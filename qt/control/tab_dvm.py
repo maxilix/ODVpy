@@ -152,7 +152,7 @@ class LevelMapInspector(Inspector):
     deletable = False
     child_name = ""  # cannot add child
 
-    def init_odv_prop(self):
+    def init_sub_inspector(self):
         self.sub_inspector_group["Info"] = [InfoSubInspector(self, "info")]
         self.sub_inspector_group["Map"] = [(psi:=PixmapSubInspector(self, "image"))]
         psi.visibility_checkbox.setChecked(True)

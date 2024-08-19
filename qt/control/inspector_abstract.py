@@ -75,7 +75,7 @@ class Inspector(QWidget):
 
         sub_layout = QVBoxLayout()
         sub_layout.setSpacing(10)
-        self.init_odv_prop()
+        self.init_sub_inspector()
         for group_name in self.sub_inspector_group:
             box = QGroupBox(group_name)
             box.setStyleSheet("""
@@ -140,11 +140,8 @@ class Inspector(QWidget):
             rop.append(self.tree_item.child(i).inspector)
         return rop
 
-    def init_odv_prop(self):
-        # must define self.prop = {property_label : property_widget, ...}
-        # must connect property_widget.changed signal to the right edition of self.odv_object
-        #
-        # note: for graphical properties, don't forget to add graphic item to self.scene
+    def init_sub_inspector(self):
+        # must define self.sub_inspector_group = {group_name : list[SubInspector]}
         pass
 
     def get_odv_prop(self, prop_name):
@@ -174,7 +171,7 @@ class Inspector(QWidget):
         self.a_add_child.triggered.connect(self.add_child)
 
         self.a_delete = QAction("Delete")
-        self.a_delete.triggered.connect(self.delete)
+        self.a_delete.triggered.connect(self.delete_and_update)
 
 
     def add_child(self):
@@ -192,9 +189,9 @@ class Inspector(QWidget):
     def new_odv_child(self):
         raise NotImplementedError
 
-    def delete(self):
+    def _inner_delete(self):
         for inspector_child in self.inspector_child_list:
-            inspector_child.delete()
+            inspector_child._inner_delete()
         self.tree_item.parent().removeChild(self.tree_item)
         self._tab_control.tree_items.pop(self.odv_object)
 
@@ -203,11 +200,11 @@ class Inspector(QWidget):
         for g in self.graphic_list:
             self.scene.removeItem(g)
         self.deleteLater()
-
-        self._tab_control.inspectors[self.odv_object.parent].take_focus()  # take_focus finish with a global update
         self.odv_object.parent.remove_child(self.odv_object)
 
-        self._tab_control.update()
+    def delete_and_update(self):
+        self._inner_delete()
+        self._tab_control.inspectors[self.odv_object.parent].take_focus()  # take_focus finish with a global update
 
     def scene_menu_name(self):
         return self.odv_object.name

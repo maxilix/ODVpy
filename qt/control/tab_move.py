@@ -10,7 +10,7 @@ class ObstacleInspector(Inspector):
     deletable = True
     child_name = ""  # cannot add child
 
-    def init_odv_prop(self):
+    def init_sub_inspector(self):
         self.sub_inspector_group["Polygon"] = [
             GeometrySubInspector(self, "poly", color=QColor(255, 90, 40)),
         ]
@@ -21,7 +21,7 @@ class MainAreaInspector(Inspector):
     deletable = True
     child_name = "Obstacle"
 
-    def init_odv_prop(self):
+    def init_sub_inspector(self):
         self.sub_inspector_group["Polygon"] = [
             GeometrySubInspector(self, "poly", color=QColor(160, 200, 40)),
         ]

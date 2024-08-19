@@ -17,7 +17,7 @@ class DoorInspector(Inspector):
     deletable = True
     child_name = ""
 
-    def init_odv_prop(self):
+    def init_sub_inspector(self):
         if self.odv_object.door_type == 3:  # special door
             self.sub_inspector_group["Properties"] = [
                 CheckBoxInspector(self, "enable", "Enable?"),
@@ -72,7 +72,7 @@ class BuildingInspector(Inspector):
     deletable = True
     child_name = "Door"
 
-    def init_odv_prop(self):
+    def init_sub_inspector(self):
         self.sub_inspector_group["Properties"] = [IntegerBoxInspector(self, "unk1", "unk1", int_type=UShort),
                                                   InfoSubInspector(self, "character_id_list", "char id")]
 
