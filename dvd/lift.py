@@ -10,10 +10,10 @@ class LiftArea(OdvLeaf):
     move: Move
     lift_type: UChar
     main_area: MainArea
-    main_area_under: MainArea
-    gateway_under: Gateway
-    main_area_over: MainArea
-    gateway_over: Gateway
+    main_area_below: MainArea
+    gateway_below: Gateway
+    main_area_above: MainArea
+    gateway_above: Gateway
     # shape: QPolygonF
     perspective: UShort
 
@@ -30,16 +30,16 @@ class LiftArea(OdvLeaf):
         # 2: ladder
         # 3: wall
 
-        rop.main_area_under = move.get_by_global(stream.read(UShort))
+        rop.main_area_below = move.get_by_global(stream.read(UShort))
         under_layer_id = stream.read(UShort)  # layer id
 
-        rop.main_area_over = move.get_by_global(stream.read(UShort))
+        rop.main_area_above = move.get_by_global(stream.read(UShort))
         over_layer_id = stream.read(UShort)  # layer id
 
         shape = stream.read(QPolygonF)  # seems useless, isn't always defined
 
-        rop.gateway_under = stream.read(Gateway)
-        rop.gateway_over = stream.read(Gateway)
+        rop.gateway_below = stream.read(Gateway)
+        rop.gateway_above = stream.read(Gateway)
 
         rop.perspective = stream.read(UShort)
         return rop
@@ -48,17 +48,17 @@ class LiftArea(OdvLeaf):
         stream.write(UShort(self.main_area.global_id))
         stream.write(UChar(self.lift_type))
 
-        stream.write(UShort(self.main_area_under.global_id))
-        stream.write(UShort(self.main_area_under.parent.i))  # layer id
+        stream.write(UShort(self.main_area_below.global_id))
+        stream.write(UShort(self.main_area_below.parent.i))  # layer id
 
-        stream.write(UShort(self.main_area_over.global_id))
-        stream.write(UShort(self.main_area_over.parent.i))  # layer id
+        stream.write(UShort(self.main_area_above.global_id))
+        stream.write(UShort(self.main_area_above.parent.i))  # layer id
 
         # stream.write(self.shape)
         stream.write(UShort(0))  # write null polygon as shape
 
-        stream.write(self.gateway_under)
-        stream.write(self.gateway_over)
+        stream.write(self.gateway_below)
+        stream.write(self.gateway_above)
 
         stream.write(UShort(self.perspective))
 

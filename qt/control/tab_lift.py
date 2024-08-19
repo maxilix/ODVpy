@@ -24,13 +24,13 @@ class LiftAreaInspector(Inspector):
             IntegerBoxInspector(self, "perspective", "Perspective", int_type=UChar),
         ]
         self.sub_inspector_group["Main Areas"] = [
-            OdvObjectListSubInspector(self, "main_area_under", "Under", iterable=self.odv_object.move.main_area_iterator()),
+            OdvObjectListSubInspector(self, "main_area_below", "Below", iterable=self.odv_object.move.main_area_iterator()),
             OdvObjectListSubInspector(self, "main_area", "", iterable=self.odv_object.move.main_area_iterator()),
-            OdvObjectListSubInspector(self, "main_area_over", "Over", iterable=self.odv_object.move.main_area_iterator()),
+            OdvObjectListSubInspector(self, "main_area_above", "Above", iterable=self.odv_object.move.main_area_iterator()),
         ]
         self.sub_inspector_group["Gateways"] = [
-            GeometrySubInspector(self, "gateway_under","Under", color=QColor(200, 120, 40)),
-            GeometrySubInspector(self, "gateway_over", "Over", color=QColor(200, 120, 40)),
+            GeometrySubInspector(self, "gateway_below","Below", color=QColor(200, 120, 40)),
+            GeometrySubInspector(self, "gateway_above", "Above", color=QColor(200, 120, 40)),
         ]
 
 
@@ -44,10 +44,10 @@ class LiftInspector(Inspector):
 
         new_lift_area.lift_type = 1
         new_lift_area.main_area = None
-        new_lift_area.main_area_under = None
-        new_lift_area.main_area_over = None
-        new_lift_area.gateway_under = self._tab_control.scene.new_centered_gateway(scale=0.2)
-        new_lift_area.gateway_over = self._tab_control.scene.new_centered_gateway(scale=0.2)
+        new_lift_area.main_area_below = None
+        new_lift_area.main_area_above = None
+        new_lift_area.gateway_below = self._tab_control.scene.new_centered_gateway(scale=0.2)
+        new_lift_area.gateway_above = self._tab_control.scene.new_centered_gateway(scale=0.2)
         new_lift_area.perspective = 0
 
         return new_lift_area

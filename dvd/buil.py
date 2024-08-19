@@ -24,7 +24,7 @@ class Door(OdvLeaf):
     main_area_1: MainArea
     main_area_3: MainArea
     anim_id: UShort
-    allowed_sens: None or (UChar, UChar)
+    allowed_sens: (UChar, UChar)
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent, move) -> Self:
@@ -50,9 +50,9 @@ class Door(OdvLeaf):
         assert rop.main_area_1.parent.i == layer_id_1
 
         p2 = stream.read(QPointF)
-        main_area_3 = move.get_by_global(stream.read(UShort))
-        layer_id_3 = stream.read(UShort)
-        assert main_area_3.parent.i == layer_id_3
+        main_area_2 = move.get_by_global(stream.read(UShort))
+        layer_id_2 = stream.read(UShort)
+        assert main_area_2.parent.i == layer_id_2
 
         p3 = stream.read(QPointF)
         rop.main_area_3 = move.get_by_global(stream.read(UShort))
@@ -89,11 +89,11 @@ class Door(OdvLeaf):
         stream.write(UShort(self.main_area_1.global_id))
         stream.write(UShort(self.main_area_1.parent.i))
         stream.write(self.gateway.p2)
-        stream.write(UShort(self.main_area_1.global_id))  # rewrite main_area in global_id
-        stream.write(UShort(self.main_area_1.parent.i))  # rewrite layer id of main_area in
+        stream.write(UShort(self.main_area_1.global_id))  # rewrite main_area_1 global id
+        stream.write(UShort(self.main_area_1.parent.i))   # rewrite main_area_1 layer id
         stream.write(self.gateway.p3)
-        stream.write(UShort(self.main_area_3.global_id))
-        stream.write(UShort(self.main_area_3.parent.i))
+        stream.write(UShort(self.main_area_3.global_id))  # TODO test with main_area_1 info again for non special door
+        stream.write(UShort(self.main_area_3.parent.i))   # TODO same
 
         stream.write(UShort(self.anim_id))
         if self.anim_id != 0xffff:

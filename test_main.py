@@ -92,10 +92,118 @@ for level_index in range(26):
     # print(f"Level {level_index}")
     level = BackupedLevel(level_index)
 
-    lift = level.dvd.lift
-    for lift_area in lift:
-        if lift_area.lift_type == 0:
-            print(f"L{level_index} i={lift_area.i}")
+    # lift = level.dvd.lift
+    # for lift_area in lift:
+    #     if lift_area.lift_type == 0:
+    #         print(f"L{level_index} i={lift_area.i}")
+
+    buildings = level.dvd.buil.buildings
+    for building in buildings:
+        for door in building:
+            if door.main_area_3.global_id != 0:
+                print(f"L{level_index}: building {building.i}, door {door.i}")
+"""
+L0: building 0, door 2
+L0: building 9, door 2
+L6: building 24, door 0
+L6: building 24, door 1
+L8: building 1, door 0
+L8: building 1, door 1
+L8: building 3, door 0
+L8: building 4, door 0
+L9: building 0, door 0
+L10: building 7, door 1
+L10: building 16, door 2
+L13: building 7, door 0
+L13: building 8, door 0
+L13: building 8, door 2
+L13: building 10, door 1
+L13: building 11, door 0
+L13: building 15, door 0
+L13: building 15, door 2
+L14: building 4, door 1
+L14: building 6, door 2
+L14: building 7, door 1
+L15: building 24, door 0
+L16: building 1, door 0
+L16: building 1, door 1
+L16: building 2, door 0
+L16: building 2, door 3
+L16: building 4, door 0
+L16: building 6, door 0
+L16: building 7, door 0
+L16: building 8, door 0
+L16: building 8, door 1
+L16: building 9, door 0
+L16: building 9, door 1
+L16: building 10, door 0
+L16: building 11, door 0
+L16: building 15, door 0
+L16: building 16, door 0
+L16: building 16, door 1
+L16: building 17, door 0
+L16: building 17, door 1
+L16: building 18, door 0
+L16: building 18, door 1
+L16: building 19, door 0
+L16: building 19, door 1
+L16: building 19, door 2
+L16: building 20, door 0
+L16: building 20, door 1
+L16: building 21, door 0
+L16: building 22, door 0
+L16: building 23, door 1
+L16: building 24, door 0
+L16: building 24, door 1
+L21: building 0, door 0
+L21: building 1, door 0
+L21: building 2, door 0
+L21: building 2, door 1
+L21: building 2, door 2
+L21: building 2, door 3
+L21: building 3, door 0
+L21: building 4, door 0
+L21: building 5, door 0
+L21: building 5, door 1
+L21: building 6, door 0
+L21: building 7, door 0
+L21: building 7, door 1
+L21: building 8, door 0
+L21: building 8, door 1
+L21: building 9, door 0
+L21: building 9, door 1
+L21: building 11, door 0
+L21: building 12, door 0
+L21: building 13, door 0
+L21: building 14, door 0
+L21: building 15, door 0
+L21: building 15, door 1
+L21: building 16, door 0
+L21: building 17, door 0
+L21: building 18, door 0
+L21: building 19, door 0
+L21: building 19, door 1
+L21: building 20, door 0
+L21: building 20, door 1
+L21: building 22, door 0
+L21: building 22, door 1
+L21: building 23, door 0
+L21: building 24, door 0
+L21: building 24, door 1
+L21: building 25, door 0
+L22: building 1, door 0
+L22: building 2, door 0
+L22: building 2, door 1
+L22: building 3, door 0
+L22: building 4, door 0
+L22: building 6, door 0
+L22: building 6, door 1
+L22: building 8, door 1
+L22: building 9, door 0
+L22: building 10, door 0
+L22: building 11, door 0
+"""
+
 
 exit()
 

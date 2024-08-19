@@ -44,8 +44,8 @@ class DoorInspector(Inspector):
                 CheckBoxInspector(self, "unk_bool_8", "unk_bool_8"),
                 IntegerBoxInspector(self, "anim_id", "anim_id", int_type=UShort),
                 IntegerTwinBoxInspector(self, "allowed_sens", "allowed_sens", int_type=UChar), ]
-            self.sub_inspector_group["Door Shape"] = [
-                GeometrySubInspector(self, "shape", color=QColor(30, 30, 255)),
+            self.sub_inspector_group["Door Frame"] = [
+                GeometrySubInspector(self, "shape", color=QColor(0, 140, 255)),
             ]
 
         self.sub_inspector_group["Main Areas"] = [
@@ -53,7 +53,7 @@ class DoorInspector(Inspector):
             OdvObjectListSubInspector(self, "main_area_3", "To", iterable=self.odv_object.move.main_area_iterator()),
         ]
         self.sub_inspector_group["Gateway"] = [
-            GeometrySubInspector(self, "gateway", color=QColor(200, 120, 40)),
+            GeometrySubInspector(self, "gateway", color=QColor(220, 200, 80)),
         ]
 
 
