@@ -1,85 +1,103 @@
 from config import CONFIG
-from odv.level import Level
+from odv.level import BackupedLevel
 
 CONFIG.load()
 
-"""
-w[0] = obstacle avoidance distance, on foot
-     = [x distance, y distance]
-     
-w[3] or w[4] = obstacle avoidance distance, on horseback
-             = [x distance, y distance]
-             
-             
-        human                    monkey       horse      
 
-L00   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L01   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L02   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L03   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L04   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L05   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L06   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L07   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L08   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L09   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L10   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L11   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L12   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L13   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L14   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L15   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L16   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L17   [6.0, 3.0]  [11.0, 6.0]  [3.0, 2.0]  [19.0, 11.0]
-L18   [6.0, 3.0]  [11.0, 6.0]              [19.0, 11.0]
-L19   [6.0, 3.0]  [11.0, 6.0] 
-L20   [6.0, 3.0]  [11.0, 6.0]  [3.0, 2.0]  [19.0, 11.0]
-L21   [6.0, 3.0]  [11.0, 6.0]  [3.0, 2.0]  [19.0, 11.0]
-L22   [6.0, 3.0]  [11.0, 6.0]  [3.0, 2.0]  [19.0, 11.0]
-L23   [6.0, 3.0]  [11.0, 6.0]  [3.0, 2.0]  [19.0, 11.0]
-L24   [6.0, 3.0]  [11.0, 6.0]  [3.0, 2.0]
-L25   [6.0, 3.0]  [11.0, 6.0] 
-"""
-
-
-# def draw_obstacle_on_dvm(level, layer_index=0):
-#     if level.dvd.move.loaded_areas is False:
-#         level.dvd.move.load(only_areas=True)
-#     pen = QPen(QColor(255, 0, 0, 128))
-#     pen.setWidthF(0.5)
-#     brush = QBrush(QColor(255, 0, 0, 32))
-#     for sublayer in level.dvd.move[layer_index]:
-#         for obstacle in sublayer:
-#             level.dvm.draw(obstacle.QPolygonF(), pen, brush)
-
-
-
-
-level = Level("./dev/empty_level/empty_level_02")
+# level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/03_Red_River/level_03")
 # level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)
 # level = BackupedLevel(2)
 
 
-# for level_index in range(26):
-#     print(f"Level {level_index}")
+"""
+without shape:
+level lift_area_id
+L0 0
+L0 1
+L0 2
+L0 3
+L0 4
+L0 5
+L0 6
+L0 7
+L0 8
+L0 9
+L1 0
+L1 1
+L1 2
+L1 3
+L8 1
+L10 1
+L11 0
+L11 1
+L12 0
+L12 4
+L12 5
+L12 6
+L12 7
+L12 8
+L13 6
+L13 7
+L13 8
+L13 9
+L13 16
+L15 0
+L15 1
+L15 4
+L16 0
+L16 2
+L16 4
+L16 5
+L18 0
+L18 1
+L18 2
+L18 3
+L18 4
+L18 5
+L18 6
+L18 7
+L18 8
+L18 9
+L18 10
+L18 11
+L18 12
+L21 0
+L21 1
+L21 2
+L21 3
+L21 4
+L21 5
+L21 6
+L21 7
+L21 8
+L21 9
+L21 10
+L21 11
+L22 0
+L22 1
+L22 2
+L24 0
+L24 1
+L24 2
+L24 3
+L24 4
+L24 5
+L24 6
+"""
 
-# move = level.dvd.move
 
-# buil = level.dvd.buil
-# print(len(buil.building_list), len(buil.special_door_list))
-# for sd in buil.special_door_list:
-#     print(sd.accesses[0].point, sd.accesses[0].area_global_id, sd.accesses[0].layer_id)
-#     print(sd.accesses[1].point, sd.accesses[1].area_global_id, sd.accesses[1].layer_id)
-#     print(sd.accesses[2].point, sd.accesses[2].area_global_id, sd.accesses[2].layer_id)
-#     print()
+for level_index in range(26):
+    # print(f"Level {level_index}")
+    level = BackupedLevel(level_index)
 
-# exit()
-bond = level.dvd.bond
-for bond_line in bond:
-    bond_line.right_id, bond_line.left_id = bond_line.left_id, bond_line.right_id
+    lift = level.dvd.lift
+    for lift_area in lift:
+        if lift_area.lift_type == 0:
+            print(f"L{level_index} i={lift_area.i}")
 
+exit()
 
 
 # for sublayer in motion[0]:
@@ -87,5 +105,4 @@ for bond_line in bond:
 #         level.dvm.draw(area.poly, QPen(QColor(255, 90, 40, 128)), QBrush(QColor(255, 90, 40, 32)))
 
 
-
-level.insert_in_game()
+# level.insert_in_game()

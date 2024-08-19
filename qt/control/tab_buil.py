@@ -1,6 +1,6 @@
 from PyQt6.QtGui import QColor, QPolygonF
 
-from common import UShort, UChar
+from common import *
 from dvd.buil import Door, Building, SpecialDoors, Buildings
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import IntegerBoxInspector, InfoSubInspector, ConstantEnumListInspector, \
@@ -48,7 +48,7 @@ class DoorInspector(Inspector):
                 GeometrySubInspector(self, "shape", color=QColor(30, 30, 255)),
             ]
 
-        self.sub_inspector_group["Main Ares"] = [
+        self.sub_inspector_group["Main Areas"] = [
             OdvObjectListSubInspector(self, "main_area_1", "From", iterable=self.odv_object.move.main_area_iterator()),
             OdvObjectListSubInspector(self, "main_area_3", "To", iterable=self.odv_object.move.main_area_iterator()),
         ]

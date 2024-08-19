@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QTabWidget
 from qt.control.tab_bond import QBondTabControl
 from qt.control.tab_buil import QBuilTabControl
 from qt.control.tab_dvm import QMapTabControl
+from qt.control.tab_lift import QLiftTabControl
 from qt.control.tab_move import QMoveTabControl
 from qt.scene import QScene
 
@@ -78,6 +79,8 @@ class QMainControl(QTabWidget):
         # Materials
 
         # Lifts
+        self.lift_tab = QLiftTabControl(self, level.dvd.lift)
+        self.addTab(self.lift_tab, "LIFT")
 
         # AI
 

@@ -157,7 +157,7 @@ class DvdParser(Parser):
     @property
     def lift(self):
         if self._lift.loaded is False:
-            self._lift.load()
+            self._lift.load(move=self.move)
         return self._lift
 
     @property

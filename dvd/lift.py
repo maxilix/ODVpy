@@ -1,100 +1,82 @@
-from typing import Self, Iterator
+from typing import Self
 
 from common import *
-
+from odv.odv_object import OdvRoot, OdvLeaf
+from .move import MainArea, Move
 from .section import Section
 
 
-class LiftEntry(RWStreamable):
-    def __init__(self, lift_global_id, lift_type, under_global_id, under_layer_id, under_gateway, over_global_id, over_layer_id, over_gateway, shape,
-                 perspective) -> None:
-        # each global id (lift, under and over) refer to the MOVE global id
+class LiftArea(OdvLeaf):
+    move: Move
+    lift_type: UChar
+    main_area: MainArea
+    main_area_under: MainArea
+    gateway_under: Gateway
+    main_area_over: MainArea
+    gateway_over: Gateway
+    # shape: QPolygonF
+    perspective: UShort
 
-        self.lift_global_id = lift_global_id
-        # the lift area hasn't layer_id because lifts layer is always the last layer
-        self.lift_type = lift_type
-
-        self.under_global_id = under_global_id
-        self.under_layer_id = under_layer_id
-        self.under_gateway = under_gateway
-
-        self.over_global_id = over_global_id
-        self.over_layer_id = over_layer_id
-        self.over_gateway = over_gateway
-
-        self.shape = shape
-        self.perspective = perspective
-
-    def __str__(self):
-        return f"{self.lift_global_id} T{self.lift_type} - A1 {self.under_global_id} {self.under_layer_id} - A2 {self.over_global_id} {self.over_layer_id} - {len(self.shape)}"
 
     @classmethod
-    def from_stream(cls, stream: ReadStream) -> Self:
-        lift_global_id = stream.read(UShort)
-        lift_type = stream.read(UChar)
+    def from_stream(cls, stream: ReadStream, *, parent, move) -> Self:
+        rop = cls(parent)
+        rop.move = move
+
+        rop.main_area = move.get_by_global(stream.read(UShort))
+        rop.lift_type = stream.read(UChar)
         # 0: ????
         # 1: stair
         # 2: ladder
         # 3: wall
 
-        under_global_id = stream.read(UShort)
+        rop.main_area_under = move.get_by_global(stream.read(UShort))
         under_layer_id = stream.read(UShort)  # layer id
 
-        over_global_id = stream.read(UShort)
+        rop.main_area_over = move.get_by_global(stream.read(UShort))
         over_layer_id = stream.read(UShort)  # layer id
 
-        shape = stream.read(QPolygonF)
+        shape = stream.read(QPolygonF)  # seems useless, isn't always defined
 
-        under_gateway = stream.read(Gateway)
-        over_gateway = stream.read(Gateway)
+        rop.gateway_under = stream.read(Gateway)
+        rop.gateway_over = stream.read(Gateway)
 
-        perspective = stream.read(UShort)
-        return cls(lift_global_id, lift_type, under_global_id, under_layer_id, under_gateway, over_global_id, over_layer_id, over_gateway, shape, perspective)
+        rop.perspective = stream.read(UShort)
+        return rop
 
     def to_stream(self, stream: WriteStream) -> None:
-        stream.write(UShort(self.lift_global_id))
+        stream.write(UShort(self.main_area.global_id))
         stream.write(UChar(self.lift_type))
 
-        stream.write(UShort(self.under_global_id))
-        stream.write(UShort(self.under_layer_id))  # layer id
+        stream.write(UShort(self.main_area_under.global_id))
+        stream.write(UShort(self.main_area_under.parent.i))  # layer id
 
-        stream.write(UShort(self.over_global_id))
-        stream.write(UShort(self.over_layer_id))  # layer id
+        stream.write(UShort(self.main_area_over.global_id))
+        stream.write(UShort(self.main_area_over.parent.i))  # layer id
 
-        stream.write(self.shape)
+        # stream.write(self.shape)
+        stream.write(UShort(0))  # write null polygon as shape
 
-        stream.write(self.under_gateway)
-        stream.write(self.over_gateway)
+        stream.write(self.gateway_under)
+        stream.write(self.gateway_over)
 
         stream.write(UShort(self.perspective))
 
 
-class Lift(Section):
+class Lift(Section, OdvRoot):
     _section_name = "LIFT"
     _section_version = 2
 
 
 
-    def __iter__(self) -> Iterator[LiftEntry]:
-        return iter(self.lift_list)
-
-    def __getitem__(self, index: int) -> LiftEntry:
-        return self.lift_list[index]
-
-    def __len__(self) -> int:
-        return len(self.lift_list)
-
-
-    def _load(self, substream: ReadStream) -> None:
-        # tail = substream.read_raw()
-        # print(tail.hex())
-        # exit()
+    def _load(self, substream: ReadStream, *, move) -> None:
+        self.move = move
         nb_lift = substream.read(UShort)
-        self.lift_list = [substream.read(LiftEntry) for _ in range(nb_lift)]
-        # self.tail = substream.read_raw()
+        for _ in range(nb_lift):
+            self.add_child(substream.read(LiftArea, parent=self, move=move))
 
     def _save(self, substream: WriteStream) -> None:
-        nb_lift = len(self.lift_list)
+        nb_lift = len(self)
         substream.write(UShort(nb_lift))
-        for lift_entry in self.lift_list:
-            substream.write(lift_entry)
+        for lift_area in self:
+            substream.write(lift_area)
