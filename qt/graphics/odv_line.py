@@ -215,3 +215,90 @@ class OdvLine(OdvGraphic):
 
     def line_deleted(self, line_item: OdvEditLineElement):
         self.delete()
+
+
+
+class OdvMultiLine(OdvGraphic):
+    def __init__(self, sub_inspector):
+        super().__init__(sub_inspector)
+
+        self.line_fix = []
+        self.point_edit = []
+        self.line_edit = []
+
+        self.exit_edit_mode(save=False)
+
+    @property
+    def point_list(self):
+        return self.sub_inspector.current
+
+    @point_list.setter
+    def point_list(self, point_list):
+        self.sub_inspector.current = [p.truncated() for p in point_list]
+
+    def enter_edit_mode(self):
+        self.remove_children(self.line_fix)
+        self.line_fix = []
+
+        point_list = self.point_list
+        self.point_edit = \
+            [OdvEditPointElement(self.sub_inspector, point_list[0], movable=True, deletable=False)] + \
+            [OdvEditPointElement(self.sub_inspector, p, movable=True, deletable=True) for p in self.point_list[1:-1]] + \
+            [OdvEditPointElement(self.sub_inspector, point_list[-1], movable=True, deletable=False)]
+
+        self.line_edit = [OdvEditLineElement(self.sub_inspector, p1, p2, secable=True, deletable=False) for p1, p2 in
+                          zip(self.point_edit[:-1], self.point_edit[1:])]
+
+
+        self.add_children(self.point_edit)
+        self.add_children(self.line_edit)
+
+        self.update()
+
+    def exit_edit_mode(self, save):
+        if save is True:
+            self.point_list = [p.pos() for p in self.point_edit]
+
+        self.remove_children(self.point_edit)
+        self.remove_children(self.line_edit)
+        self.point_edit = []
+        self.line_edit = []
+
+        point_list = self.point_list
+        self.line_fix = [OdvFixLineElement(self.sub_inspector, QLineF(p1,p2)) for p1, p2 in
+                          zip(point_list[:-1], point_list[1:])]
+        self.add_children(self.line_fix)
+
+        self.update()
+
+    def point_moved(self, point_item: OdvEditPointElement):
+        index = self.point_edit.index(point_item)
+        if index < len(self.point_edit)-1:
+            self.line_edit[index].update()
+        if index > 0:
+            self.line_edit[index - 1].update()
+
+    def point_added(self,
+                    previous_point_item: OdvEditPointElement,
+                    new_point_item: OdvEditPointElement,
+                    new_line_item: OdvEditLineElement):
+        index = self.point_edit.index(previous_point_item)
+        self.point_edit.insert(index + 1, new_point_item)
+        new_point_item.deletable = True
+        self.add_child(new_point_item)
+        self.line_edit.insert(index + 1, new_line_item)
+        self.add_child(new_line_item)
+
+        self.update()
+
+    def point_deleted(self, point_item: OdvEditPointElement):
+        index = self.point_edit.index(point_item)
+        self.line_edit[index-1].p2 = self.point_edit[index+1]
+        self.line_edit[index].delete()
+        self.line_edit.remove(self.line_edit[index])
+        self.point_edit.remove(point_item)
+        self.remove_child(point_item)
+
+
+    def line_deleted(self, line_item: OdvEditLineElement):
+        self.remove_child(line_item)

@@ -221,8 +221,8 @@ class Inspector(QWidget):
     def scene_menu_common_actions(self, scene_position):
         rop = []
         rop.append(self.a_focus)
-        if self.deletable:
-            rop.append(self.a_delete)
+        # if self.deletable:
+        #     rop.append(self.a_delete)
         return rop
 
     def tree_menu_common_actions(self):

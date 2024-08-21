@@ -1,7 +1,10 @@
+from PyQt6.QtGui import QColor
+
 from dvd.mask import Mask, MaskImage
 from qt.control.inspector_abstract import Inspector
-from qt.control.inspector_graphic import MaskImageSubInspector
+from qt.control.inspector_graphic import MaskImageSubInspector, GeometrySubInspector
 from qt.control.tab_abstract import QTabControlGenericTree
+from qt.graphics.odv_line import OdvMultiLine
 
 
 class MaskImageInspector(Inspector):
@@ -13,6 +16,14 @@ class MaskImageInspector(Inspector):
         msi.opacity_slider.setValue(40)
         msi.visibility_checkbox.setChecked(True)
         msi.graphic.setPos(self.odv_object.x, self.odv_object.y)
+
+        self.sub_inspector_group["Polygon"] = []
+        if self.odv_object.point_list_1 != []:
+            self.sub_inspector_group["Polygon"] += [GeometrySubInspector(self, "point_list_1", "L1", graphic_type=OdvMultiLine, color=QColor(0, 255, 0))]
+        if self.odv_object.point_list_2 != []:
+            self.sub_inspector_group["Polygon"] += [GeometrySubInspector(self, "point_list_2", "L2", graphic_type=OdvMultiLine, color=QColor(0, 0, 255))]
+        if self.sub_inspector_group["Polygon"] == []:
+            self.sub_inspector_group.pop("Polygon")
 
 
 
