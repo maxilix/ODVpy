@@ -57,6 +57,8 @@ class QMainControl(QTabWidget):
         self.addTab(self.move_tab, "MOVE")
 
         # Sights
+        self.sght_tab = QSghtTabControl(self, level.dvd.sght)
+        self.addTab(self.sght_tab, "SGHT")
 
         # Masks
 

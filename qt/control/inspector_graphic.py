@@ -130,7 +130,7 @@ class GeometrySubInspector(GraphicSubInspector):
                     QLineF: OdvLine,
                     Gateway: OdvGraphicGateway}
 
-    def sub_init(self, *, color):
+    def sub_init(self, *, color, graphic_type=None):
         super().sub_init()
 
         self.edit_button = QPushButton("Edit")
@@ -160,7 +160,7 @@ class GeometrySubInspector(GraphicSubInspector):
         l1.addWidget(self.localise_button)
         self.main_layout.addLayout(l1)
 
-        self.init_graphic(color)
+        self.init_graphic(color, graphic_type)
         self.init_actions()
 
         self.setLayout(self.main_layout)
@@ -170,12 +170,14 @@ class GeometrySubInspector(GraphicSubInspector):
         self.save_button.clicked.connect(self.save_button_clicked)
         self.cancel_button.clicked.connect(self.cancel_button_clicked)
 
-    def init_graphic(self, color: QColor):
+    def init_graphic(self, color: QColor, graphic_type):
         self.pen = OdvThinPen(color)
         self.light_brush = OdvLightBrush(color)
         self.high_brush = OdvHighBrush(color)
-
-        self.graphic = self.graphic_type[type(self.current)](self)
+        if graphic_type is None:
+            self.graphic = self.graphic_type[type(self.current)](self)
+        else:
+            self.graphic = graphic_type(self)
         self.scene.addItem(self.graphic)
 
     @property

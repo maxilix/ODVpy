@@ -97,7 +97,7 @@ class DvdParser(Parser):
     @property
     def sght(self):
         if self._sght.loaded is False:
-            self._sght.load()
+            self._sght.load(move=self.move)
         return self._sght
 
     @property
