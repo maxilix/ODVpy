@@ -9,7 +9,7 @@ from qt.control.inspector_abstract import Inspector
 
 class QTabControl(QScrollArea):
     def __init__(self, main_control):
-        super().__init__(main_control)
+        super().__init__()
         self.main_control = main_control
         self.setWidgetResizable(True)
         self._scene_menu_priority = 2  # Nornal
@@ -39,7 +39,7 @@ class QTabControl(QScrollArea):
     def _set_scene_menu_exclusive(self, value: bool):
         self._scene_menu_exclusive = value
 
-    def exec_scene_menu(self):
+    def exec_tab_menu(self):
         menu = QMenu()
         menu.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
 
@@ -70,15 +70,16 @@ class QTabControl(QScrollArea):
 class QTabControlGenericTree(QTabControl):
     inspector_types: dict
 
-    def __init__(self, parent, odv_section_list):
+    def __init__(self, parent, odv_root_list):
         super().__init__(parent)
-        if isinstance(odv_section_list, (list, tuple)):
-            self.odv_section_list = list(odv_section_list)
+        if isinstance(odv_root_list, (list, tuple)):
+            self.odv_section_list = list(odv_root_list)
         else:
-            self.odv_section_list = [odv_section_list]
+            self.odv_section_list = [odv_root_list]
         self.tree_items = dict()
         self.inspectors = dict()
 
+    def load(self):
         def build_tree_structure(tree_parent_item, odv_root):
             if not isinstance(odv_root, OdvRoot):
                 return
@@ -97,9 +98,9 @@ class QTabControlGenericTree(QTabControl):
         self.tree = QGenericTree()
 
         self.tree.itemSelectionChanged.connect(self.item_selection_changed)
-        inspector_stack_widget = QWidget(self)
-        inspector_stack_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.inspector_stack_layout = QStackedLayout(inspector_stack_widget)
+        self.inspector_stack_widget = QWidget(self)
+        self.inspector_stack_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.inspector_stack_layout = QStackedLayout(self.inspector_stack_widget)
 
 
         for odv_section in self.odv_section_list:
@@ -112,7 +113,7 @@ class QTabControlGenericTree(QTabControl):
 
         assert len(self.tree_items) == len(self.inspectors)
         # add inspector stack widget
-        layout.addWidget(inspector_stack_widget)
+        layout.addWidget(self.inspector_stack_widget)
 
         # add tree widget if multiple section or any itérable section
         if len(self.odv_section_list) > 1 or any([isinstance(odv_section, OdvRoot) for odv_section in self.odv_section_list]):
@@ -129,6 +130,16 @@ class QTabControlGenericTree(QTabControl):
         self.tree.expandAll()
 
         self.update()
+
+    def unload(self):
+        for inspector in self.inspectors.values():
+            for g in inspector.graphic_list:
+                self.scene.removeItem(g)
+        self.inspector_stack_widget.deleteLater()
+        self.tree.deleteLater()
+        self.tree_items = dict()
+        self.inspectors = dict()
+
 
     def update(self):
         for inspector in self.inspectors.values():

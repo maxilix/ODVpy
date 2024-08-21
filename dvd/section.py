@@ -98,7 +98,7 @@ class Section(RWStreamable):
         next_byte = substream.read(Bytes, 1)
         assert next_byte == b''
         self._loaded = True
-        # log.info(f"Section {self.section} loaded")
+        print(f"Section {self._section_name} loaded")
 
     @abstractmethod
     def _load(self, substream: ReadStream, **kwargs) -> None:
