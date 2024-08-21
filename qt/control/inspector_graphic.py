@@ -8,7 +8,7 @@ from qt.control.inspector_abstract import SubInspector
 from qt.graphics.common import OdvThinPen, OdvLightBrush, OdvHighBrush
 from qt.graphics.odv_gatway import OdvGraphicGateway
 from qt.graphics.odv_line import OdvLine
-from qt.graphics.odv_pixmap import OdvMap
+from qt.graphics.odv_pixmap import OdvMap, OdvMask
 from qt.graphics.odv_polygon import QCEGPolygon
 
 
@@ -255,3 +255,53 @@ class PixmapSubInspector(GraphicSubInspector):
                 self.visibility_checkbox.setChecked(True)
                 self.opacity_slider.setValue(100)
                 self.global_update()
+
+class MaskImageSubInspector(GraphicSubInspector):
+    def sub_init(self):
+        super().sub_init()
+
+        self.visibility_label = QLabel("Visibility ")
+
+        l1 = QHBoxLayout()
+        l1.setContentsMargins(0, 0, 0, 0)
+        l1.addWidget(self.visibility_label)
+        l1.addWidget(self.visibility_checkbox)
+        l1.addWidget(self.opacity_slider)
+
+        # self.filename_label = QLabel()
+        # self.change_image_button = QPushButton("Change Image")
+        # self.change_image_button.clicked.connect(self.change_image_button_clicked)
+        #
+        # l2 = QHBoxLayout()
+        # l2.setContentsMargins(0, 0, 0, 0)
+        # l2.addStretch(1)
+        # l2.addWidget(self.change_image_button)
+
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.addLayout(l1)
+        # main_layout.addLayout(l2)
+
+        self.init_graphic()
+        self.init_actions()
+
+        self.setLayout(main_layout)
+        # self.update()
+
+    def init_graphic(self):
+        self.graphic = OdvMask(self)
+        self.scene.addItem(self.graphic)
+
+    # def change_image_button_clicked(self):
+    #     dialog = QFileDialog(self)
+    #     dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
+    #     filters = ["PNG Image (*.png)", "BMP Image (*.bmp)"]
+    #     dialog.setNameFilters(filters)
+    #     if dialog.exec():
+    #         filenames = dialog.selectedFiles()
+    #         if len(filenames) == 1:
+    #             self.current = QImage(filenames[0]).convertedTo(QImage.Format.Format_RGB16)
+    #             self.graphic.rest_map()
+    #             self.visibility_checkbox.setChecked(True)
+    #             self.opacity_slider.setValue(100)
+    #             self.global_update()

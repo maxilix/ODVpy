@@ -26,7 +26,7 @@ def QPointF_to_stream(self, stream):
     stream.write(Short(self.y()))
 
 def QPointF___str__(self):
-    return f'({self.x()}, {self.y()})'
+    return f'({round(self.x())}, {round(self.y())})'
 
 
 QPointF.truncated = QPointF_truncated

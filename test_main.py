@@ -11,9 +11,9 @@ CONFIG.load()
 # level = BackupedLevel(2)
 
 
-for level_index in range(26):
-    print(f"\nLevel {level_index}")
-    level = BackupedLevel(level_index)
+# for level_index in range(26):
+#     print(f"\nLevel {level_index}")
+#     level = BackupedLevel(level_index)
 
     # lift = level.dvd.lift
     # for lift_area in lift:
@@ -26,8 +26,8 @@ for level_index in range(26):
     #         if door.main_area_3.global_id != 0:
     #             print(f"L{level_index}: building {building.i}, door {door.i}")
 
-
-    dlgs = level.dvd.dlgs
+level = BackupedLevel(0)
+mask = level.dvd.mask
 
 
 

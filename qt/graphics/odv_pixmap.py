@@ -9,6 +9,29 @@ class OdvFixPixmapElement(OdvGraphicElement, QGraphicsPixmapItem):
     pass
 
 
+class OdvMask(OdvGraphic):
+    def __init__(self, sub_inspector):
+        super().__init__(sub_inspector)
+
+        self.mask_item = None
+        self.reset_mask()
+
+    @property
+    def mask(self) -> QImage :
+        return self.sub_inspector.current
+
+    def reset_mask(self):
+        self.remove_child(self.mask_item)
+
+        self.mask_item = OdvFixPixmapElement(self.sub_inspector, QPixmap(self.mask))
+        self.add_child(self.mask_item)
+        super().update()
+
+    def setOpacity(self, opacity):
+        # opacity only affect map_item
+        self.mask_item.setOpacity(opacity)
+
+
 class OdvMap(OdvGraphic):
     def __init__(self, sub_inspector):
         super().__init__(sub_inspector)

@@ -6,6 +6,7 @@ from qt.control.tab_bond import QBondTabControl
 from qt.control.tab_buil import QBuilTabControl
 from qt.control.tab_dvm import QMapTabControl
 from qt.control.tab_lift import QLiftTabControl
+from qt.control.tab_mask import QMaskTabControl
 from qt.control.tab_move import QMoveTabControl
 from qt.control.tab_sght import QSghtTabControl
 from qt.scene import QScene
@@ -52,7 +53,7 @@ class QMainControl(QTabWidget):
         self.tab["BGND"] = None
         self.tab["MOVE"] = QMoveTabControl(self, level.dvd.move)
         self.tab["SGHT"] = QSghtTabControl(self, level.dvd.sght)
-        self.tab["MASK"] = None
+        self.tab["MASK"] = QMaskTabControl(self, level.dvd.mask)
         self.tab["WAYS"] = None
         self.tab["ELEM"] = None
         self.tab["FXBK"] = None
