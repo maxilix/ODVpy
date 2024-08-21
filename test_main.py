@@ -27,7 +27,7 @@ for level_index in range(26):
     #             print(f"L{level_index}: building {building.i}, door {door.i}")
 
 
-    sght = level.dvd.sght
+    dlgs = level.dvd.dlgs
 
 
 
