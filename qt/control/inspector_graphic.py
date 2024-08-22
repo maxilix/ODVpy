@@ -5,11 +5,8 @@ from PyQt6.QtWidgets import QPushButton, QCheckBox, QWidget, QSlider, QHBoxLayou
 
 from common import Gateway
 from qt.control.inspector_abstract import SubInspector
-from qt.graphics.common import OdvThinPen, OdvLightBrush, OdvHighBrush
-from qt.graphics.odv_gatway import OdvGraphicGateway
-from qt.graphics.odv_line import OdvLine
-from qt.graphics.odv_pixmap import OdvMap, OdvMask
-from qt.graphics.odv_polygon import QCEGPolygon
+from qt.graphics import OdvThinPen, OdvLightBrush, OdvHighBrush, GraphicPolygon, GraphicLine, GraphicGateway, \
+    GraphicMap, GraphicMask
 
 
 class GraphicSubInspector(SubInspector):
@@ -126,9 +123,9 @@ class GraphicSubInspector(SubInspector):
 
 
 class GeometrySubInspector(GraphicSubInspector):
-    graphic_type = {QPolygonF: QCEGPolygon,
-                    QLineF: OdvLine,
-                    Gateway: OdvGraphicGateway}
+    graphic_type = {QPolygonF: GraphicPolygon,
+                    QLineF: GraphicLine,
+                    Gateway: GraphicGateway}
 
     def sub_init(self, *, color, graphic_type=None):
         super().sub_init()
@@ -239,7 +236,7 @@ class PixmapSubInspector(GraphicSubInspector):
         self.light_brush = OdvLightBrush(color)
         self.high_brush = QBrush(Qt.GlobalColor.transparent)
 
-        self.graphic = OdvMap(self)
+        self.graphic = GraphicMap(self)
         self.scene.addItem(self.graphic)
 
     def change_image_button_clicked(self):
@@ -289,7 +286,7 @@ class MaskImageSubInspector(GraphicSubInspector):
         # self.update()
 
     def init_graphic(self):
-        self.graphic = OdvMask(self)
+        self.graphic = GraphicMask(self)
         self.scene.addItem(self.graphic)
 
     # def change_image_button_clicked(self):

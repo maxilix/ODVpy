@@ -90,7 +90,6 @@ class QTabControlGenericTree(QTabControl):
                 self.inspectors[odv_object] = self.inspector_types.get(type(odv_object), Inspector)(self, odv_object)
                 self.inspector_stack_layout.addWidget(self.inspectors[odv_object])
 
-
                 build_tree_structure(self.tree_items[odv_object], odv_object)
 
         content = QWidget()

@@ -4,7 +4,7 @@ from dvd.mask import Mask, MaskImage
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_graphic import MaskImageSubInspector, GeometrySubInspector
 from qt.control.tab_abstract import QTabControlGenericTree
-from qt.graphics.odv_line import OdvMultiLine
+from qt.graphics import GraphicMultiLine
 
 
 class MaskImageInspector(Inspector):
@@ -19,9 +19,9 @@ class MaskImageInspector(Inspector):
 
         self.sub_inspector_group["Polygon"] = []
         if self.odv_object.point_list_1 != []:
-            self.sub_inspector_group["Polygon"] += [GeometrySubInspector(self, "point_list_1", "L1", graphic_type=OdvMultiLine, color=QColor(0, 255, 0))]
+            self.sub_inspector_group["Polygon"] += [GeometrySubInspector(self, "point_list_1", "L1", graphic_type=GraphicMultiLine, color=QColor(0, 255, 0))]
         if self.odv_object.point_list_2 != []:
-            self.sub_inspector_group["Polygon"] += [GeometrySubInspector(self, "point_list_2", "L2", graphic_type=OdvMultiLine, color=QColor(0, 0, 255))]
+            self.sub_inspector_group["Polygon"] += [GeometrySubInspector(self, "point_list_2", "L2", graphic_type=GraphicMultiLine, color=QColor(0, 0, 255))]
         if self.sub_inspector_group["Polygon"] == []:
             self.sub_inspector_group.pop("Polygon")
 

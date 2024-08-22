@@ -7,7 +7,7 @@ from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import InfoSubInspector, OdvObjectListSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
 from qt.control.tab_abstract import QTabControlGenericTree
-from qt.graphics.odv_sight import OdvGraphicSightObstacle
+from qt.graphics.sight import GraphicSightObstacle
 
 
 class SightObstacleInspector(Inspector):
@@ -29,7 +29,7 @@ class SightObstacleInspector(Inspector):
         ]
 
         self.sub_inspector_group["Geometry"] = [
-            GeometrySubInspector(self, "vline_list", color=QColor(255,255,255), graphic_type=OdvGraphicSightObstacle)
+            GeometrySubInspector(self, "vline_list", color=QColor(255,255,255), graphic_type=GraphicSightObstacle)
         ]
 
     @property
