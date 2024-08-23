@@ -1,11 +1,8 @@
-from typing import Self, Iterator
-
-from PyQt6.QtCore import QPoint
+from typing import Self
 
 from common import *
-from odv.odv_object import OdvObject, OdvRoot, OdvLeaf
+from odv.odv_object import OdvRoot, OdvLeaf
 from .move import Layer, Move
-
 from .section import Section
 
 

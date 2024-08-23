@@ -1,6 +1,7 @@
-from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QWidget, QPushButton, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QFormLayout
+from PyQt6.QtWidgets import QWidget, QPushButton, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QFormLayout, \
+    QSizePolicy
 
 from qt.control._generic_tree import QODVTreeItem
 
@@ -73,8 +74,6 @@ class Inspector(QWidget):
 
         self.main_layout.addLayout(header_layout)
 
-        sub_layout = QVBoxLayout()
-        sub_layout.setSpacing(10)
         self.init_sub_inspector()
         for group_name in self.sub_inspector_group:
             box = QGroupBox(group_name)

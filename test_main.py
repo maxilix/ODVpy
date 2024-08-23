@@ -11,9 +11,9 @@ CONFIG.load()
 # level = BackupedLevel(2)
 
 
-# for level_index in range(26):
-#     print(f"\nLevel {level_index}")
-#     level = BackupedLevel(level_index)
+for level_index in range(26):
+    print(f"\nLevel {level_index}")
+    level = BackupedLevel(level_index)
 
     # lift = level.dvd.lift
     # for lift_area in lift:
@@ -27,8 +27,8 @@ CONFIG.load()
     #             print(f"L{level_index}: building {building.i}, door {door.i}")
 
 # level = Level("./dev/empty_level/empty_level_02")
-level = BackupedLevel(2)
-scb = level.scb
+# level = BackupedLevel(2)
+    scrp = level.dvd.scrp
 
 
 
