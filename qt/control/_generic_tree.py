@@ -46,13 +46,7 @@ class QODVTreeItem(QTreeWidgetItem):
             # title = "      " + title
             # self.setFlags(self.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
             # self.current_state = Qt.CheckState.Unchecked
-
-
-
         self.setText(0, title)
-
-
-
 
     @property
     def inspector(self):

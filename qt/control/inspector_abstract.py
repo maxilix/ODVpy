@@ -113,7 +113,7 @@ class Inspector(QWidget):
         return self._tab_control.level
 
     @property
-    def tree_item(self):
+    def tree_item(self) -> QODVTreeItem:
         return self._tab_control.tree_items[self.odv_object]
 
     @property
@@ -173,6 +173,11 @@ class Inspector(QWidget):
         self.a_delete = QAction("Delete")
         self.a_delete.triggered.connect(self.delete_and_update)
 
+        self.a_show_children = QAction(f"Show all {self.child_name}")
+        self.a_show_children.triggered.connect(self.show_children)
+
+        self.a_hide_children = QAction(f"Hide all {self.child_name}")
+        self.a_hide_children.triggered.connect(self.hide_children)
 
     def add_child(self):
         odv_child = self.new_odv_child()
@@ -206,6 +211,20 @@ class Inspector(QWidget):
         self._inner_delete()
         self._tab_control.inspectors[self.odv_object.parent].take_focus()  # take_focus finish with a global update
 
+    def show_children(self):
+        for ic in self.inspector_child_list:
+            for si in ic.sub_inspector_list:
+                if hasattr(si, 'visibility_checkbox'):
+                    si.visibility_checkbox.setChecked(True)
+            ic.update()
+
+    def hide_children(self):
+        for ic in self.inspector_child_list:
+            for si in ic.sub_inspector_list:
+                if hasattr(si, 'visibility_checkbox'):
+                    si.visibility_checkbox.setChecked(False)
+            ic.update()
+
     def scene_menu_name(self):
         return self.odv_object.name
 
@@ -221,8 +240,6 @@ class Inspector(QWidget):
     def scene_menu_common_actions(self, scene_position):
         rop = []
         rop.append(self.a_focus)
-        # if self.deletable:
-        #     rop.append(self.a_delete)
         return rop
 
     def tree_menu_common_actions(self):
@@ -232,6 +249,10 @@ class Inspector(QWidget):
             rop.append(self.a_add_child)
         if self.deletable is True:
             rop.append(self.a_delete)
+        if self.child_name != "":
+            rop.append(self.a_show_children)
+            rop.append(self.a_hide_children)
+
         return rop
 
     def has_focus(self):
