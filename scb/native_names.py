@@ -1,4 +1,4 @@
-OP_CODE = {
+OP_CODE_NAME = {
     0x00 : "Empty",
     0x01 : "Nop",
     0x02 : "Param op1",
@@ -47,7 +47,7 @@ OP_CODE = {
 }
 
 
-NATIVE_FUNCTIONS = {
+NATIVE_FUNCTIONS_NAME = {
     0x00 : "StartDialog                       - (int dialogId)",
     0x01 : "SetCameraScrollTo                 - (object)",
     0x02 : "SetCameraScrollSlowlyTo           - (object | float)",

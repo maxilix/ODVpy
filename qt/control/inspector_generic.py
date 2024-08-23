@@ -1,5 +1,6 @@
-from PyQt6.QtWidgets import QComboBox, QSpinBox, QPushButton, QHBoxLayout, QLabel, QCheckBox, QGridLayout
-
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QComboBox, QSpinBox, QPushButton, QHBoxLayout, QLabel, QCheckBox, QGridLayout, \
+    QPlainTextEdit
 
 from qt.control.inspector_abstract import SubInspector
 
@@ -203,3 +204,16 @@ class InfoSubInspector(SubInspector):
     #         self.setText(str(getattr(self.odv_object, self.property_name)))
     #     except (ValueError, IndexError):
     #         self.setStyleSheet("color: red;")
+
+class LongTextSubInspector(SubInspector):
+
+    def sub_init(self, *, read_only=True, line_display=15):
+        self.plain_text = QPlainTextEdit()
+        self.plain_text.setReadOnly(read_only)
+        self.plain_text.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.plain_text.setFixedHeight(line_display*19)
+        self.main_layout.addWidget(self.plain_text)
+        self.setLayout(self.main_layout)
+
+    def update(self):
+        self.plain_text.setPlainText(str(self.current))

@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt, QLineF
+from PyQt6.QtCore import Qt, QLineF, QPointF
 from PyQt6.QtGui import QColor, QBrush, QPolygonF, QAction, QImage
 from PyQt6.QtWidgets import QPushButton, QCheckBox, QWidget, QSlider, QHBoxLayout, QStackedLayout, QLabel, QVBoxLayout, \
     QFileDialog
@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QPushButton, QCheckBox, QWidget, QSlider, QHBoxLayou
 from common import Gateway
 from qt.control.inspector_abstract import SubInspector
 from qt.graphics import OdvThinPen, OdvLightBrush, OdvHighBrush, GraphicPolygon, GraphicLine, GraphicGateway, \
-    GraphicMap, GraphicMask
+    GraphicMap, GraphicMask, GraphicPoint
 
 
 class GraphicSubInspector(SubInspector):
@@ -123,9 +123,11 @@ class GraphicSubInspector(SubInspector):
 
 
 class GeometrySubInspector(GraphicSubInspector):
-    graphic_type = {QPolygonF: GraphicPolygon,
-                    QLineF: GraphicLine,
-                    Gateway: GraphicGateway}
+    graphic_type = {
+        QPointF: GraphicPoint,
+        QLineF: GraphicLine,
+        QPolygonF: GraphicPolygon,
+        Gateway: GraphicGateway}
 
     def sub_init(self, *, color, graphic_type=None):
         super().sub_init()

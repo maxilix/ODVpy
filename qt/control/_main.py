@@ -8,6 +8,8 @@ from qt.control.tab_dvm import QMapTabControl
 from qt.control.tab_lift import QLiftTabControl
 from qt.control.tab_mask import QMaskTabControl
 from qt.control.tab_move import QMoveTabControl
+from qt.control.tab_scb import QScbTabControl
+from qt.control.tab_scrp import QScrpTabControl
 from qt.control.tab_sght import QSghtTabControl
 from qt.scene import QScene
 
@@ -39,7 +41,7 @@ class QMainControl(QTabWidget):
         super().__init__(parent)
         self.scene = scene
         self.level = level
-        self.setMinimumWidth(400)
+        self.setMinimumWidth(500)
         self.setTabPosition(QTabWidget.TabPosition.East)
         self.setMovable(True)
         self.setTabsClosable(True)
@@ -65,10 +67,11 @@ class QMainControl(QTabWidget):
         self.tab["LIFT"] = QLiftTabControl(self, level.dvd.lift)
         self.tab["AI"] = None
         self.tab["BUIL"] = QBuilTabControl(self, [level.dvd.buil.buildings, level.dvd.buil.special_doors])
-        self.tab["SCRP"] = None
+        self.tab["SCRP"] = QScrpTabControl(self, level.dvd.scrp)
         self.tab["JUMP"] = None
         self.tab["CART"] = None
         self.tab["DLGS"] = None
+        self.tab["SCB"] = QScbTabControl(self, level.scb.classes)
 
         initial_tabs = ["DVM"]
         for name in initial_tabs:
@@ -85,20 +88,20 @@ class QMainControl(QTabWidget):
 
 
     def mousePressEvent(self, event: QMouseEvent):
-        tab_index = self.tabBar().tabAt(self.tabBar().mapFromParent(event.pos()))
-        if tab_index == -1:
-            menu = QMenu()
-            add_submenu = menu.addMenu("Add tab")
-            actions = []
-            for k in self.tab:
-                if self.tab[k] is not None and k not in [self.tabText(i) for i in range(self.count())]:
-                    actions.append(QAction(str(k)))
-                    actions[-1].triggered.connect(lambda state, name=k: self.add_tab(name))
-            add_submenu.addActions(actions)
-            menu.exec(QCursor.pos())
-
-        if (event.button() == Qt.MouseButton.RightButton and tab_index == self.tabBar().currentIndex()):
-            self.currentWidget().exec_tab_menu()
+        if event.button() == Qt.MouseButton.RightButton:
+            tab_index = self.tabBar().tabAt(self.tabBar().mapFromParent(event.pos()))
+            if tab_index == -1:
+                menu = QMenu()
+                add_submenu = menu.addMenu("Add tab")
+                actions = []
+                for k in self.tab:
+                    if self.tab[k] is not None and k not in [self.tabText(i) for i in range(self.count())]:
+                        actions.append(QAction(str(k)))
+                        actions[-1].triggered.connect(lambda state, name=k: self.add_tab(name))
+                add_submenu.addActions(actions)
+                menu.exec(QCursor.pos())
+            elif tab_index == self.tabBar().currentIndex():
+                self.currentWidget().exec_tab_menu()
 
 
         super().mousePressEvent(event)

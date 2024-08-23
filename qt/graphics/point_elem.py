@@ -1,6 +1,6 @@
-from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtCore import Qt, QPointF, QLineF
 from PyQt6.QtGui import QAction, QPainter
-from PyQt6.QtWidgets import QGraphicsSceneMouseEvent, QGraphicsEllipseItem, QGraphicsItem
+from PyQt6.QtWidgets import QGraphicsSceneMouseEvent, QGraphicsEllipseItem, QGraphicsItem, QGraphicsLineItem
 
 from qt.graphics.base_elem import OdvGraphicElement
 
@@ -12,17 +12,30 @@ class OdvFixPointElement(OdvGraphicElement, QGraphicsItem):
 
     def __init__(self, parent_item, position: QPointF):
         super().__init__(parent_item)
+        self.branch1 = QLineF(-self.size / 2, -self.size / 2, self.size / 2, self.size / 2)
+        self.branch2 = QLineF(-self.size / 2, self.size / 2, self.size / 2, -self.size / 2)
         if (ga := self.parentItem().grid_alignment) is not None:
             position = position.truncated() + ga
         self.setPos(position)
+
         self.update()
 
     def paint(self, painter: QPainter, option, widget=None):
         if self.visible:
             painter.setRenderHints(QPainter.RenderHint.Antialiasing)
             painter.setPen(self.sub_inspector.pen)
-            painter.drawLine(QPointF(-self.size / 2, -self.size / 2), QPointF(self.size / 2, self.size / 2))
-            painter.drawLine(QPointF(-self.size / 2, self.size / 2), QPointF(self.size / 2, -self.size / 2))
+            painter.drawLine(self.branch1)
+            painter.drawLine(self.branch2)
+
+    def shape(self):
+        temp_branch_1 = QGraphicsLineItem(self.branch1)
+        temp_branch_1.setPen(self.sub_inspector.pen)
+        temp_branch_2 = QGraphicsLineItem(self.branch2)
+        temp_branch_2.setPen(self.sub_inspector.pen)
+        return temp_branch_1.shape() + temp_branch_2.shape()
+
+    def boundingRect(self):
+        return self.shape().boundingRect()
 
 
 class OdvEditPointElement(OdvGraphicElement, QGraphicsEllipseItem):
