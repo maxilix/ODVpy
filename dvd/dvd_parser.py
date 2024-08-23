@@ -74,7 +74,6 @@ class DvdParser(Parser):
 
         with open(filename, 'wb') as file:
             file.write(stream.get_value())
-        print(f"Saved to {filename}")
 
     @property
     def misc(self):

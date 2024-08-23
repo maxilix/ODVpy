@@ -1,5 +1,5 @@
 from config import CONFIG
-from odv.level import BackupedLevel
+from odv.level import BackupedLevel, Level
 
 CONFIG.load()
 
@@ -26,8 +26,9 @@ CONFIG.load()
     #         if door.main_area_3.global_id != 0:
     #             print(f"L{level_index}: building {building.i}, door {door.i}")
 
-level = BackupedLevel(0)
-mask = level.dvd.mask
+# level = Level("./dev/empty_level/empty_level_02")
+level = BackupedLevel(2)
+scb = level.scb
 
 
 

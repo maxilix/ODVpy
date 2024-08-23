@@ -2,6 +2,7 @@ import hashlib
 import os
 import re
 
+from scb.scb_parser import ScbParser
 from settings import *
 from config import CONFIG
 
@@ -46,6 +47,12 @@ class Level(object):
         if self._dvd is None:
             self._dvd = DvdParser(self.abs_name + ".dvd")
         return self._dvd
+
+    @property
+    def scb(self):
+        if self._scb is None:
+            self._scb = ScbParser(self.abs_name + ".scb")
+        return self._scb
 
     @property
     def dvm(self):
@@ -113,19 +120,31 @@ class Level(object):
     def insert_in_game(self):
         source = self.abs_name
         destination = original_name(self.index, root=CONFIG.installation_path)
+
         if self._dvd is None:
             copy(f"{source}.dvd", f"{destination}.dvd")
+            print("DVD: copy", end="")
         else:
-            self.dvd.save_to_file(destination + ".dvd")
+            self.dvd.save_to_file(f"{destination}.dvd")
+            print("DVD: save", end="")
+        print(f"to {destination}.dvd")
 
         if self._dvm is None:
             # copy(f"{source}.dvm", f"{destination}.dvm")
+            # print("DVM: copy", end="")
             pass
         else:
-            self.dvm.save_to_file(destination + ".dvm")
+            self.dvm.save_to_file(f"{destination}.dvm")
+            print("DVM: save", end="")
+        print(f"to {destination}.dvm")
 
-        print("copy of scb")
-        copy(f"{source}.scb", f"{destination}.scb")
+        if self._scb is None:
+            copy(f"{source}.scb", f"{destination}.scb")
+            print("SCB: copy", end="")
+        else:
+            self.scb.save_to_file(f"{destination}.scb")
+            print("SCB: save", end="")
+        print(f"to {destination}.scb")
 
 
 class BackupedLevel(Level):

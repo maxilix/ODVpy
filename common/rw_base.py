@@ -122,12 +122,17 @@ class Float(float, RWStreamable):
 class String(str, RWStreamable):
 
     @classmethod
-    def from_stream(cls, stream, length=None):
+    def from_stream(cls, stream, length=None, *, end=""):
+        if length is None and end == "":
+            raise ReadingError("reading String must specify length or end character")
         if length is None:
-            raise ReadingError("length must be specified when reading String")
-        raw_bytes = stream.read_raw(length)
-        # stream.debug_print(raw_bytes.hex())
-        return cls(object=raw_bytes, encoding='latin1')
+            rop = ""
+            while (c:= str(stream.read_raw(1), encoding='latin1')) != end:
+                rop += c
+            return cls(rop)
+        else:
+            raw_bytes = stream.read_raw(length)
+            return cls(object=raw_bytes, encoding='latin1')
 
     def to_stream(self, stream):
         raw_bytes = self.encode("latin1")

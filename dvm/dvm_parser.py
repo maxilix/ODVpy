@@ -128,7 +128,6 @@ class DvmParser(Parser):
 		stream.write(self._level_map)
 		with open(filename, 'wb') as file:
 			file.write(stream.get_value())
-		print(f"Saved to {filename}")
 
 	# def extract_to_bmp(self, filename):
 	# 	self._level_map.save(filename)
