@@ -7,11 +7,6 @@ from .section import Section
 
 class MobileElement(OdvLeaf):
 
-    line: QLineF
-    left_id: UShort
-    right_id: UShort
-
-
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
         rop = cls(parent)

@@ -157,13 +157,13 @@ class ScbParser(Parser):
         assert " debug " == self.stream.read(String, 7)
         self.debug = bool(int(self.stream.read(String, end="\n")))
         # print(f"{self.debug=}")
-        self.classes = self.stream.read(ScbClassGroup)
+        # self.classes = self.stream.read(ScbClassGroup)
         self.tail = self.stream.read_raw()
 
 
     def save_to_file(self, filename):
         stream = WriteStream()
-        stream.write(String("version 1.00, debug 1\n"))
+        stream.write(String("version 1.00, debug 0\n"))
         stream.write(Bytes(self.tail))
         with open(filename, 'wb') as file:
             file.write(stream.get_value())

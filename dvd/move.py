@@ -1,4 +1,3 @@
-from profile import runctx
 from typing import Self
 
 from common import *
@@ -137,7 +136,7 @@ class Layer(OdvObject):
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
         rop = cls(parent)
-        # total_area is not used by the constructor and it's rebuilt on demand
+        # total_area is rebuilt on demand
         total_area = stream.read(UShort)
         nb_main_area = stream.read(UShort)
         for _ in range(nb_main_area):
@@ -153,10 +152,6 @@ class Layer(OdvObject):
 
 
 class Move(Section, OdvRoot):
-
-
-
-
     _section_name = "MOVE"
     _section_version = 1
 

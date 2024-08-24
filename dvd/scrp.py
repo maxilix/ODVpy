@@ -39,6 +39,7 @@ class Script(OdvLeaf):
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
+        # TODO write script
         pass
 
 

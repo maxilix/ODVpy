@@ -73,7 +73,7 @@ class QMainControl(QTabWidget):
         self.tab["JUMP"] = QJumpTabControl(self, level.dvd.jump)
         self.tab["CART"] = None
         self.tab["DLGS"] = None
-        self.tab["SCB"] = QScbTabControl(self, level.scb.classes)
+        self.tab["SCB"] = None # QScbTabControl(self, level.scb.classes)
 
         initial_tabs = ["DVM"] + CONFIG.default_tabs
         for name in initial_tabs:

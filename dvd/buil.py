@@ -6,6 +6,7 @@ from .move import Move, MainArea
 
 from .section import Section
 
+# TODO separate buildings door and special door
 
 class Door(OdvLeaf):
     move: Move
