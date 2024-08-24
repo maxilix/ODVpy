@@ -3,19 +3,15 @@ from PyQt6.QtGui import QAction, QPalette, QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QWidget, \
     QVBoxLayout
 
+from common import *
+from config import CONFIG
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
+from qt.control._main import QMainControl
 from qt.info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
-from qt.control._main import QMainControl
-
-from config import CONFIG
-from common import *
 from qt.scene import QScene
 from qt.viewport import QViewport
-
-
-# from debug import *
 
 
 class QWindow(QMainWindow):

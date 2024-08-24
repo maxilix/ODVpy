@@ -2,6 +2,8 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QMouseEvent, QCursor, QAction
 from PyQt6.QtWidgets import QTabWidget, QMenu
 
+from config import CONFIG
+
 from qt.control.tab_bond import QBondTabControl
 from qt.control.tab_buil import QBuilTabControl
 from qt.control.tab_dvm import QMapTabControl
@@ -12,7 +14,6 @@ from qt.control.tab_move import QMoveTabControl
 from qt.control.tab_scb import QScbTabControl
 from qt.control.tab_scrp import QScrpTabControl
 from qt.control.tab_sght import QSghtTabControl
-from qt.scene import QScene
 
 
 # MISC - Miscellaneous
@@ -74,7 +75,7 @@ class QMainControl(QTabWidget):
         self.tab["DLGS"] = None
         self.tab["SCB"] = QScbTabControl(self, level.scb.classes)
 
-        initial_tabs = ["DVM"]
+        initial_tabs = ["DVM"] + CONFIG.default_tabs
         for name in initial_tabs:
             self.add_tab(name)
 
