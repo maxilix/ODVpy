@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QPalette, QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QWidget, \
     QVBoxLayout
@@ -7,7 +7,7 @@ from common import *
 from config import CONFIG
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
-from qt.control._main import QMainControl
+from qt.control.tab__main import QMainControl
 from qt.info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
 from qt.scene import QScene
@@ -18,7 +18,7 @@ class QWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle('Open Death Valley py')
+        self.setWindowTitle('ODVpy Editor')
         self.showMaximized()
         # self.setMinimumSize(800, 600)
         # self.setGeometry(0, 0, 500, 500)

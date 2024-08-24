@@ -6,7 +6,7 @@ from dvd.sght import Sght, SightObstacle
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import InfoSubInspector, OdvObjectListSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab_abstract import QTabControlGenericTree
+from qt.control.tab__abstract import QTabControlGenericTree
 from qt.graphics.sight import GraphicSightObstacle
 
 

@@ -6,7 +6,7 @@ from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import IntegerBoxInspector, InfoSubInspector, ConstantEnumListInspector, \
     MultiCheckBoxInspector, CheckBoxInspector, IntegerTwinBoxInspector, OdvObjectListSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab_abstract import QTabControlGenericTree
+from qt.control.tab__abstract import QTabControlGenericTree
 
 DOOR_TYPE = {0: "Invisible Door",
              1: "Normal Door",

@@ -4,7 +4,7 @@ from dvd.scrp import Scrp, Script
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import InfoSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab_abstract import QTabControlGenericTree
+from qt.control.tab__abstract import QTabControlGenericTree
 
 
 class ScriptInspector(Inspector):

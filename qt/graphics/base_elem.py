@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter
 
-from qt.control._scene_menu import QSceneMenuSection
+from qt.control.scene_menu import QSceneMenuSection
 
 
 class OdvGraphicElement(object):

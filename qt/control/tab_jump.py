@@ -4,7 +4,7 @@ from dvd.jump import Jump, JumpArea
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import OdvObjectListSubInspector, LongTextSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab_abstract import QTabControlGenericTree
+from qt.control.tab__abstract import QTabControlGenericTree
 from qt.graphics import GraphicMultiLine
 
 

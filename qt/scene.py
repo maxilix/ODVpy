@@ -2,7 +2,7 @@ from PyQt6.QtCore import QRectF
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent
 
 from common import *
-from qt.control._scene_menu import QSceneMenu
+from qt.control.scene_menu import QSceneMenu
 
 
 class QScene(QGraphicsScene):

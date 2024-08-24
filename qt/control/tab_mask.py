@@ -3,7 +3,7 @@ from PyQt6.QtGui import QColor
 from dvd.mask import Mask, MaskImage
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_graphic import MaskImageSubInspector, GeometrySubInspector
-from qt.control.tab_abstract import QTabControlGenericTree
+from qt.control.tab__abstract import QTabControlGenericTree
 from qt.graphics import GraphicMultiLine
 
 
