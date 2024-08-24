@@ -5,6 +5,8 @@ from qt.graphics.point_elem import OdvEditPointElement, OdvFixPointElement
 
 
 class GraphicPoint(OdvGraphic):
+    grid_alignment = QPointF(0.5, 0.5)
+
     def __init__(self, sub_inspector):
         super().__init__(sub_inspector)
 

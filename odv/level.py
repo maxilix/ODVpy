@@ -123,28 +123,27 @@ class Level(object):
 
         if self._dvd is None:
             copy(f"{source}.dvd", f"{destination}.dvd")
-            print("DVD: copy", end="")
+            print(f"DVD: copy to {destination}.dvd")
         else:
             self.dvd.save_to_file(f"{destination}.dvd")
-            print("DVD: save", end="")
-        print(f"to {destination}.dvd")
+            print(f"DVD: save to {destination}.dvd")
 
         if self._dvm is None:
-            # copy(f"{source}.dvm", f"{destination}.dvm")
-            # print("DVM: copy", end="")
-            pass
+            if source != destination:
+                copy(f"{source}.dvm", f"{destination}.dvm")
+                print(f"DVM: copy to {destination}.dvm")
+            else:
+                print(f"DVM: no change", end="")
         else:
             self.dvm.save_to_file(f"{destination}.dvm")
-            print("DVM: save", end="")
-        print(f"to {destination}.dvm")
+            print(f"DVM: save to {destination}.dvm")
 
         if self._scb is None:
             copy(f"{source}.scb", f"{destination}.scb")
-            print("SCB: copy", end="")
+            print(f"SCB: copy to {destination}.scb")
         else:
             self.scb.save_to_file(f"{destination}.scb")
-            print("SCB: save", end="")
-        print(f"to {destination}.scb")
+            print(f"SCB: save to {destination}.scb")
 
 
 class BackupedLevel(Level):
