@@ -172,11 +172,14 @@ class Inspector(QWidget):
         self.a_delete = QAction("Delete")
         self.a_delete.triggered.connect(self.delete_and_update)
 
-        self.a_show_children = QAction(f"Show all {self.child_name}")
-        self.a_show_children.triggered.connect(self.show_children)
+        self.a_children_show = QAction(f"Show all")
+        self.a_children_show.triggered.connect(self.show_children)
 
-        self.a_hide_children = QAction(f"Hide all {self.child_name}")
-        self.a_hide_children.triggered.connect(self.hide_children)
+        self.a_children_hide = QAction(f"Hide all")
+        self.a_children_hide.triggered.connect(self.hide_children)
+
+        self.a_children_delete = QAction("Delete all")
+        self.a_children_delete.triggered.connect(self.delete_children)
 
     def add_child(self):
         odv_child = self.new_odv_child()
@@ -224,6 +227,12 @@ class Inspector(QWidget):
                     si.visibility_checkbox.setChecked(False)
             ic.update()
 
+    def delete_children(self):
+        for ic in self.inspector_child_list:
+            assert ic.deletable
+            ic._inner_delete()
+        self.update()
+
     def scene_menu_name(self):
         return self.odv_object.name
 
@@ -249,8 +258,7 @@ class Inspector(QWidget):
         if self.deletable is True:
             rop.append(self.a_delete)
         if self.child_name != "":
-            rop.append(self.a_show_children)
-            rop.append(self.a_hide_children)
+            rop.append(["On Children", self.a_children_show, self.a_children_hide, self.a_children_delete])
 
         return rop
 

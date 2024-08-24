@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QContextMenuEvent, QCursor, QColor
+from PyQt6.QtGui import QContextMenuEvent, QCursor, QColor, QAction
 from PyQt6.QtWidgets import QAbstractItemView, QTreeWidget, QTreeWidgetItem, QMenu
 
 class QODVTreeItem(QTreeWidgetItem):
@@ -76,7 +76,12 @@ class QODVTreeItem(QTreeWidgetItem):
 
     def contextMenuEvent(self, event):
         menu = QMenu()
-        menu.addActions(self.inspector.tree_menu_common_actions())
+        for e in self.inspector.tree_menu_common_actions():
+            if isinstance(e, QAction):
+                menu.addAction(e)
+            else:
+                submenu = menu.addMenu(e[0])
+                submenu.addActions(e[1:])
         menu.exec(QCursor.pos())
 
 
