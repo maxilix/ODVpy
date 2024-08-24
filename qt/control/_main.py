@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QTabWidget, QMenu
 from qt.control.tab_bond import QBondTabControl
 from qt.control.tab_buil import QBuilTabControl
 from qt.control.tab_dvm import QMapTabControl
+from qt.control.tab_jump import QJumpTabControl
 from qt.control.tab_lift import QLiftTabControl
 from qt.control.tab_mask import QMaskTabControl
 from qt.control.tab_move import QMoveTabControl
@@ -68,7 +69,7 @@ class QMainControl(QTabWidget):
         self.tab["AI"] = None
         self.tab["BUIL"] = QBuilTabControl(self, [level.dvd.buil.buildings, level.dvd.buil.special_doors])
         self.tab["SCRP"] = QScrpTabControl(self, level.dvd.scrp)
-        self.tab["JUMP"] = None
+        self.tab["JUMP"] = QJumpTabControl(self, level.dvd.jump)
         self.tab["CART"] = None
         self.tab["DLGS"] = None
         self.tab["SCB"] = QScbTabControl(self, level.scb.classes)

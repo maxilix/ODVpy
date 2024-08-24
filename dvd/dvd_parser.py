@@ -180,7 +180,7 @@ class DvdParser(Parser):
     @property
     def jump(self):
         if self._jump.loaded is False:
-            self._jump.load()
+            self._jump.load(move=self.move)
         return self._jump
 
     @property

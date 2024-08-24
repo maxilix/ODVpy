@@ -11,9 +11,9 @@ CONFIG.load()
 # level = BackupedLevel(2)
 
 
-for level_index in range(26):
-    print(f"\nLevel {level_index}")
-    level = BackupedLevel(level_index)
+# for level_index in range(26):
+#     print(f"\nLevel {level_index}")
+#     level = BackupedLevel(level_index)
 
     # lift = level.dvd.lift
     # for lift_area in lift:
@@ -26,18 +26,30 @@ for level_index in range(26):
     #         if door.main_area_3.global_id != 0:
     #             print(f"L{level_index}: building {building.i}, door {door.i}")
 
+
+
 # level = Level("./dev/empty_level/empty_level_02")
-# level = BackupedLevel(2)
-    scrp = level.dvd.scrp
+# level = BackupedLevel(10)
+
+
+# jump_area = level.dvd.jump[4]
+# for e in jump_area.jump_roof_balcony_list:
+    # e.u1 = 100
+    # e.u2 = 50
+    # e.u3 = -30
+
+
+# 134 130 -12
+# 134 130 -2
+# 133 130 -3
+
 
 
 
 exit()
 
-
 # for sublayer in motion[0]:
 #     for area in sublayer.obstacles:
 #         level.dvm.draw(area.poly, QPen(QColor(255, 90, 40, 128)), QBrush(QColor(255, 90, 40, 32)))
 
-
-# level.insert_in_game()
+level.insert_in_game()
