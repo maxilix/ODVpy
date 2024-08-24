@@ -45,17 +45,17 @@ class Door(OdvLeaf):
         assert nb_access == 3
 
         p1 = stream.read(QPointF)
-        rop.main_area_1 = move.get_by_global(stream.read(UShort))
+        rop.main_area_1 = move.main_area(stream.read(UShort))
         layer_id_1 = stream.read(UShort)
         assert rop.main_area_1.parent.i == layer_id_1
 
         p2 = stream.read(QPointF)
-        main_area_2 = move.get_by_global(stream.read(UShort))
+        main_area_2 = move.main_area(stream.read(UShort))
         layer_id_2 = stream.read(UShort)
         assert main_area_2.parent.i == layer_id_2
 
         p3 = stream.read(QPointF)
-        rop.main_area_3 = move.get_by_global(stream.read(UShort))
+        rop.main_area_3 = move.main_area(stream.read(UShort))
         layer_id_3 = stream.read(UShort)
         assert rop.main_area_3.parent.i == layer_id_3
 
@@ -86,13 +86,13 @@ class Door(OdvLeaf):
         stream.write(self.shape)
         stream.write(UShort(3))  # nb access
         stream.write(self.gateway.p1)
-        stream.write(UShort(self.main_area_1.global_id))
+        stream.write(UShort(self.main_area_1.main_area_id))
         stream.write(UShort(self.main_area_1.parent.i))
         stream.write(self.gateway.p2)
-        stream.write(UShort(self.main_area_1.global_id))  # rewrite main_area_1 global id
+        stream.write(UShort(self.main_area_1.main_area_id))  # rewrite main_area_1 global id
         stream.write(UShort(self.main_area_1.parent.i))   # rewrite main_area_1 layer id
         stream.write(self.gateway.p3)
-        stream.write(UShort(self.main_area_3.global_id))  # TODO test with main_area_1 info again for non special door
+        stream.write(UShort(self.main_area_3.main_area_id))  # TODO test with main_area_1 info again for non special door
         stream.write(UShort(self.main_area_3.parent.i))   # TODO same
 
         stream.write(UShort(self.anim_id))

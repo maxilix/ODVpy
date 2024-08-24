@@ -25,7 +25,7 @@ class SightObstacleInspector(Inspector):
         ]
 
         self.sub_inspector_group["Main Areas"] = [
-            OdvObjectListSubInspector(self, "main_area", iterable=self.odv_object.move.main_area_iterator()),
+            OdvObjectListSubInspector(self, "main_area", iterable=self.odv_object.move.main_area_iterator(include_None=True)),
         ]
 
         self.sub_inspector_group["Geometry"] = [

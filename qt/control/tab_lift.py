@@ -24,9 +24,9 @@ class LiftAreaInspector(Inspector):
             IntegerBoxInspector(self, "perspective", "Perspective", int_type=UChar),
         ]
         self.sub_inspector_group["Main Areas"] = [
-            OdvObjectListSubInspector(self, "main_area_below", "Below", iterable=self.odv_object.move.main_area_iterator()),
-            OdvObjectListSubInspector(self, "main_area", "", iterable=self.odv_object.move.main_area_iterator()),
-            OdvObjectListSubInspector(self, "main_area_above", "Above", iterable=self.odv_object.move.main_area_iterator()),
+            OdvObjectListSubInspector(self, "main_area_below", "Below", iterable=self.odv_object.move.main_area_iterator(include_None=False)),
+            OdvObjectListSubInspector(self, "main_area", "", iterable=self.odv_object.move.main_area_iterator(include_None=False)),
+            OdvObjectListSubInspector(self, "main_area_above", "Above", iterable=self.odv_object.move.main_area_iterator(include_None=False)),
         ]
         self.sub_inspector_group["Gateways"] = [
             GeometrySubInspector(self, "gateway_below","Below", color=QColor(200, 120, 40)),

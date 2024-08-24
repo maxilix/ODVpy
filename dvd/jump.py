@@ -45,14 +45,14 @@ class JumpArea(OdvLeaf):
         rop.move = move
 
         layer_id = stream.read(UShort)
-        rop.roof_main_area = move.get_by_global(stream.read(UShort))
+        rop.roof_main_area = move.main_area(stream.read(UShort))
         assert rop.roof_main_area.parent.i == layer_id
 
         nb_point = stream.read(UShort)
         rop.jump_start_list = [stream.read(JumpStart) for _ in range(nb_point)]
 
         layer_id = stream.read(UShort)
-        rop.ground_main_area = move.get_by_global(stream.read(UShort))
+        rop.ground_main_area = move.main_area(stream.read(UShort))
         assert rop.ground_main_area.parent.i == layer_id
 
         rop.landing_polygon = stream.read(QPolygonF)
@@ -61,13 +61,13 @@ class JumpArea(OdvLeaf):
 
     def to_stream(self, stream: WriteStream) -> None:
         stream.write(UShort(self.roof_main_area.parent.i))  # layer id
-        stream.write(UShort(self.roof_main_area.global_id))
+        stream.write(UShort(self.roof_main_area.main_area_id))
         n = len(self.jump_start_list)
         stream.write(UShort(n))
         for jump_start in self.jump_start_list:
             stream.write(jump_start)
         stream.write(UShort(self.ground_main_area.parent.i))  # layer id
-        stream.write(UShort(self.ground_main_area.global_id))
+        stream.write(UShort(self.ground_main_area.main_area_id))
         stream.write(self.landing_polygon)
 
 

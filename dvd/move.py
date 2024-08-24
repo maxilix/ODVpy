@@ -12,11 +12,11 @@ class Obstacle(OdvLeaf):
     _poly: QPolygonF
 
     def __str__(self):
-        return f"Obstacle {self.global_id}"
+        return f"Obstacle {self.parent.main_area_id + self.i + 1}"
 
-    @property
-    def global_id(self):
-        return self.parent.global_id + self.i + 1
+    # @property
+    # def global_id(self):
+    #     return self.parent.main_area_id + self.i + 1
 
     @property
     def poly(self) -> QPolygonF:
@@ -46,10 +46,10 @@ class MainArea(OdvObject):
     _poly: QPolygonF
 
     def __str__(self):
-        return f"Main area {self.global_id}"
+        return f"Main area {self.main_area_id}"
 
     @property
-    def global_id(self):
+    def main_area_id(self):
         rop = 0
         for layer_index in range(self.parent.i):
             rop += self.parent.parent[layer_index].total_area()
@@ -70,20 +70,6 @@ class MainArea(OdvObject):
         else:
             # counter-clockwise
             self._poly = QPolygonF(poly[::-1])
-
-    # def add_obstacle(self, poly: QPolygonF, index: int = 0) -> Obstacle:
-    #     self._path = None
-    #     obstacle = Obstacle(self, poly)
-    #     if index <= 0:
-    #         self.area_list.append(obstacle)
-    #     else:
-    #         self.area_list.insert(index, obstacle)
-    #     return obstacle
-
-    # def delete_obstacle(self, index: int):
-    #     self._path = None
-    #     assert 0 < index < len(self.area_list)
-    #     self.area_list.pop(index)
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
@@ -174,24 +160,26 @@ class Move(Section, OdvRoot):
     _section_name = "MOVE"
     _section_version = 1
 
-    def get_by_global(self, k: int):
+    def main_area(self, index: int):
         i = 0
-        while (ta_i := self[i].total_area()) <= k:
+        while (ta_i := self[i].total_area()) <= index:
             i += 1
-            k -= ta_i
+            index -= ta_i
         j = 0
-        while (ta_j := (1+len(self[i][j]))) <= k:
+        while (ta_j := (1 + len(self[i][j]))) <= index:
             j += 1
-            k -= ta_j
-        assert k == 0
+            index -= ta_j
+        assert index == 0
         rop = self[i][j]
-        # assert isinstance(rop, MainArea)
         return rop
 
-    def main_area_iterator(self):
+    def main_area_iterator(self, *, include_None):
         class MAI:
             def __iter__(subself):
-                return iter(ma for layer in self for ma in layer)
+                if include_None:
+                    return iter([None] + [ma for layer in self for ma in layer])
+                else:
+                    return iter(ma for layer in self for ma in layer)
             def __getitem__(self, item):
                 return list(iter(self))[item]
             def __len__(self):

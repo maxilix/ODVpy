@@ -35,8 +35,7 @@ class SightLine(RWStreamable):
 class SightObstacle(OdvLeaf):
     move: Move
     vline_list: list[SightLine]
-    has_main_area_above: UChar
-    main_area: MainArea
+    main_area: MainArea | None
     unk_char_1: UChar
     unk_char_2: UChar
     unk_char_3: UChar
@@ -45,6 +44,15 @@ class SightObstacle(OdvLeaf):
     def volume_shape(self):
         pass
 
+    def __str__(self):
+        if self.main_area is None:
+            return super().__str__()
+        else:
+            return f"{super().__str__()} - {self.walkable_sight_id}"
+
+    @property
+    def walkable_sight_id(self):
+        return list(self.parent.walkable_sight_iterator()).index(self)
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent, move) -> Self:
@@ -74,10 +82,10 @@ class SightObstacle(OdvLeaf):
         max_y = stream.read(Float)
         assert max_y == max(vl.y for vl in rop.vline_list)
 
-        rop.has_main_area_above = stream.read(UChar)
-        if rop.has_main_area_above:
+        has_main_area_above = stream.read(UChar)
+        if has_main_area_above:
             layer_id = stream.read(UShort)
-            rop.main_area = move.get_by_global(stream.read(UShort))
+            rop.main_area = move.main_area(stream.read(UShort))
             assert rop.main_area.parent.i == layer_id
         else:
             rop.main_area = None
@@ -112,7 +120,7 @@ class SightObstacle(OdvLeaf):
         if self.main_area is not None:
             stream.write(UChar(1))
             stream.write(UShort(self.main_area.parent.i))
-            stream.write(UShort(self.main_area.global_id))
+            stream.write(UShort(self.main_area.main_area_id))
         else:
             stream.write(UChar(0))
 
@@ -126,14 +134,34 @@ class SightObstacle(OdvLeaf):
         stream.write(UInt(0))
 
 
+class GroundSight(object):
+    walkable_sight_id = 0
+    def __str__(self):
+        return "Ground Sight"
 
 
 class Sght(Section, OdvRoot):
-
     _section_name = "SGHT"
     _section_version = 6
 
+    move: Move
+
+    def walkable_sight(self, index):
+        return self.walkable_sight_iterator()[index]
+
+    def walkable_sight_iterator(self):
+        class WSI:
+            def __iter__(subself):
+                return iter([self.ground_sight] + [s for s in self if s.main_area is not None])
+            def __getitem__(self, item):
+                return list(iter(self))[item]
+            def __len__(self):
+                return len(list(iter(self)))
+        return WSI()
+
     def _load(self, substream: ReadStream, * , move) -> None:
+        self.move = move
+        self.ground_sight = GroundSight()
         nb_sight_obstacle = substream.read(UShort)
         for _ in range(nb_sight_obstacle):
             self.add_child(substream.read(SightObstacle, parent=self, move=move))
@@ -143,5 +171,4 @@ class Sght(Section, OdvRoot):
         substream.write(UShort(nb_sight_obstacle))
         for sight_obstacle in self:
             substream.write(sight_obstacle)
-
 

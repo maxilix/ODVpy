@@ -49,8 +49,8 @@ class DoorInspector(Inspector):
             ]
 
         self.sub_inspector_group["Main Areas"] = [
-            OdvObjectListSubInspector(self, "main_area_1", "From", iterable=self.odv_object.move.main_area_iterator()),
-            OdvObjectListSubInspector(self, "main_area_3", "To", iterable=self.odv_object.move.main_area_iterator()),
+            OdvObjectListSubInspector(self, "main_area_1", "From", iterable=self.odv_object.move.main_area_iterator(include_None=False)),
+            OdvObjectListSubInspector(self, "main_area_3", "To", iterable=self.odv_object.move.main_area_iterator(include_None=False)),
         ]
         self.sub_inspector_group["Gateway"] = [
             GeometrySubInspector(self, "gateway", color=QColor(220, 200, 80)),

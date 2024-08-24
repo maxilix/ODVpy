@@ -4,29 +4,33 @@ from common import *
 from odv.odv_object import OdvRoot, OdvLeaf
 from .move import Layer, Move
 from .section import Section
+from .sght import Sght, SightObstacle
 
 
 class BondLine(OdvLeaf):
     move: Move
+    sght: Sght
     line: QLineF
-    left_id: UShort
-    right_id: UShort
+    sight_obstacle_1: SightObstacle
+    sight_obstacle_2: SightObstacle
     layer: Layer
 
     @classmethod
-    def from_stream(cls, stream: ReadStream, *, parent, move) -> Self:
+    def from_stream(cls, stream: ReadStream, *, parent, move, sght) -> Self:
         rop = cls(parent)
         rop.move = move
+        rop.sght = sght
         rop.line = stream.read(QLineF)
-        rop.left_id = stream.read(UShort)
-        rop.right_id = stream.read(UShort)
+        rop.sight_obstacle_1 = sght.walkable_sight(stream.read(UShort))
+        rop.sight_obstacle_2 = sght.walkable_sight(stream.read(UShort))
+
         rop.layer = move[stream.read(UShort)]
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
         stream.write(self.line)
-        stream.write(UShort(self.left_id))
-        stream.write(UShort(self.right_id))
+        stream.write(UShort(self.sight_obstacle_1.walkable_sight_id))
+        stream.write(UShort(self.sight_obstacle_2.walkable_sight_id))
         stream.write(UShort(self.layer.i))
 
 
@@ -35,12 +39,14 @@ class Bond(Section, OdvRoot):
     _section_version = 2
 
     move: Move
+    sght: Sght
 
-    def _load(self, substream: ReadStream, *, move) -> None:
+    def _load(self, substream: ReadStream, *, move, sght) -> None:
         self.move = move
+        self.sght = sght
         nb_bond_line = substream.read(UShort)
         for _ in range(nb_bond_line):
-            self.add_child(substream.read(BondLine, parent=self, move=move))
+            self.add_child(substream.read(BondLine, parent=self, move=move, sght=sght))
 
     def _save(self, substream: WriteStream) -> None:
         nb_bond_line = len(self)

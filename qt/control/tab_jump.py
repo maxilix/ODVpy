@@ -18,7 +18,7 @@ class JumpAreaInspector(Inspector):
             LongTextSubInspector(self, "text"),
         ]
         self.sub_inspector_group["Properties"] = [
-            OdvObjectListSubInspector(self, "roof_main_area", "Roof Area", iterable=self.odv_object.move.main_area_iterator()),
+            OdvObjectListSubInspector(self, "roof_main_area", "Roof Area", iterable=self.odv_object.move.main_area_iterator(include_None=False)),
             OdvObjectListSubInspector(self, "ground_main_area", "Ground Area",
                                       iterable=self.odv_object.move.main_area_iterator()),
         ]

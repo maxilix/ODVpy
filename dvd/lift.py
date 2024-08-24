@@ -23,17 +23,17 @@ class LiftArea(OdvLeaf):
         rop = cls(parent)
         rop.move = move
 
-        rop.main_area = move.get_by_global(stream.read(UShort))
+        rop.main_area = move.main_area(stream.read(UShort))
         rop.lift_type = stream.read(UChar)
         # 0: ????
         # 1: stair
         # 2: ladder
         # 3: wall
 
-        rop.main_area_below = move.get_by_global(stream.read(UShort))
+        rop.main_area_below = move.main_area(stream.read(UShort))
         under_layer_id = stream.read(UShort)  # layer id
 
-        rop.main_area_above = move.get_by_global(stream.read(UShort))
+        rop.main_area_above = move.main_area(stream.read(UShort))
         over_layer_id = stream.read(UShort)  # layer id
 
         shape = stream.read(QPolygonF)  # seems useless, isn't always defined
@@ -45,13 +45,13 @@ class LiftArea(OdvLeaf):
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
-        stream.write(UShort(self.main_area.global_id))
+        stream.write(UShort(self.main_area.main_area_id))
         stream.write(UChar(self.lift_type))
 
-        stream.write(UShort(self.main_area_below.global_id))
+        stream.write(UShort(self.main_area_below.main_area_id))
         stream.write(UShort(self.main_area_below.parent.i))  # layer id
 
-        stream.write(UShort(self.main_area_above.global_id))
+        stream.write(UShort(self.main_area_above.main_area_id))
         stream.write(UShort(self.main_area_above.parent.i))  # layer id
 
         # stream.write(self.shape)
