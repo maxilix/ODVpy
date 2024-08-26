@@ -78,6 +78,6 @@ class Mask(Section, OdvRoot):
                 self.add_child(substream.read(MaskImage, parent=self, layer_id=layer_id))
 
     def _save(self, substream: WriteStream) -> None:
-        pass
+        substream.write(UShort(0))
 
 

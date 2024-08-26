@@ -491,26 +491,31 @@ class PathFinder(RWStreamable):
         # define crossing point list
         for i, layer in enumerate(self._motion):
             self.crossing_point_list.append([])
-            for j, sublayer in enumerate(layer):
+            for j, main_area in enumerate(layer):
                 self.crossing_point_list[i].append([])
-                for k, area in enumerate(sublayer):
+                self.crossing_point_list[i][j].append([])
+                self.rebuild_crossing_point_of(i, j, 0)
+                for k, obstacle in enumerate(main_area):
                     self.crossing_point_list[i][j].append([])
-                    self.rebuild_crossing_point_of(i, j, k)
+                    self.rebuild_crossing_point_of(i, j, k+1)
+
 
         # define accesses for each crossing point
         for i, layer in enumerate(self._motion):
-            for j, sublayer in enumerate(layer):
-                for k, _ in enumerate(sublayer):
-                    for cp in self.crossing_point_list[i][j][k]:
-                        cp.rebuild_accesses(sublayer)
+            for j, main_area in enumerate(layer):
+                for cp in self.crossing_point_list[i][j][0]:
+                    cp.rebuild_accesses(main_area)
+                for k, obstacle in enumerate(main_area):
+                    for cp in self.crossing_point_list[i][j][k+1]:
+                        cp.rebuild_accesses(main_area)
 
         # clear inaccessible crossing point
-        for i, layer in enumerate(self._motion):
-            for j, sublayer in enumerate(layer):
-                for k, _ in enumerate(sublayer):
-                    self.crossing_point_list[i][j][k] = [cp for cp in self.crossing_point_list[i][j][k]
-                                                         if cp.as_access()]
-        print("\b\b\bDone")
+        # for i, layer in enumerate(self._motion):
+        #     for j, sublayer in enumerate(layer):
+        #         for k, _ in enumerate(sublayer):
+        #             self.crossing_point_list[i][j][k] = [cp for cp in self.crossing_point_list[i][j][k]
+        #                                                  if cp.as_access()]
+        # print("\b\b\bDone")
 
     @timeit
     def rebuild_crossing_point_of(self, i, j, k):
