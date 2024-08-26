@@ -20,7 +20,7 @@ class JumpAreaInspector(Inspector):
         self.sub_inspector_group["Properties"] = [
             OdvObjectListSubInspector(self, "roof_main_area", "Roof Area", iterable=self.odv_object.move.main_area_iterator(include_None=False)),
             OdvObjectListSubInspector(self, "ground_main_area", "Ground Area",
-                                      iterable=self.odv_object.move.main_area_iterator()),
+                                      iterable=self.odv_object.move.main_area_iterator(include_None=False)),
         ]
         self.sub_inspector_group["Graphics"] = [
             GeometrySubInspector(self, "landing_polygon", "Landing", color=QColor(255, 255, 255)),

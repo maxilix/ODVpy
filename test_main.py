@@ -28,7 +28,7 @@ CONFIG.load()
 
 
 
-# level = Level("./dev/empty_level/empty_level_02")
+level = Level("./dev/empty_level/empty_level_02")
 # level = BackupedLevel(10)
 
 
@@ -46,7 +46,7 @@ CONFIG.load()
 
 
 
-exit()
+# exit()
 
 # for sublayer in motion[0]:
 #     for area in sublayer.obstacles:

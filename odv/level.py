@@ -129,11 +129,11 @@ class Level(object):
             print(f"DVD: save to {destination}.dvd")
 
         if self._dvm is None:
-            if source != destination:
+            try:
                 copy(f"{source}.dvm", f"{destination}.dvm")
                 print(f"DVM: copy to {destination}.dvm")
-            else:
-                print(f"DVM: no change", end="")
+            except FileNotFoundError as e:
+                pass
         else:
             self.dvm.save_to_file(f"{destination}.dvm")
             print(f"DVM: save to {destination}.dvm")
