@@ -1,11 +1,8 @@
-### OpenDeathValley
+### ODVpy Editor
 extracted/
 backup/
 decompile/
 config.json
-
-# DVD section hex dump
-dvd/*/
 
 # tests
 tests/
@@ -21,8 +18,6 @@ dvd/_ways.py
 dvd/_elem.py
 dvd/_fxbk.py
 dvd/_msic.py
-
-old_main.py
 
 ### venv template
 # Virtualenv
