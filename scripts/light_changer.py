@@ -86,6 +86,6 @@ modify_data_3 = [apply_transform(c) for c in data_3]
 
 print("Saving")
 l3.dvm.data = modify_data_3
-l3.dvm.extract_to_bmp(f"./extracted/level_map_custom/{level_to_apply:02}.bmp")
+l3.dvm.extract_to_bmp(f"./extracted/custom_maps/{level_to_apply:02}.bmp")
 
 print("Done")
