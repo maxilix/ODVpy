@@ -6,10 +6,11 @@ import numpy as np
 
 from minimap.regression import poly_reg, apply_poly
 
-IMAGE = cv2.imread("extract_borders.bmp", cv2.IMREAD_UNCHANGED)
+# IMAGE = cv2.imread("extract_borders.bmp", cv2.IMREAD_UNCHANGED)
+IMAGE = cv2.imread("motif/minimap_2.bmp", cv2.IMREAD_UNCHANGED)
 SUB_H = 1
 SUB_W = 1
-DEGREE = 3
+DEGREE = 2
 
 
 def sub_image(y, x):
@@ -78,7 +79,7 @@ source = [[i,j] for i in range(int(h/SUB_H)) for j in range(int(w/SUB_W))]
 rop = apply_poly(source, c, DEGREE).astype(np.uint8)
 rop = rop.reshape(int(h/SUB_H), int(w/SUB_W), 3)
 
-cv2.imwrite(f"gen_h{SUB_H}_w{SUB_W}_d{DEGREE}.bmp", rop)
+cv2.imwrite(f"g2_h{SUB_H}_w{SUB_W}_d{DEGREE}.bmp", rop)
 
 # cv2.imshow("", rop)
 # cv2.waitKey(0)
