@@ -4,6 +4,6 @@ from .monkey_patch import QPointF, QLineF, QPolygonF
 from .exception import *
 from .rw_object import Version, Padding, Gateway
 from .geometry import Gateway
-from .image import Pixel
+from .rw_image import Pixel, Image
 from .parser import Parser
 from .utils import *

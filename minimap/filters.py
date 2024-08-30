@@ -1,7 +1,6 @@
-import math
-
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 
 
 def luminance_noise(_image, scale=30):
@@ -26,7 +25,7 @@ def luminance_noise(_image, scale=30):
     return cv2.cvtColor(rop, cv2.COLOR_Lab2BGR)
 
 
-def mean_curvature_blur(_image, sigma=0.8, alpha=0.2):
+def mean_curvature_blur(_image, sigma=0.7, alpha=0.2):
     """
     Apply Mean Curvature Blur filter to the image using OpenCV.
 
@@ -40,10 +39,10 @@ def mean_curvature_blur(_image, sigma=0.8, alpha=0.2):
     img = _image.astype(np.float32)
     laplacian_image = cv2.Laplacian(img, cv2.CV_32F)
 
-    # Update the image with the mean curvature term
+    # update the image with the mean curvature term
     img -= alpha * laplacian_image
 
-    # Apply Gaussian smoothing
+    # apply gaussian smoothing
     smoothed_image = cv2.GaussianBlur(img, (0, 0), sigmaX=sigma)
 
     return np.clip(smoothed_image, 0, 255).astype(np.uint8)
@@ -63,35 +62,26 @@ def add_frame(_image, offset=4, bf=3.90, gf=5.60, rf=1.85):
 
 
 def add_corner(_image):
-    corner = cv2.imread(('sprites/corner.png'), cv2.IMREAD_UNCHANGED)  # with alpha
+    corner = cv2.imread("sprites/corner.png", cv2.IMREAD_UNCHANGED)  # with alpha
 
     return copy_image(_image, corner, 0, 0)
 
 
-def add_gray_map(_minimap_image, _gray_map_image, lighten=False):
+def add_gray_map(_minimap_image, _gray_map_image):
     assert _minimap_image.shape[0] == _gray_map_image.shape[0] + 10
     assert _minimap_image.shape[1] == _gray_map_image.shape[1] + 10
-    _gray_map_image = _gray_map_image.astype(float) / 255
-
-    if lighten:
-        def f(x):
-            # return x
-            # return min(-0.52*x**3 + 0.03*x**2 + 1.46*x, 1)
-            return min(-0.49*x**3 - 0.24*x**2 + 1.73*x, 1)
-            # return 0.1 * math.exp(-10*x) + x
-        np_f = np.vectorize(f)
-        _gray_map_image = np_f(_gray_map_image)
+    _gray_mask = _gray_map_image.astype(float) / 255
 
     # add gradient to the edge
-    h, w = _gray_map_image.shape
+    h, w = _gray_mask.shape
     p = [3.8, 2.9, 2.2, 1.7, 1.4, 1.2, 1.1]
     for offset in range(len(p)):
         for i in range(offset, h - offset):  # y
-            _gray_map_image[i, offset] = 1-(1-_gray_map_image[i, offset]) / p[offset]
-            _gray_map_image[i, w - offset - 1] = 1-(1-_gray_map_image[i, w - offset - 1]) / p[offset]
+            _gray_mask[i, offset] = 1-(1-_gray_mask[i, offset]) / p[offset]
+            _gray_mask[i, w - offset - 1] = 1-(1-_gray_mask[i, w - offset - 1]) / p[offset]
         for j in range(offset + 1, w - offset - 1):  # x
-            _gray_map_image[offset, j] = 1-(1-_gray_map_image[offset, j]) / p[offset]
-            _gray_map_image[h - offset - 1, j] = 1-(1-_gray_map_image[h - offset - 1, j]) / p[offset]
+            _gray_mask[offset, j] = 1-(1-_gray_mask[offset, j]) / p[offset]
+            _gray_mask[h - offset - 1, j] = 1-(1-_gray_mask[h - offset - 1, j]) / p[offset]
 
 
     rop = _minimap_image.copy()
@@ -100,10 +90,10 @@ def add_gray_map(_minimap_image, _gray_map_image, lighten=False):
     g = roi[:, :, 1].astype(float)/255
     r = roi[:, :, 2].astype(float)/255
 
-    G = 1.2
-    roi[:, :, 0] = (b * _gray_map_image**(G*1.25)) * 255
-    roi[:, :, 1] = (g * _gray_map_image**(G*0.95)) * 255
-    roi[:, :, 2] = (r * _gray_map_image**(G*0.75)) * 255
+    G = 1.05
+    roi[:, :, 0] = (b * _gray_mask**(G*1.25)) * 255
+    roi[:, :, 1] = (g * _gray_mask**(G*0.95)) * 255
+    roi[:, :, 2] = (r * _gray_mask**(G*0.75)) * 255
 
     return rop
 
@@ -156,83 +146,66 @@ def sharpen(_image, r1_f, r2_f):
     return cv2.cvtColor(_image_hsv, cv2.COLOR_HSV2BGR)
 
 
+def gray_n(_image, fm=None):
+    # _gray = cv2.cvtColor(_image, cv2.COLOR_BGR2HLS)[:, :, 1].astype(np.float64)/255.  # Luminance
+    _gray = cv2.cvtColor(_image, cv2.COLOR_BGR2HSV)[:, :, 2].astype(np.float64)/255.  # Value
 
-def gray(_image):
-    def f(x):
-        return math.sin(math.pi * x / 2)
-    np_f = np.vectorize(f)
+    if fm is None or fm == []:
+        rop = _gray
+        poly = lambda x: x
+    else:
+        n = len(fm)
+        mean = np.mean(_gray.reshape(-1))
 
-    # move to [-1 ; 1]
-    _gray = cv2.cvtColor(_image, cv2.COLOR_BGR2HLS)[:, :, 1].astype(np.float64)/128. - 1
-    print(np.mean(_gray.reshape(-1)))
-    _gray = np_f(_gray)
-    print(np.mean(_gray.reshape(-1)))
+        x = np.linspace(0,1, n+2)
+        y = np.concatenate(([0], (0.5 - mean)/10*np.array(fm) + x[1:-1], [1]))
 
-
-
-    return (_gray+1)*128
-
-
-
-
-level_id = [15,21,9]
-stack = []
-
-# print(f"Level {level_id:02}", end="")
-for i in level_id:
-    map = cv2.imread(f"../extracted/maps/{i:02}.bmp")
-    f = 300/max(map.shape[0], map.shape[1])
-    map = cv2.resize(map, (int(map.shape[1]*f), int(map.shape[0]*f)), interpolation=cv2.INTER_AREA)
-    map = gray(map)
+        poly = np.poly1d(np.polyfit(x, y, n+1))
+        rop = poly(_gray)
+    return np.clip(rop * 255, 0, 255).astype(np.uint8), poly, _gray.reshape(-1)
 
 
-    stack.append(map)
+# for i in range(25):
+i = 6
+map_image = cv2.imread(f"../extracted/maps/{i:02}.bmp")
+minimap_max_side_length = 300
+map_max_side_length = max(map_image.shape[0], map_image.shape[1])
+f = (minimap_max_side_length-10)/map_max_side_length
+resized_map = cv2.resize(map_image, (int(map_image.shape[1]*f), int(map_image.shape[0]*f)), interpolation=cv2.INTER_AREA)
+resized_map = sharpen(resized_map, 0.2, 0.1)
+resized_gray_map, poly, lum = gray_n(resized_map, fm=[1.5, 4, 5, 3])
 
-rop = np.vstack(stack)
+h, w = resized_gray_map.shape
+h += 10
+w += 10
 
+minimap = cv2.imread("sprites/gradient.png")
+minimap = luminance_noise(minimap)
+c = max(h, w)
+minimap = cv2.resize(minimap, (c, c), interpolation=cv2.INTER_CUBIC)
+minimap = minimap[:h, :w]  # crop
+minimap = mean_curvature_blur(minimap)
+minimap = luminance_noise(minimap, scale=8)
+minimap = add_frame(minimap)
+minimap = add_gray_map(minimap, resized_gray_map)
+minimap = add_corner(minimap)
 
+cv2.imwrite(f"rebuilt/ign_{i:02}.png", minimap)
+original_minimap = cv2.imread(f"../extracted/minimaps/{i:02}.bmp")
+compare = np.hstack([original_minimap[:h,:w], minimap])
+cv2.imwrite(f"compare/ign_{i:02}.png", compare)
 
-#
-# map15 = cv2.imread(f"../extracted/maps/15.bmp")
-# map21 = cv2.imread(f"../extracted/maps/21.bmp")
-# map09 = cv2.imread(f"../extracted/maps/09.bmp")
-# map = cv2.imread(f"./3_maps.png")
+# Output graph
+step = 0.01
+bins = np.arange(0, 1+step, step)
+hist, edges = np.histogram(lum, bins=bins)
+hist = hist/max(hist)
 
+x_plot = np.linspace(0, 1, 100)
+y_plot = np.clip(poly(x_plot), 0, 1)
 
-
-# minimap_max_side_length = 310
-# map_max_side_length = max(map.shape[0], map.shape[1])
-# f = (minimap_max_side_length-10)/map_max_side_length
-# resized_map = cv2.resize(map, (int(map.shape[1]*f), int(map.shape[0]*f)), interpolation=cv2.INTER_AREA)
-# resized_map = sharpen(resized_map, 0.2, 0.1)
-# V = cv2.cvtColor(map, cv2.COLOR_BGR2HSV)[:, :, 2]
-# L = cv2.cvtColor(map, cv2.COLOR_BGR2HLS)[:, :, 1]
-
-
-# h, w = resized_gray_map.shape
-# h += 10
-# w += 10
-#
-# minimap = cv2.imread("sprites/gradient.png")
-# minimap = luminance_noise(minimap)
-# c = max(h, w)
-# minimap = cv2.resize(minimap, (c, c), interpolation=cv2.INTER_CUBIC)
-# minimap = minimap[:h, :w]  # crop
-# minimap = mean_curvature_blur(minimap)
-# minimap = luminance_noise(minimap, scale=5)
-# minimap = add_frame(minimap)
-# minimap = add_gray_map(minimap, resized_gray_map, lighten=False)
-# minimap = add_corner(minimap)
-
-
-# minimap = cv2.cvtColor(minimap, cv2.COLOR_BGR2BGR565)
-# print(minimap.shape)
-# print(minimap.tobytes()[:2].hex())
-
-
-cv2.imwrite(f"stack.png", rop)
-# cv2.imwrite(f"L.png", L)
-# cv2.imwrite(f"rebuilt/{level_id:02}.bmp", minimap)
-# print(" - Done")
-
-# cv2.imwrite(f"test.png", minimap)
+plt.bar(edges[:-1], hist, width=step, alpha=0.5)
+plt.plot([0,1], [0,1], color="gray")
+plt.plot(x_plot, y_plot, color="red")
+plt.grid(True)
+plt.show()

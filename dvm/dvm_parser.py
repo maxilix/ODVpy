@@ -1,73 +1,49 @@
-import bz2
 from typing import Self
-
-from PyQt6.QtGui import QImage
 
 from common import *
 from odv.odv_object import OdvBase
 
 
 class LevelMap(OdvBase):
-	def __init__(self, width, height, data, filename):
+	def __init__(self, image):
 		super().__init__()
-		self._filename = filename
-		self._width = width
-		self._height = height
-		self._data = data
-		self._image = None
+		self.image = image
 		self.modified = False
 
 	@property
 	def width(self):
-		return self._width
+		return self.image.width
 
 	@property
 	def height(self):
-		return self._height
+		return self.image.height
 
-	@property
-	def filename(self):
-		return self._filename
-
-	@property
-	def image(self):
-		if self._image is None:
-			self._image = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
-		return self._image
-
-	@image.setter
-	def image(self, new_image: QImage):
-		self._image = new_image
-		self._width = self._image.width()
-		self._height = self._image.height()
-		self.modified = True
+	# @property
+	# def image(self):
+	# 	if self._image is None:
+	# 		self._image = QImage(self._data, self._width, self._height, QImage.Format.Format_RGB16)
+	# 	return self._image
+	#
+	# @image.setter
+	# def image(self, new_image: QImage):
+	# 	self._image = new_image
+	# 	self._width = self._image.width()
+	# 	self._height = self._image.height()
+	# 	self.modified = True
 
 	@classmethod
-	def from_stream(cls, stream: ReadStream, *, filename) -> Self:
-		width = stream.read(UShort)
-		height = stream.read(UShort)
-		compression = stream.read(UInt)
-		assert compression == 2
-		compressed_data_length = stream.read(UInt)
-		compressed_data = stream.read(Bytes, compressed_data_length)
-		data = bz2.decompress(compressed_data)
-		return cls(width, height, data, filename)
+	def from_stream(cls, stream: ReadStream) -> Self:
+		image = stream.read(Image)
+		return cls(image)
 
 	def to_stream(self, stream: WriteStream) -> None:
+		raise NotImplemented
 		if self.modified:
 			s = self.image.sizeInBytes()
 			data = bytes(self.image.bits().asarray(s))
 		else:
 			data = self._data
 
-		compressed_data = bz2.compress(data)
-		compressed_data_length = len(compressed_data)
-
-		stream.write(UShort(self._width))
-		stream.write(UShort(self._height))
-		stream.write(UInt(2))  # compression type
-		stream.write(UInt(compressed_data_length))
-		stream.write(Bytes(compressed_data))
 
 
 
@@ -81,11 +57,11 @@ class DvmParser(Parser):
 
 	def __init__(self, filename):
 		super().__init__(filename)
-		self._level_map = self.stream.read(LevelMap, filename=filename)
+		self.level_map = self.stream.read(LevelMap, filename=filename)
 
-	@property
-	def level_map(self) -> LevelMap:
-		return self._level_map
+	# @property
+	# def level_map(self) -> LevelMap:
+	# 	return self._level_map
 
 	# @property
 	# def width(self):
@@ -107,7 +83,8 @@ class DvmParser(Parser):
 	# 	self.modified = True
 
 	def change_level_map_image(self, image_path):
-		self._level_map.image = QImage(image_path).convertedTo(QImage.Format.Format_RGB16)
+		self.level_map.image = Image.from_file(image_path)
+		self.level_map.modified = True
 
 	# def draw(self, poly, pen, brush):
 	# 	if self._draw is None:
@@ -125,7 +102,7 @@ class DvmParser(Parser):
 
 	def save_to_file(self, filename):
 		stream = WriteStream()
-		stream.write(self._level_map)
+		stream.write(self.level_map)
 		with open(filename, 'wb') as file:
 			file.write(stream.get_value())
 

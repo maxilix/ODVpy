@@ -29,6 +29,8 @@ CONFIG.load()
 
 
 level = Level("./dev/empty_level/empty_level_02")
+bgnd = level.dvd.bgnd
+# bgnd.image.debug_show()
 # level = BackupedLevel(10)
 
 
