@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QVBoxLayout, QLabel
-
+from common import Image
 from dvm.dvm_parser import LevelMap
+from qt.common.utils import image_to_qimage
 from qt.control.inspector_graphic import PixmapSubInspector
 from qt.control.inspector_abstract import Inspector
 from qt.control.tab__abstract import QTabControlGenericTree
@@ -154,14 +154,23 @@ class LevelMapInspector(Inspector):
 
     def init_sub_inspector(self):
         self.sub_inspector_group["Info"] = [InfoSubInspector(self, "info")]
-        self.sub_inspector_group["Map"] = [(psi:=PixmapSubInspector(self, "image"))]
+        self.sub_inspector_group["Map"] = [(psi:=PixmapSubInspector(self, "qimage"))]
         psi.visibility_checkbox.setChecked(True)
 
     @property
     def info(self):
         return f"size: {self.odv_object.width} x {self.odv_object.height}"
 
+    @property
+    def qimage(self):
+        # getter return a QImage
+        return image_to_qimage(self.odv_object.image)
+
+    @qimage.setter
+    def qimage(self, image_path):
+        # setter need an image path string
+        self.odv_object.image = Image.from_file(image_path)
+
 
 class QMapTabControl(QTabControlGenericTree):
     inspector_types = {LevelMap: LevelMapInspector}
-

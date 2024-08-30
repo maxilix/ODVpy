@@ -244,12 +244,14 @@ class PixmapSubInspector(GraphicSubInspector):
     def change_image_button_clicked(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
-        filters = ["PNG Image (*.png)", "BMP Image (*.bmp)"]
+        filters = ["Any Image (*.png *.bmp)",
+                   "BMP Image (*.bmp)",
+                   "PNG Image (*.png)"]
         dialog.setNameFilters(filters)
         if dialog.exec():
             filenames = dialog.selectedFiles()
             if len(filenames) == 1:
-                self.current = QImage(filenames[0]).convertedTo(QImage.Format.Format_RGB16)
+                self.current = filenames[0]
                 self.graphic.rest_map()
                 self.visibility_checkbox.setChecked(True)
                 self.opacity_slider.setValue(100)

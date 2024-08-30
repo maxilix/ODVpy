@@ -9,7 +9,6 @@ from .rw_stream import RWStreamable, RStreamable
 from .rw_base import UShort, UInt, Bytes
 
 
-
 class Pixel(RStreamable):
 
 	def __init__(self, r,g,b,a=255):
@@ -54,7 +53,7 @@ class Image(RWStreamable):
 	def rgba(self):
 		image_bgr = self._image
 		image_rgba = np.zeros((self.height, self.width, 4), dtype=np.uint8)
-		image_rgba[:, :, 0] =  image_bgr[:, :, 2]
+		image_rgba[:, :, 0] = image_bgr[:, :, 2]
 		image_rgba[:, :, 1] = image_bgr[:, :, 1]
 		image_rgba[:, :, 2] = image_bgr[:, :, 0]
 		image_rgba[:, :, 3] = 255
@@ -70,7 +69,7 @@ class Image(RWStreamable):
 
 	@classmethod
 	def from_file(cls, filename):
-		image = cv2.imread(filename)
+		image = cv2.imread(filename, cv2.IMREAD_COLOR)
 		return cls(image)
 
 	@classmethod
@@ -87,30 +86,23 @@ class Image(RWStreamable):
 			raise NotImplemented(f"compression type {compression}")
 
 		image_565 = np.frombuffer(decompressed, dtype=np.uint16).reshape((height, width))
-		r = (image_565 >> 11) & 0x1F
-		g = (image_565 >> 5) & 0x3F
-		b = image_565 & 0x1F
-		r = 8 * r
-		g = 4 * g
-		b = 8 * b
-
-		return cls(np.stack((b, g, r), axis=-1))
+		image = np.zeros((height, width, 3), dtype=np.uint8)
+		image[:, :, 0] = 8*(image_565 & 0x1F)
+		image[:, :, 1] = 4*((image_565 >> 5) & 0x3F)
+		image[:, :, 2] = 8*((image_565 >> 11) & 0x1F)
+		return cls(image)
 
 	def to_stream(self, stream):
 		stream.write(UShort(self.width))
 		stream.write(UShort(self.height))
 		stream.write(UInt(2))  # bz2 compression
 
-		b = self._image[:, :, 0]
-		g = self._image[:, :, 1]
-		r = self._image[:, :, 2]
+		r_565 = (self._image[:, :, 2] >> 3) & 0x1F
+		g_565 = (self._image[:, :, 1] >> 2) & 0x3F
+		b_565 = (self._image[:, :, 0] >> 3) & 0x1F
+		image_565 = ((r_565.astype(np.uint16) << 11) | (g_565.astype(np.uint16) << 5) | b_565)
 
-		r_565 = (r >> 3) & 0x1F
-		g_565 = (g >> 2) & 0x3F
-		b_565 = (b >> 3) & 0x1F
-		image_565 = ((r_565 << 11) | (g_565 << 5) | b_565)
-
-		decompressed = image_565.reshape(self.width*self.height).tobytes()
+		decompressed = image_565.tobytes()
 		data = bz2.compress(decompressed)
 		size = len(data)
 		stream.write(UInt(size))

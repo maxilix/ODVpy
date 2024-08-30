@@ -1,3 +1,5 @@
+import os
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QPalette, QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QWidget, \
@@ -21,7 +23,6 @@ class QWindow(QMainWindow):
         self.setWindowTitle('ODVpy Editor')
         self.showMaximized()
         # self.setMinimumSize(800, 600)
-        # self.setGeometry(0, 0, 500, 500)
 
         self.current_level = None
         # self.current_level = BackupedLevel(3)
@@ -136,6 +137,7 @@ class QWindow(QMainWindow):
     def load_custom_level(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
+        dialog.setDirectory(os.curdir + os.sep + "dev" + os.sep + "empty_level")
         filters = ["Any Level file (*.dvd *.dvm *.scb *.stf)",
                    "DVD file (*.dvd)",
                    "DVM file (*.dvm)",
