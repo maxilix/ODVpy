@@ -1,12 +1,14 @@
 
 import gzip
 import bz2
+from typing import Self
+from math import ceil
 
 import cv2
 import numpy as np
 
-from .rw_stream import RWStreamable, RStreamable
-from .rw_base import UShort, UInt, Bytes
+from .rw_stream import RWStreamable, RStreamable, ReadStream, WriteStream
+from .rw_base import UShort, UInt, Bytes, UChar
 
 
 class Pixel(RStreamable):
@@ -107,3 +109,82 @@ class Image(RWStreamable):
 		size = len(data)
 		stream.write(UInt(size))
 		stream.write(Bytes(data))
+
+
+class MaskImage(RWStreamable):
+	def __init__(self, image):
+		self._image = image  # numpy array stored in Grayscale format
+
+	@property
+	def height(self):
+		return self._image.shape[0]
+
+	@property
+	def width(self):
+		return self._image.shape[1]
+
+	@property
+	def data(self):
+		return self._image.data
+
+	def rgba(self, true_color=(0,0,0)):
+		image_bw = self._image
+		image_rgba = np.zeros((self.height, self.width, 4), dtype=np.uint8)
+		# image_rgba[image_bw == 0] = (0, 0, 0, 0)  # useless
+		image_rgba[image_bw == 255] = (*true_color, 255)
+
+		return image_rgba
+
+	def debug_show(self):
+		cv2.imshow("", self._image)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
+
+	@classmethod
+	def from_file(cls, filename):
+		image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+		return cls(image)
+
+	@classmethod
+	def from_stream(cls, stream: ReadStream) -> Self:
+		width = stream.read(UShort)
+		height = stream.read(UShort)
+
+		mask_length = stream.read(UShort)
+		data = b''
+		for row_index in range(height):
+			line_length = stream.read(UChar)
+			col_index = 0
+			while col_index < line_length:
+				descriptor = stream.read(UChar)
+				c = descriptor & 128
+				n = descriptor & 127
+				if c:
+					# read 1 Byte and copy it n times
+					data += stream.read(Bytes, 1) * n
+					col_index += 2
+				else:
+					# read n Bytes
+					data += stream.read(Bytes, n)
+					col_index += 1 + n
+
+		bit_array = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
+		image_array = bit_array.reshape((height, (ceil(width / 8) * 8)))[:, :width]
+		return cls(np.uint8(image_array * 255))
+
+	def to_stream(self, stream):
+		w = self.width
+		h = self.height
+		line_length = ceil(w / 8)
+		assert line_length < 128
+		stream.write(UShort(w))
+		stream.write(UShort(h))
+		bit_array = np.zeros((h, line_length * 8), dtype=np.uint8)
+		bit_array[:, :w] = (self._image/255).astype(np.uint8)
+		lines_array = [np.packbits(bit_array[j]).tobytes() for j in range(h)]
+		b_descriptor = (0 + line_length).to_bytes(1, byteorder='little')
+		b_line_length = (line_length+1).to_bytes(1, byteorder='little')
+		data = b_line_length + b_descriptor + (b_line_length + b_descriptor).join(lines_array)
+		stream.write(UShort(len(data)))
+		stream.write(Bytes(data))
+

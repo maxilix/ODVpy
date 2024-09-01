@@ -59,8 +59,8 @@ class SightObstacle(OdvLeaf):
         rop = cls(parent)
         rop.move = move
 
-        nb_sight_vline = stream.read(UShort)
-        rop.vline_list = [stream.read(SightLine) for _ in range(nb_sight_vline)]
+        nb_vline = stream.read(UShort)
+        rop.vline_list = [stream.read(SightLine) for _ in range(nb_vline)]
         assert len(rop.vline_list) >= 3
 
         min_x = stream.read(Float)
@@ -94,6 +94,9 @@ class SightObstacle(OdvLeaf):
         rop.unk_char_2 = stream.read(UChar)
         rop.unk_char_3 = stream.read(UChar)
         rop.unk_char_4 = stream.read(UChar)
+        # unk_char_i == 1, 0, 1, 0   ==>   the obstacle is roughly defined and contains sub-obstacles
+
+
         unk_float_1 = stream.read(Float)
         assert unk_float_1 == 1.0
         unk_float_2 = stream.read(Float)

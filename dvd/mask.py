@@ -1,7 +1,4 @@
-import math
 from typing import Self
-
-from PyQt6.QtGui import QImage
 
 from common import *
 from odv.odv_object import OdvLeaf, OdvRoot
@@ -9,7 +6,7 @@ from odv.odv_object import OdvLeaf, OdvRoot
 from .section import Section
 
 
-class MaskImage(OdvLeaf):
+class MaskEntry(OdvLeaf):
     flag: UShort
     point_list_1: list[QPointF] = []
     point_list_2: list[QPointF] = []
@@ -17,6 +14,7 @@ class MaskImage(OdvLeaf):
     layer_id: int
     position: QPointF
     y: UShort
+    maskimage: MaskImage
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent, layer_id) -> Self:
@@ -34,34 +32,28 @@ class MaskImage(OdvLeaf):
             rop.u4 = stream.read(UShort)
 
         rop.position = stream.read(QPointF)
-        width = stream.read(UShort)
-        height = stream.read(UShort)
+        rop.maskimage = stream.read(MaskImage)
 
-        mask_length = stream.read(UShort)
-        mask_stream = ReadStream(stream.read(Bytes, mask_length))
-        data = b''
-        for line_index in range(height):
-            line_length = mask_stream.read(UChar)
-            line_stream = ReadStream(mask_stream.read(Bytes, line_length))
-            while descriptor := line_stream.read(UChar):
-                c = descriptor & 128
-                n = descriptor & 127
-                if c:
-                    # read 1 Byte and copy it n times
-                    data += line_stream.read(Bytes, 1) * n
-                else:
-                    # read n Bytes
-                    data += line_stream.read(Bytes, n)
-            assert len(line_stream.read_raw()) == 0
-
-        assert len(mask_stream.read_raw()) == 0
-
-        rop.image = QImage(data, width, height, math.ceil(width/8), QImage.Format.Format_Mono)
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
-        # TODO write Mask
-        pass
+        stream.write(UChar(self.flag))
+        if self.flag & 1:
+            stream.write(UShort(len(self.point_list_1)))
+            for p in self.point_list_1:
+                stream.write(p)
+        if self.flag & 2:
+            stream.write(UShort(len(self.point_list_2)))
+            for p in self.point_list_2:
+                stream.write(p)
+        if self.flag & 16:
+            stream.write(UShort(self.u4))
+
+        stream.write(self.position)
+        stream.write(self.maskimage)
+
+
+
 
         
 
@@ -71,13 +63,28 @@ class Mask(Section, OdvRoot):
 
 
     def _load(self, substream: ReadStream):
-        nb_layer = substream.read(UShort)
-        for layer_id in range(nb_layer):
+        self.nb_layer = substream.read(UShort)
+        print(f"mask layer = {self.nb_layer}")
+        for layer_id in range(self.nb_layer):
             nb_mask = substream.read(UShort)
             for mask_index in range(nb_mask):
-                self.add_child(substream.read(MaskImage, parent=self, layer_id=layer_id))
+                self.add_child(substream.read(MaskEntry, parent=self, layer_id=layer_id))
 
     def _save(self, substream: WriteStream) -> None:
-        substream.write(UShort(0))
+        # mask_tab = [[] for _ in range(self.nb_layer)]
+        # for mask_entry in self:
+        #     mask_tab[mask_entry.layer_id].append(mask_entry)
+        #
+        # substream.write(UShort(len(mask_tab)))
+        # for mask_list in mask_tab:
+        #     substream.write(UShort(len(mask_list)))
+        #     for mask_entry in mask_list:
+        #         substream.write(mask_entry)
+
+        substream.write(UShort(1))
+        substream.write(UShort(len(self)))
+        for mask_entry in self:
+            substream.write(mask_entry)
+
 
 

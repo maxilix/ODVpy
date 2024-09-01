@@ -1,6 +1,7 @@
 from PyQt6.QtGui import QColor
 
-from dvd.mask import Mask, MaskImage
+from dvd.mask import Mask, MaskEntry
+from qt.common.utils import maskimage_to_qimage
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import InfoSubInspector
 from qt.control.inspector_graphic import MaskImageSubInspector, GeometrySubInspector
@@ -8,13 +9,13 @@ from qt.control.tab__abstract import QTabControlGenericTree
 from qt.graphics import GraphicMultiLine
 
 
-class MaskImageInspector(Inspector):
-    odv_object: MaskImage
+class MaskEntryInspector(Inspector):
+    odv_object: MaskEntry
     deletable = True
     child_name = ""  # cannot add child
 
     def init_sub_inspector(self):
-        self.sub_inspector_group["Bitmap"] = [(msi:=MaskImageSubInspector(self, "image"))]
+        self.sub_inspector_group["Bitmap"] = [(msi:=MaskImageSubInspector(self, "qimage"))]
         msi.opacity_slider.setValue(40)
         msi.graphic.setPos(self.odv_object.position)
 
@@ -35,7 +36,10 @@ class MaskImageInspector(Inspector):
         if self.sub_inspector_group["Multiline"] == []:
             self.sub_inspector_group.pop("Multiline")
 
-
+    @property
+    def qimage(self):
+        # getter return a QImage
+        return maskimage_to_qimage(self.odv_object.maskimage, (0,0,255))
 
 class MaskInspector(Inspector):
     deletable = False
@@ -47,4 +51,4 @@ class MaskInspector(Inspector):
 
 class QMaskTabControl(QTabControlGenericTree):
     inspector_types = {Mask: MaskInspector,
-                       MaskImage: MaskImageInspector}
+                       MaskEntry: MaskEntryInspector}
