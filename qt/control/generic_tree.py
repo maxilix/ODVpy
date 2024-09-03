@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QContextMenuEvent, QCursor, QColor, QAction
+from PyQt6.QtGui import QContextMenuEvent, QCursor, QColor, QAction, QDropEvent
 from PyQt6.QtWidgets import QAbstractItemView, QTreeWidget, QTreeWidgetItem, QMenu
+
 
 class QODVTreeItem(QTreeWidgetItem):
     def __init__(self, tab_control, odv_object):
@@ -52,6 +53,10 @@ class QODVTreeItem(QTreeWidgetItem):
     def inspector(self):
         return self._tab_control.inspectors[self.odv_object]
 
+    @property
+    def draggable(self):
+        return self.inspector.draggable
+
     def inspector_visibility_checkbox_list(self):
         rop = []
         for sub_inspector in self.inspector.sub_inspector_list:
@@ -96,18 +101,19 @@ class QGenericTree(QTreeWidget):
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.itemClicked.connect(self.item_clicked)
 
-        # self.setStyleSheet("""
-        #     QTreeWidget::indicator[data="no_checkable"] {
-        #         background-color: green;
-        #         border: 1px solid darkgreen;
-        #     }
-        # """)
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDropIndicatorShown(True)
+        self.setDragDropMode(QTreeWidget.DragDropMode.InternalMove)
+        self.dragging_item = None
+
+
     # def update_height(self):
     #
     #     h = 18 * self.count() + 2
     #     self.setMinimumHeight(h)
     #     self.setMaximumHeight(h)
-    #
+
     # def count_visible_item(self):
     #     count = 0
     #     index = self.model().index(0, 0)
@@ -115,6 +121,15 @@ class QGenericTree(QTreeWidget):
     #         count += 1
     #         index = self.indexBelow(index)
     #     return count
+
+    def mousePressEvent(self, event):
+        item = self.itemAt(event.pos())
+        self.dragging_item = item
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self.dragging_item = None
+        super().mouseReleaseEvent(event)
 
     @staticmethod
     def item_clicked(item, column):
@@ -125,3 +140,14 @@ class QGenericTree(QTreeWidget):
         item = self.itemAt(event.pos())
         if item is not None:
             item.contextMenuEvent(event)
+
+    def dropEvent(self, event:QDropEvent):
+        # TODO implement move mechanic here
+        super().dropEvent(event)
+        # item_to_drop_in = self.itemAt(event.position().toPoint())
+        # if self.dropIndicatorPosition() == QAbstractItemView.DropIndicatorPosition.OnItem:
+
+    def startDrag(self, supportedActions):
+        if self.dragging_item.draggable is True:
+            super().startDrag(supportedActions)
+            self.dragging_item = None

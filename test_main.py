@@ -1,4 +1,5 @@
 from config import CONFIG
+from dvd.sght import GroundSight
 from odv.level import BackupedLevel, Level
 
 CONFIG.load()
@@ -8,12 +9,15 @@ CONFIG.load()
 # level = Level("../Missions/03_Red_River/level_03")
 # level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)
-# level = BackupedLevel(2)
+level = BackupedLevel(4)
+
+level.dvd.sght
+exit()
 
 
-# for level_index in range(26):
-#     print(f"\nLevel {level_index}")
-#     level = BackupedLevel(level_index)
+for level_index in range(26):
+    print(f"\nLevel {level_index}")
+    level = BackupedLevel(level_index)
 
     # lift = level.dvd.lift
     # for lift_area in lift:
@@ -26,10 +30,17 @@ CONFIG.load()
     #         if door.main_area_3.global_id != 0:
     #             print(f"L{level_index}: building {building.i}, door {door.i}")
 
+    bond = level.dvd.bond
+    for bond_entry in bond:
+        if isinstance(bond_entry.sight_obstacle_1, GroundSight) or isinstance(bond_entry.sight_obstacle_2, GroundSight):
+            # print("Ground")
+            pass
+        else:
+            print(f"{bond_entry.sight_obstacle_1.main_area.parent.i} {bond_entry.sight_obstacle_2.main_area.parent.i} - {bond_entry.layer.i}")
 
+# level = Level("./dev/empty_level/empty_level_02")
+# mask = level.dvd.mask
 
-level = Level("./dev/empty_level/empty_level_02")
-bgnd = level.dvd.bgnd
 # bgnd.image.debug_show()
 # level = BackupedLevel(10)
 
@@ -54,4 +65,4 @@ bgnd = level.dvd.bgnd
 #     for area in sublayer.obstacles:
 #         level.dvm.draw(area.poly, QPen(QColor(255, 90, 40, 128)), QBrush(QColor(255, 90, 40, 32)))
 
-level.insert_in_game()
+# level.insert_in_game()

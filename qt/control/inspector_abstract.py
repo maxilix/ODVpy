@@ -37,6 +37,7 @@ class SubInspector(QWidget):
 
 class Inspector(QWidget):
     deletable = True
+    draggable = False
     child_name = ""
 
     def __init__(self, tab_control, odv_object):

@@ -8,6 +8,7 @@ from qt.control.tab__abstract import QTabControlGenericTree
 
 class ObstacleInspector(Inspector):
     deletable = True
+    draggable = True
     child_name = ""  # cannot add child
 
     def init_sub_inspector(self):
