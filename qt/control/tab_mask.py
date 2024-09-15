@@ -29,9 +29,9 @@ class MaskEntryInspector(Inspector):
 
 
         self.sub_inspector_group["Multiline"] = []
-        if self.odv_object.point_list_1 != []:
+        if self.odv_object.multiline_1 != []:
             self.sub_inspector_group["Multiline"] += [GeometrySubInspector(self, "point_list_1", "L1", graphic_type=GraphicMultiLine, color=QColor(0, 255, 0))]
-        if self.odv_object.point_list_2 != []:
+        if self.odv_object.multiline_2 != []:
             self.sub_inspector_group["Multiline"] += [GeometrySubInspector(self, "point_list_2", "L2", graphic_type=GraphicMultiLine, color=QColor(0, 0, 255))]
         if self.sub_inspector_group["Multiline"] == []:
             self.sub_inspector_group.pop("Multiline")

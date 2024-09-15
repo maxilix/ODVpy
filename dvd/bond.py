@@ -10,7 +10,7 @@ from .sght import Sght, SightObstacle
 class BondLine(OdvLeaf):
     move: Move
     sght: Sght
-    line: QLineF
+    line: Line
     sight_obstacle_1: SightObstacle
     sight_obstacle_2: SightObstacle
     layer: Layer
@@ -20,7 +20,7 @@ class BondLine(OdvLeaf):
         rop = cls(parent)
         rop.move = move
         rop.sght = sght
-        rop.line = stream.read(QLineF)
+        rop.line = stream.read(Line)
         rop.sight_obstacle_1 = sght.walkable_sight(stream.read(UShort))
         rop.sight_obstacle_2 = sght.walkable_sight(stream.read(UShort))
 

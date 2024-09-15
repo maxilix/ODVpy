@@ -1,19 +1,28 @@
+import numpy as np
+
 from config import CONFIG
 from dvd.sght import GroundSight
 from odv.level import BackupedLevel, Level
+from odv.pathfinder import oriented_angle_1
 
 CONFIG.load()
 
 
-# level = Level("./dev/empty_level/empty_level_02")
+# print(oriented_angle_1(np.array((1000,-1))))
+# exit()
+
+
+level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/03_Red_River/level_03")
 # level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)
-level = BackupedLevel(4)
+# level = BackupedLevel(4)
 
-level.dvd.sght
+move = level.dvd.move
+move.pathfinder.rebuild()
+level.insert_in_game()
+
 exit()
-
 
 for level_index in range(26):
     print(f"\nLevel {level_index}")

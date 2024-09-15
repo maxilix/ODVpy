@@ -14,7 +14,7 @@ class LiftArea(OdvLeaf):
     gateway_below: Gateway
     main_area_above: MainArea
     gateway_above: Gateway
-    # shape: QPolygonF
+    # shape: Polygon
     perspective: UShort
 
 
@@ -36,7 +36,7 @@ class LiftArea(OdvLeaf):
         rop.main_area_above = move.main_area(stream.read(UShort))
         over_layer_id = stream.read(UShort)  # layer id
 
-        shape = stream.read(QPolygonF)  # seems useless, isn't always defined
+        shape = stream.read(Polygon)  # seems useless, isn't always defined
 
         rop.gateway_below = stream.read(Gateway)
         rop.gateway_above = stream.read(Gateway)

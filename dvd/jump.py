@@ -8,7 +8,7 @@ from .move import MainArea, Move
 from .section import Section
 
 class JumpStart(RWStreamable):
-    p: QPointF
+    p: Point
     u1: Short
     u2: Short
     u3: Short
@@ -16,7 +16,7 @@ class JumpStart(RWStreamable):
     @classmethod
     def from_stream(cls, stream: ReadStream) -> Self:
         rop = cls()
-        rop.p = stream.read(QPointF)
+        rop.p = stream.read(Point)
         # offsets to draw jump line
         # u1 and u2 of the order of the jump height (in pixel)
         # u3 often close to zero, may be some kind of x offset
@@ -36,7 +36,7 @@ class JumpArea(OdvLeaf):
     move: Move
     roof_main_area: MainArea
     ground_main_area: MainArea
-    landing_polygon: QPolygonF
+    landing_polygon: Polygon
     jump_start_list: list[JumpStart]
 
     @classmethod
@@ -55,7 +55,7 @@ class JumpArea(OdvLeaf):
         rop.ground_main_area = move.main_area(stream.read(UShort))
         assert rop.ground_main_area.parent.i == layer_id
 
-        rop.landing_polygon = stream.read(QPolygonF)
+        rop.landing_polygon = stream.read(Polygon)
 
         return rop
 

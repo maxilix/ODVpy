@@ -20,7 +20,7 @@ class Door(OdvLeaf):
     unk_bool_6: UChar
     unk_bool_7: UChar
     unk_bool_8: UChar
-    shape: QPolygonF
+    shape: Polygon
     gateway: Gateway
     main_area_1: MainArea
     main_area_3: MainArea
@@ -41,21 +41,21 @@ class Door(OdvLeaf):
         rop.unk_bool_6 = stream.read(UChar)
         rop.unk_bool_7 = stream.read(UChar)
         rop.unk_bool_8 = stream.read(UChar)
-        rop.shape = stream.read(QPolygonF)
+        rop.shape = stream.read(Polygon)
         nb_access = stream.read(UShort)
         assert nb_access == 3
 
-        p1 = stream.read(QPointF)
+        p1 = stream.read(Point)
         rop.main_area_1 = move.main_area(stream.read(UShort))
         layer_id_1 = stream.read(UShort)
         assert rop.main_area_1.parent.i == layer_id_1
 
-        p2 = stream.read(QPointF)
+        p2 = stream.read(Point)
         main_area_2 = move.main_area(stream.read(UShort))
         layer_id_2 = stream.read(UShort)
         assert main_area_2.parent.i == layer_id_2
 
-        p3 = stream.read(QPointF)
+        p3 = stream.read(Point)
         rop.main_area_3 = move.main_area(stream.read(UShort))
         layer_id_3 = stream.read(UShort)
         assert rop.main_area_3.parent.i == layer_id_3

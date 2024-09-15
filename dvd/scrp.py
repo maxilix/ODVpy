@@ -6,7 +6,7 @@ from .section import Section
 
 
 class Script(OdvLeaf):
-    p: QPointF | QPolygonF
+    p: Point | Polygon
     layer_id: UShort
     main_area: UShort
     classname: str = ""
@@ -22,11 +22,13 @@ class Script(OdvLeaf):
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
         rop = cls(parent)
         n = stream.read(UShort)
+        _p_list = [stream.read(Point) for _ in range(n)]
+
         assert n not in [0, 2]
         if n == 1:
-            rop.p = stream.read(QPointF)
+            rop.p = _p_list[0]
         else:
-            rop.p = QPolygonF([stream.read(QPointF) for _ in range(n)])
+            rop.p = Polygon(_p_list[0])
 
 
         rop.layer_id = stream.read(UShort)
