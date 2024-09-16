@@ -22,11 +22,18 @@ def QPointF_from_stream(cls, stream: ReadStream):
 
 
 def QPointF_to_stream(self, stream):
-    stream.write(Short(self.x()))
-    stream.write(Short(self.y()))
+    try:
+        stream.write(Short(self.x()))
+        stream.write(Short(self.y()))
+    except:
+        print(self)
+        raise
 
 def QPointF___str__(self):
     return f'({round(self.x())}, {round(self.y())})'
+
+def QPointF___hash__(self):
+    return hash((self.x(), self.y()))
 
 
 QPointF.truncated = QPointF_truncated
@@ -34,6 +41,8 @@ QPointF.distance = QPointF_distance
 QPointF.from_stream = classmethod(QPointF_from_stream)
 QPointF.to_stream = QPointF_to_stream
 QPointF.__str__ = QPointF___str__
+QPointF.__repr__ = QPointF___str__
+QPointF.__hash__ = QPointF___hash__
 
 
 # QLineF monkey patch

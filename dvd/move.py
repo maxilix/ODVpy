@@ -113,19 +113,19 @@ class MainArea(OdvObject):
         poly_area = poly.area()
         inter = self.poly.intersected(poly)
         inter_area = inter.area()
-        if (poly_area - inter_area) <= 0.1:
-            # poly is in main
-            for obstacle in self :
-                inter = obstacle.poly.intersected(poly)
-                if inter.isEmpty():
-                    continue
-                inter_area = inter.area()
-                if inter_area > 0.1:
-                    # obstacle intersects poly
-                    return False
-            return True
-        else:
+        if (poly_area - inter_area) > 0.1:
+            # poly not in main
             return False
+        for obstacle in self :
+            inter = obstacle.poly.intersected(poly)
+            # if inter.isEmpty():
+            #     continue
+            inter_area = inter.area()
+            if inter_area > 0.1:
+                # obstacle intersects poly
+                return False
+        return True
+
 
 
 class Layer(OdvObject):
@@ -185,7 +185,7 @@ class Move(Section, OdvRoot):
         nb_layer = substream.read(UShort)
         for _ in range(nb_layer):
             self.add_child(substream.read(Layer, parent=self))
-        self.pathfinder = substream.read(PathFinder, move=self)
+        self.pathfinder = substream.read(PathFinder)
 
     def _save(self, substream: WriteStream) -> None:
         nb_layer = len(self)

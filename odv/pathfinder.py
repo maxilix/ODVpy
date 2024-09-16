@@ -9,6 +9,125 @@ from PyQt6.QtGui import QPainterPath, QPolygonF, QPolygon
 from common import *
 from debug import timeit, T
 
+""" length stats
+Percentage of links smaller than the length L in original levels
+
+L =  50 -> 18.9%
+L = 100 -> 33.5%
+L = 200 -> 53.1%
+L = 300 -> 67.9%
+L = 400 -> 77.3%
+L = 500 -> 84.1%
+L = 600 -> 88.6%
+L = 700 -> 92.0%
+L = 800 -> 94.2%
+
+  0% -> L =    0.0
+  1% -> L =    5.8
+  2% -> L =    8.5
+  3% -> L =   11.4
+  4% -> L =   14.1
+  5% -> L =   16.4
+  6% -> L =   18.4
+  7% -> L =   21.0
+  8% -> L =   23.3
+  9% -> L =   25.5
+ 10% -> L =   28.1
+ 11% -> L =   30.5
+ 12% -> L =   32.7
+ 13% -> L =   35.3
+ 14% -> L =   37.7
+ 15% -> L =   40.2
+ 16% -> L =   42.6
+ 17% -> L =   45.1
+ 18% -> L =   47.6
+ 19% -> L =   50.2
+ 20% -> L =   52.6
+ 21% -> L =   55.4
+ 22% -> L =   58.2
+ 23% -> L =   61.0
+ 24% -> L =   64.1
+ 25% -> L =   67.2
+ 26% -> L =   70.7
+ 27% -> L =   74.2
+ 28% -> L =   78.2
+ 29% -> L =   81.9
+ 30% -> L =   85.6
+ 31% -> L =   89.3
+ 32% -> L =   93.2
+ 33% -> L =   97.4
+ 34% -> L =  101.8
+ 35% -> L =  105.6
+ 36% -> L =  110.0
+ 37% -> L =  114.9
+ 38% -> L =  119.7
+ 39% -> L =  124.4
+ 40% -> L =  129.4
+ 41% -> L =  134.6
+ 42% -> L =  139.4
+ 43% -> L =  144.2
+ 44% -> L =  149.3
+ 45% -> L =  154.1
+ 46% -> L =  158.9
+ 47% -> L =  164.3
+ 48% -> L =  170.1
+ 49% -> L =  175.4
+ 50% -> L =  181.0
+ 51% -> L =  186.7
+ 52% -> L =  193.0
+ 53% -> L =  199.1
+ 54% -> L =  205.2
+ 55% -> L =  210.8
+ 56% -> L =  216.4
+ 57% -> L =  223.1
+ 58% -> L =  229.0
+ 59% -> L =  235.1
+ 60% -> L =  241.3
+ 61% -> L =  248.0
+ 62% -> L =  254.7
+ 63% -> L =  261.9
+ 64% -> L =  269.0
+ 65% -> L =  276.4
+ 66% -> L =  283.9
+ 67% -> L =  291.5
+ 68% -> L =  300.1
+ 69% -> L =  309.4
+ 70% -> L =  318.7
+ 71% -> L =  327.6
+ 72% -> L =  338.7
+ 73% -> L =  349.0
+ 74% -> L =  359.9
+ 75% -> L =  371.5
+ 76% -> L =  383.4
+ 77% -> L =  396.1
+ 78% -> L =  408.9
+ 79% -> L =  421.7
+ 80% -> L =  434.8
+ 81% -> L =  449.1
+ 82% -> L =  465.8
+ 83% -> L =  481.6
+ 84% -> L =  497.2
+ 85% -> L =  516.7
+ 86% -> L =  538.9
+ 87% -> L =  560.0
+ 88% -> L =  583.3
+ 89% -> L =  608.7
+ 90% -> L =  636.1
+ 91% -> L =  665.6
+ 92% -> L =  698.2
+ 93% -> L =  739.0
+ 94% -> L =  787.5
+ 95% -> L =  840.1
+ 96% -> L =  897.4
+ 97% -> L =  966.9
+ 98% -> L = 1073.7
+ 99% -> L = 1283.0
+100% -> L = 2559.0 (longest link)
+"""
+
+
+
+
 
 class Viability(RWStreamable):
 
@@ -372,13 +491,17 @@ class CrossingPoint(RWStreamable):
 
 
 class PathFinder(RWStreamable):
+    size_list: list[tuple[float, float]] = []
+    crossing_point_list: list[list[list[list[CrossingPoint]]]] = []
+    link_list: list[Link] = []
+    viability_list: list[Viability] = []
 
-    def __init__(self, motion, size_list, crossing_point_list, link_list, viability_list):
-        self._motion = motion
-        self.size_list = size_list
-        self.crossing_point_list = crossing_point_list
-        self.link_list = link_list
-        self.viability_list = viability_list
+    # def __init__(self, motion, size_list, crossing_point_list, link_list, viability_list):
+    #     self._motion = motion
+    #     self.size_list = size_list
+    #     self.crossing_point_list = crossing_point_list
+    #     self.link_list = link_list
+    #     self.viability_list = viability_list
 
     def __len__(self):
         return len(self.size_list)
@@ -394,8 +517,8 @@ class PathFinder(RWStreamable):
         return self.viability_list[index]
 
     @classmethod
-    def from_stream(cls, stream: ReadStream, *, move: Any):
-        rop = cls(move, [], [], [], [])
+    def from_stream(cls, stream: ReadStream):
+        rop = cls()
 
         nb_pathfinder = stream.read(UShort)
         rop.size_list = [[stream.read(Float), stream.read(Float)] for _ in range(nb_pathfinder)]
@@ -459,22 +582,26 @@ class PathFinder(RWStreamable):
         for viability in self.viability_list:
             substream.write(viability)
 
-    @timeit
-    def rebuild(self):
-        """
-          1.08 rebuild_crossing_point_list
-         54.41 rebuild_link_list
+    def rebuild_v2(self, motion):
+        from odv.pathfinder_generation import PathFinderFactory
 
-         48.68 contains_v1
-         16.13 QPolygonF_signed_area
-          3.23 line_and_trace
-          1.07 rebuild_accesses
-          1.04 potential_direction_combination
-        """
+        factory = PathFinderFactory(self.size_list, motion)
+        factory.generate()
+        self.crossing_point_list = factory.new_pathfinder.crossing_point_list.copy()
+        # print([cp.point for cp in  self.crossing_point_list[0][0][103]])
+        self.link_list = factory.new_pathfinder.link_list.copy()
+        self.viability_list = factory.new_pathfinder.viability_list.copy()
+
+    @timeit
+    def rebuild_v1(self):
+
 
         self.rebuild_crossing_point_list()
         print(
             f"nb_cb = {sum([sum([sum([len(cp_l) for cp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in self.crossing_point_list])}")
+
+        # print(f"as = {sum([sum([sum([sum([sum(cp.accesses) for cp in cp_l]) for cp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in self.crossing_point_list])}")
+        # print(f"ac = {[[[[cp.accesses for cp in cp_l] for cp_l in area_l] for area_l in sublayer_l] for sublayer_l in self.crossing_point_list]}")
 
         self.rebuild_link_list()
         print(f"nb_link = {len(self.link_list)}")
@@ -541,6 +668,7 @@ class PathFinder(RWStreamable):
 
     @timeit
     def rebuild_link_list(self):
+        self.tl=[]
         print("rebuilding link list - 00.0%", end="")
         nb_cp = sum([sum([sum([len(cp_l) for cp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in
                      self.crossing_point_list])
@@ -581,6 +709,7 @@ class PathFinder(RWStreamable):
                                     for _, sq, eq in combine_quarts:
                                         if link.is_pertinent_link(pf_index, sq, eq):
                                             _, trace = link.line_and_trace(pf_index, sq, eq)
+                                            self.tl.append((cp1.point_at(pf_index, sq), cp2.point_at(pf_index, eq)))
                                             if sublayer.contains(trace):
                                                 viability.t1.append(eq)
                                                 viability.t2.append(sq)
@@ -602,4 +731,9 @@ class PathFinder(RWStreamable):
                                         reversed_link.viability_index_list.append(len(self.viability_list) - 1)
                                     self.link_list.append(reversed_link)
                                     cp2.link_index_list.append(len(self.link_list) - 1)
+        print(f"{len(self.tl)=}")
+
         print("\b\b\b\b\bDone")
+
+
+
