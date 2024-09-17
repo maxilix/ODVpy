@@ -6,7 +6,6 @@ from odv.level import BackupedLevel, Level
 import numpy as np
 import matplotlib.pyplot as plt
 
-from odv.pathfinder_generation import PathFinderFactory
 
 CONFIG.load()
 
@@ -18,29 +17,12 @@ level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)
 # level = BackupedLevel(1)
+
+
+
 move = level.dvd.move
-size_list = move.pathfinder.size_list
-# print(f"dp   {sum([sum([sum([len(cp_l) for cp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in move.pathfinder.crossing_point_list])}")
-# print(f"link {len(move.pathfinder.link_list)}")
-# print()
-
-# move.pathfinder._motion = move
-move.pathfinder.rebuild_v2(move)
-
-
+move.pathfinder.rebuild(move, max_link_length=30000, print_times=True)
 level.insert_in_game()
-
-# print(f"{len(pff.tl)=}")
-# new_tl = set(pff.tl)
-# print(f"{len(new_tl)=}")
-#
-# print(f"{len(move.pathfinder.tl)=}")
-# old_tl = set(move.pathfinder.tl)
-# print(f"{len(old_tl)=}")
-#
-# print(f"{new_tl-old_tl=}")
-# print(f"{old_tl-new_tl=}")
-# old generation doesn't proceed the last obstacle (from nor to)
 
 exit()
 
