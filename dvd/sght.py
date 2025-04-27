@@ -1,7 +1,7 @@
 from typing import Self
 
 from common import *
-from odv.odv_object import OdvLeaf, OdvRoot
+from odv.odv_object import OdvObject
 from .move import Move, MainArea
 from .section import Section
 
@@ -32,7 +32,7 @@ class SightLine(RWStreamable):
         stream.write(Float(self.z_top))
 
 
-class SightObstacle(OdvLeaf):
+class SightObstacle(OdvObject):
     move: Move
     vline_list: list[SightLine]
     main_area: MainArea | None
@@ -143,7 +143,7 @@ class GroundSight(object):
         return "Ground Sight"
 
 
-class Sght(Section, OdvRoot):
+class Sght(Section):
     _section_name = "SGHT"
     _section_version = 6
 

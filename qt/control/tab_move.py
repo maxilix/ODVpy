@@ -39,7 +39,7 @@ class LayerInspector(Inspector):
 
     def new_odv_child(self):
         new_main_area = MainArea(self.odv_object)
-        new_main_area.poly = self._tab_control.scene.new_centered_polygon(scale=0.9)
+        new_main_area.area = self._tab_control.scene.new_centered_polygon(scale=0.9)
         return new_main_area
 
 

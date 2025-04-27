@@ -2,7 +2,7 @@ from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtWidgets import QScrollArea, QMenu, QWidget, QVBoxLayout, QSizePolicy, \
     QStackedLayout
 
-from odv.odv_object import OdvRoot
+# from odv.odv_object import OdvRoot
 from qt.control.generic_tree import QGenericTree, QODVTreeItem
 from qt.control.inspector_abstract import Inspector
 

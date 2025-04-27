@@ -27,7 +27,7 @@ class Misc(Section):
         self.b1 = substream.read(Bytes, 1)
         self.muwStandardViewPolygonRadius = substream.read(UShort)
         self.hearing_factor = substream.read(Float)
-        self.night = substream.read(UChar)  # impact length of the vision cone, sprite darkening
+        self.night = substream.read(UChar)  # impact length of the vision cone and sprite darkening
         self.b2 = substream.read(Bytes, 1)
 
         self.c = substream.read(UInt)  # 40404000 for L00

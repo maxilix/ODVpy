@@ -140,13 +140,11 @@ def signed_double_area(poly: QPolygonF) -> float:
         area += (next_point.x() - current_point.x()) * (next_point.y() + current_point.y())
     return area
 
-
 def is_simple(poly: QPolygonF) -> (bool,str):
     for point in poly:
         if (c:=poly.count(point)) > 1:
             return False, f"{point} appear {c} times."
     return True, ""
-
 
 def is_self_intersected(poly: QPolygonF) -> (bool,str):
     line_list = [QLineF(poly[i-1], poly[i]) for i in range(-1, poly.count())]
@@ -174,7 +172,7 @@ class Viability(RWStreamable):
         return self.t1 == []
 
     @classmethod
-    def from_stream(cls, stream: ReadStream):
+    def from_stream(cls, stream: ReadStream, **kwargs):
         end_reduced = stream.read(UChar)
         if end_reduced == 255:
             # 0xff is read
@@ -215,24 +213,23 @@ class Viability(RWStreamable):
 class Link(RWStreamable):
 
     def __init__(self,
-                 pathfinders: Any,  # should be a PathFinders
                  cp1_indexes: (UShort | int, UShort | int, UShort | int, UShort | int),
                  cp2_indexes: (UShort | int, UShort | int, UShort | int, UShort | int),
                  length: Float,
-                 viability_index_list: [UShort | int]):
+                 viability_index_list: list[UShort | int]):
         self.cp1_indexes = cp1_indexes
         self.cp2_indexes = cp2_indexes
         self.length = length
         self.viability_index_list = viability_index_list
 
     @classmethod
-    def from_stream(cls, stream, *, pathfinders):
+    def from_stream(cls, stream, **kwargs):
         indexes2 = tuple(stream.read(UShort) for _ in range(4))
         indexes1 = tuple(stream.read(UShort) for _ in range(4))
         length = stream.read(Float)
         nb_pathfinder = stream.read(UShort)
         viability_index_list = [stream.read(UShort) for _ in range(nb_pathfinder)]
-        return cls(pathfinders, indexes1, indexes2, length, viability_index_list)
+        return cls(indexes1, indexes2, length, viability_index_list)
 
     def to_stream(self, stream):
         for index in self.cp2_indexes:
@@ -249,12 +246,12 @@ class Link(RWStreamable):
 class CrossingPoint(RWStreamable):
 
     def __init__(self,
-                 pathfinders: Any,  # should be a PathFinders
-                 accesses: [UChar | int],
+                 # pathfinders: Any,  # should be a PathFinders
+                 accesses: list[UChar | int],
                  point: QPointF,
                  vector_to_next: QPointF,
                  vector_from_previous: QPointF,
-                 link_index_list: [UShort | int]):
+                 link_index_list: list[UShort | int]):
         self.accesses = accesses
         self.point = point
         self.vector_to_next = vector_to_next
@@ -270,7 +267,7 @@ class CrossingPoint(RWStreamable):
         return self.point.y()
 
     @classmethod
-    def from_stream(cls, stream, *, pathfinders):
+    def from_stream(cls, stream, **kwargs):
         nb_pathfinder = stream.read(UShort)
         accesses = [stream.read(UChar) for _ in range(nb_pathfinder)]
         # each access (in accesses) define if obstacles are present around the point
@@ -295,7 +292,7 @@ class CrossingPoint(RWStreamable):
 
         nb_path_link = stream.read(UShort)
         path_link_index_list = [stream.read(UShort) for _ in range(nb_path_link)]
-        return cls(pathfinders, accesses, point, vector_to_next, vector_from_previous, path_link_index_list)
+        return cls(accesses, point, vector_to_next, vector_from_previous, path_link_index_list)
 
     def to_stream(self, stream):
         nb_pathfinder = UShort(len(self.accesses))  # w
@@ -334,11 +331,11 @@ class PathFinder(RWStreamable):
         return self.viability_list[index]
 
     @classmethod
-    def from_stream(cls, stream: ReadStream):
+    def from_stream(cls, stream: ReadStream, **kwargs):
         rop = cls()
 
         nb_pathfinder = stream.read(UShort)
-        rop.size_list = [[stream.read(Float), stream.read(Float)] for _ in range(nb_pathfinder)]
+        rop.size_list = [(stream.read(Float), stream.read(Float)) for _ in range(nb_pathfinder)]
 
         # part 1 : crossing points
         nb_layer = stream.read(UShort)
@@ -355,11 +352,11 @@ class PathFinder(RWStreamable):
                     nb_crossing_point = stream.read(UShort)
                     for crossing_point_index in range(nb_crossing_point):
                         rop.crossing_point_list[layer_index][sublayer_index][area_index].append(
-                            stream.read(CrossingPoint, pathfinders=rop))
+                            stream.read(CrossingPoint))
 
         # part 2 : path links
         nb_path_link = stream.read(UShort)
-        rop.link_list = [stream.read(Link, pathfinders=rop) for _ in range(nb_path_link)]
+        rop.link_list = [stream.read(Link) for _ in range(nb_path_link)]
 
         # part 3 : link viability
         nb_link_viability = stream.read(UShort)
@@ -461,12 +458,13 @@ class PathFinder(RWStreamable):
             for main_area in layer:
                 self.polygon_list[-1].append([])
                 # main polygon must be defined counter-clockwise
-                if _check_and_add(QPolygonF(main_area.poly), clockwise=False) is False:
+                if _check_and_add(QPolygonF(main_area.area), clockwise=False) is False:
                     return False
                 for obstacle in main_area:
                     # obstacle polygons must be defined clockwise
-                    if _check_and_add(QPolygonF(obstacle.poly), clockwise=True) is False:
+                    if _check_and_add(QPolygonF(obstacle.area), clockwise=True) is False:
                         return False
+
 
     @timeit
     def _rebuild_crossing_points(self):
@@ -502,8 +500,7 @@ class PathFinder(RWStreamable):
             theta = QLineF(cp, pp).angleTo(QLineF(cp, np))
 
             if theta < 180:  # this point is a crossing point
-                self.crossing_point_list[i][j][k].append(CrossingPoint(self,
-                                                                       [],
+                self.crossing_point_list[i][j][k].append(CrossingPoint([],
                                                                        cp,
                                                                        np - cp,
                                                                        cp - pp,
@@ -621,7 +618,7 @@ class PathFinder(RWStreamable):
             elif 270 < a < 360:
                 rop.append((QPolygonF([c2 + v2, c2 + v8, c1 + v8, c1 + v2]), sq, eq))
             else:
-                raise Exception("code should be inaccessible")
+                raise Exception(f"code should be inaccessible (a={a})")
 
         return rop
 
@@ -644,8 +641,7 @@ class PathFinder(RWStreamable):
                                     cp2.x > cp1.x and cp2.y < cp1.y) is False:
                                     continue
 
-                                link = Link(self,
-                                            (i, j, k1, l1),
+                                link = Link((i, j, k1, l1),
                                             (i, j, k2, l2),
                                             QLineF(cp1.point, cp2.point).length(),
                                             [])
@@ -666,7 +662,7 @@ class PathFinder(RWStreamable):
                                 if sum(link.viability_index_list) > 0:  # if at least one viability has been appended
                                     self.link_list.append(link)
                                     cp1.link_index_list.append(len(self.link_list) - 1)
-                                    reversed_link = Link(self, link.cp2_indexes, link.cp1_indexes, link.length, [])
+                                    reversed_link = Link(link.cp2_indexes, link.cp1_indexes, link.length, [])
                                     for viability in link.viability_index_list:
                                         reversed_viability = Viability(self.viability_list[viability].t2,
                                                                        self.viability_list[viability].t1)

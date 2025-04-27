@@ -1,12 +1,10 @@
-from typing import Self
-
 from common import *
-from odv.odv_object import OdvLeaf, OdvRoot
+from odv.odv_object import OdvObject
 
 from .section import Section
 
 
-class MaskEntry(OdvLeaf):
+class MaskEntry(OdvObject):
     flag: UShort
     point_list_1: list[QPointF] = []
     point_list_2: list[QPointF] = []
@@ -57,7 +55,7 @@ class MaskEntry(OdvLeaf):
 
         
 
-class Mask(Section, OdvRoot):
+class Mask(Section):
     _section_name = "MASK"
     _section_version = 4
 

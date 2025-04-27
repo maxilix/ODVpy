@@ -1,5 +1,6 @@
 from math import floor
 
+from common import auto_id
 from config import CONFIG
 from dvd.sght import GroundSight
 from odv.level import BackupedLevel, Level
@@ -11,20 +12,23 @@ CONFIG.load()
 
 
 
-
-level = Level("./dev/empty_level/empty_level_02")
+# level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/03_Red_River/level_03")
 # level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)
-# level = BackupedLevel(1)
+level = BackupedLevel(1)
 
 
 
 move = level.dvd.move
+print("-------------------")
+
+print(move.pathfinder)
+exit()
+
 move.pathfinder.rebuild(move, max_link_length=30000, print_times=True)
 level.insert_in_game()
 
-exit()
 
 
 for level_index in range(26):

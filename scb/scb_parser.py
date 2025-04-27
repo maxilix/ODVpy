@@ -1,7 +1,7 @@
 from typing import Self
 
 from common import *
-from odv.odv_object import OdvRoot, OdvLeaf, OdvObject
+from odv.odv_object import OdvObject
 from scb.native_names import OP_CODE_NAME
 
 
@@ -28,7 +28,7 @@ class ScbQuad(RWStreamable):
         pass
 
 
-class ScbFunction(OdvLeaf):
+class ScbFunction(OdvObject):
     function_name: str
     address: int
     nb_parameter: int
@@ -128,7 +128,7 @@ class ScbClass(OdvObject):
 
 
 
-class ScbClassGroup(OdvRoot):
+class ScbClassGroup(OdvObject):
     @classmethod
     def from_stream(cls, stream: ReadStream) -> Self:
         rop = cls()

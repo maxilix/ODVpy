@@ -77,7 +77,7 @@ class Section(RWStreamable):
         return self._section_version
 
     @classmethod
-    def from_stream(cls, stream):
+    def from_stream(cls, stream, **kwargs):
         name = stream.read(String, 4)
         try:
             assert name == cls._section_name

@@ -6,10 +6,10 @@ from abc import ABC, abstractmethod
 
 
 class RStreamable(ABC):
-    has_graphic = False
+    # has_graphic = False # TODO del-it
     @classmethod
     @abstractmethod
-    def from_stream(cls, stream):
+    def from_stream(cls, stream, **kwargs):
         pass
 
 
