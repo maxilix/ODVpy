@@ -1,8 +1,7 @@
 # required
-PyQt6~=6.6.1
-PyQt6-sip~=13.6.0
-opencv-python~=4.10.0.84
-numpy~=2.0.0
+PyQt6
+opencv-python
+numpy
 
 # optional
-matplotlib~=3.9.2
+matplotlib

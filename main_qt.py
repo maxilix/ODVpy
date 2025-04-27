@@ -3,7 +3,7 @@ import os
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QPalette, QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QWidget, \
-    QVBoxLayout
+    QVBoxLayout, QStyleFactory
 
 from common import *
 from config import CONFIG
@@ -220,6 +220,8 @@ def set_dark_mode(app):
 if __name__ == '__main__':
     CONFIG.load()
     app = QApplication([])
+    print(QStyleFactory.keys())
+    app.setStyle('Fusion')
     # set_dark_mode(app)
     window = QWindow()
     window.show()
