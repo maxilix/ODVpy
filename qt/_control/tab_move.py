@@ -1,9 +1,9 @@
 from PyQt6.QtGui import QColor, QPolygonF
 
 from dvd.move import Layer, MainArea, Obstacle, Move
-from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.inspector_abstract import Inspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt._control.inspector_graphic import GeometrySubInspector
+from qt._control.inspector_abstract import Inspector
+from qt._control.tab__abstract import QTabControlGenericTree
 
 
 class ObstacleInspector(Inspector):

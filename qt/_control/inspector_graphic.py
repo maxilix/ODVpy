@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QPushButton, QCheckBox, QWidget, QSlider, QHBoxLayou
     QFileDialog
 
 from common import Gateway
-from qt.control.inspector_abstract import SubInspector
+from qt._control.inspector_abstract import SubInspector
 from qt.graphics import OdvThinPen, OdvLightBrush, OdvHighBrush, GraphicPolygon, GraphicLine, GraphicGateway, \
     GraphicMap, GraphicMask, GraphicPoint
 

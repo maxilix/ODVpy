@@ -100,6 +100,7 @@ class QGenericTree(QTreeWidget):
         self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.itemClicked.connect(self.item_clicked)
+        self.itemDoubleClicked.connect(self.item_double_clicked)
 
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
@@ -134,12 +135,18 @@ class QGenericTree(QTreeWidget):
     @staticmethod
     def item_clicked(item, column):
         if column == 0:
-            item.clicked()
+            print("clicked")
+            # item.clicked()
 
-    def contextMenuEvent(self, event: QContextMenuEvent):
-        item = self.itemAt(event.pos())
-        if item is not None:
-            item.contextMenuEvent(event)
+    @staticmethod
+    def item_double_clicked(item, column):
+        if column == 0:
+            print("double clicked")
+
+    # def contextMenuEvent(self, event: QContextMenuEvent):
+    #     item = self.itemAt(event.pos())
+    #     if item is not None:
+    #         item.contextMenuEvent(event)
 
     def dropEvent(self, event:QDropEvent):
         # TODO implement move mechanic here

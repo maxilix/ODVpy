@@ -2,11 +2,11 @@ from PyQt6.QtGui import QColor, QPolygonF
 
 from common import *
 from dvd.buil import Door, Building, SpecialDoors, Buildings
-from qt.control.inspector_abstract import Inspector
-from qt.control.inspector_generic import IntegerBoxInspector, InfoSubInspector, ConstantEnumListInspector, \
+from qt._control.inspector_abstract import Inspector
+from qt._control.inspector_generic import IntegerBoxInspector, InfoSubInspector, ConstantEnumListInspector, \
     MultiCheckBoxInspector, CheckBoxInspector, IntegerTwinBoxInspector, OdvObjectListSubInspector
-from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt._control.inspector_graphic import GeometrySubInspector
+from qt._control.tab__abstract import QTabControlGenericTree
 
 DOOR_TYPE = {0: "Invisible Door",
              1: "Normal Door",

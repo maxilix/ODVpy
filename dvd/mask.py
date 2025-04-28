@@ -15,7 +15,7 @@ class MaskEntry(OdvObject):
     maskimage: MaskImage
 
     @classmethod
-    def from_stream(cls, stream: ReadStream, *, parent, layer_id) -> Self:
+    def from_stream(cls, stream: ReadStream, *, parent, layer_id) -> 'MaskEntry':
         rop = cls(parent)
         rop.layer_id = layer_id
         

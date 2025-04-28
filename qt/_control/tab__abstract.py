@@ -3,8 +3,8 @@ from PyQt6.QtWidgets import QScrollArea, QMenu, QWidget, QVBoxLayout, QSizePolic
     QStackedLayout
 
 # from odv.odv_object import OdvRoot
-from qt.control.generic_tree import QGenericTree, QODVTreeItem
-from qt.control.inspector_abstract import Inspector
+from qt._control.generic_tree import QGenericTree, QODVTreeItem
+from qt._control.inspector_abstract import Inspector
 
 
 class QTabControl(QScrollArea):

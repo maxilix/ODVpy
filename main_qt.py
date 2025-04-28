@@ -9,7 +9,7 @@ from common import *
 from config import CONFIG
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
-from qt.control.tab__main import QMainControl
+from qt.control import QMainControl
 from qt.info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
 from qt.scene import QScene
@@ -95,11 +95,11 @@ class QWindow(QMainWindow):
             restore_submenu.addAction(restore_action)
         # ============================== Mod manager menu =======================
 
-        self.setStyleSheet("""
-            QMenu::item:!enabled {
-                color: gray;
-            }
-        """)
+        # self.setStyleSheet("""
+        #     QMenu::item:!enabled {
+        #         color: gray;
+        #     }
+        # """)
         self.set_widget()
 
     @staticmethod
@@ -169,11 +169,14 @@ class QWindow(QMainWindow):
         else:
             self.insert_current_level_action.setEnabled(True)
             main_widget = QSplitter(self)
+            main_widget.setOrientation(Qt.Orientation.Horizontal)
+            main_widget.setChildrenCollapsible(False)
 
             visualizer = QWidget(main_widget)
             info_bar = QInfoBar(visualizer)
             scene = QScene(visualizer)
             viewport = QViewport(scene, self.current_level.dvm.level_map, info_bar)
+            # control = QWidget(main_widget)
             control = QMainControl(main_widget, scene, self.current_level)
             info_bar.set_info(level_index=self.current_level.index)
 
@@ -193,28 +196,27 @@ class QWindow(QMainWindow):
 
             main_widget.addWidget(visualizer)
             main_widget.addWidget(control)
-            main_widget.setChildrenCollapsible(False)
 
         self.setCentralWidget(main_widget)
 
 
-def set_dark_mode(app):
-    dark_palette = QPalette()
-    dark_palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
-    dark_palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))
-    dark_palette.setColor(QPalette.ColorRole.Base, QColor(25, 25, 25))
-    dark_palette.setColor(QPalette.ColorRole.AlternateBase, QColor(53, 53, 53))
-    dark_palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(255, 255, 220))
-    dark_palette.setColor(QPalette.ColorRole.ToolTipText, QColor(255, 255, 255))
-    dark_palette.setColor(QPalette.ColorRole.Text, QColor(255, 255, 255))
-    dark_palette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
-    dark_palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))
-    dark_palette.setColor(QPalette.ColorRole.BrightText, QColor(255, 0, 0))
-    dark_palette.setColor(QPalette.ColorRole.Highlight, QColor(142, 45, 197))
-    dark_palette.setColor(QPalette.ColorRole.HighlightedText, QColor(0, 0, 0))
-
-    app.setPalette(dark_palette)
-    app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
+# def set_dark_mode(app):
+#     dark_palette = QPalette()
+#     dark_palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
+#     dark_palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))
+#     dark_palette.setColor(QPalette.ColorRole.Base, QColor(25, 25, 25))
+#     dark_palette.setColor(QPalette.ColorRole.AlternateBase, QColor(53, 53, 53))
+#     dark_palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(255, 255, 220))
+#     dark_palette.setColor(QPalette.ColorRole.ToolTipText, QColor(255, 255, 255))
+#     dark_palette.setColor(QPalette.ColorRole.Text, QColor(255, 255, 255))
+#     dark_palette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
+#     dark_palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))
+#     dark_palette.setColor(QPalette.ColorRole.BrightText, QColor(255, 0, 0))
+#     dark_palette.setColor(QPalette.ColorRole.Highlight, QColor(142, 45, 197))
+#     dark_palette.setColor(QPalette.ColorRole.HighlightedText, QColor(0, 0, 0))
+#
+#     app.setPalette(dark_palette)
+#     app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
 
 
 if __name__ == '__main__':

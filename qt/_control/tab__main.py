@@ -4,16 +4,16 @@ from PyQt6.QtWidgets import QTabWidget, QMenu
 
 from config import CONFIG
 
-from qt.control.tab_bond import QBondTabControl
-from qt.control.tab_buil import QBuilTabControl
-from qt.control.tab_dvm import QMapTabControl
-from qt.control.tab_jump import QJumpTabControl
-from qt.control.tab_lift import QLiftTabControl
-from qt.control.tab_mask import QMaskTabControl
-from qt.control.tab_move import QMoveTabControl
-from qt.control.tab_scb import QScbTabControl
-from qt.control.tab_scrp import QScrpTabControl
-from qt.control.tab_sght import QSghtTabControl
+from qt._control.tab_bond import QBondTabControl
+from qt._control.tab_buil import QBuilTabControl
+from qt._control.tab_dvm import QMapTabControl
+from qt._control.tab_jump import QJumpTabControl
+from qt._control.tab_lift import QLiftTabControl
+from qt._control.tab_mask import QMaskTabControl
+from qt._control.tab_move import QMoveTabControl
+from qt._control.tab_scb import QScbTabControl
+from qt._control.tab_scrp import QScrpTabControl
+from qt._control.tab_sght import QSghtTabControl
 
 
 # MISC - Miscellaneous
@@ -43,7 +43,8 @@ class QMainControl(QTabWidget):
         super().__init__(parent)
         self.scene = scene
         self.level = level
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(300)
+
         self.setTabPosition(QTabWidget.TabPosition.East)
         self.setMovable(True)
         self.setTabsClosable(True)
