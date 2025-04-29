@@ -1,28 +1,29 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 from common import *
 
 # 20 dvd sections in order
-section_list = ["MISC",
-                "BGND",
-                "MOVE",
-                "SGHT",
-                "MASK",
-                "WAYS",
-                "ELEM",
-                "FXBK",
-                "MSIC",
-                "SND ",
-                "PAT ",
-                "BOND",
-                "MAT ",
-                "LIFT",
-                "AI  ",
-                "BUIL",
-                "SCRP",
-                "JUMP",
-                "CART",
-                "DLGS"]
+section_flag_list = ["MISC",
+                     "BGND",
+                     "MOVE",
+                     "SGHT",
+                     "MASK",
+                     "WAYS",
+                     "ELEM",
+                     "FXBK",
+                     "MSIC",
+                     "SND ",
+                     "PAT ",
+                     "BOND",
+                     "MAT ",
+                     "LIFT",
+                     "AI  ",
+                     "BUIL",
+                     "SCRP",
+                     "JUMP",
+                     "CART",
+                     "DLGS"]
 
 """
 DVM/BGND    Loading map             Chargement de la carte
@@ -67,6 +68,7 @@ class Section(RWStreamable):
         super().__init__(*args, **kwargs)
         self._data = data
         self._loaded = False
+        self.tree_structure = []
         # log.info(f"Section {self.section} initialized.")
 
     def __str__(self):

@@ -5,8 +5,9 @@ from PyQt6.QtGui import QAction, QPalette, QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QWidget, \
     QVBoxLayout, QStyleFactory
 
-from common import *
+from settings import *
 from config import CONFIG
+from common import *
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
 from qt.control import QMainControl
@@ -28,6 +29,8 @@ class QWindow(QMainWindow):
         # self.current_level = BackupedLevel(3)
         # self.current_level = Level("./dev/empty_level/empty_level_19")
 
+        self.status_bar = self.statusBar()
+
         menu = self.menuBar()
         # ============================== File menu ==============================
         file_menu = menu.addMenu("File")
@@ -39,6 +42,7 @@ class QWindow(QMainWindow):
             else:
                 open_original_level_action = QAction(f"Level {i}", self)
             open_original_level_action.triggered.connect(lambda state, index=i: self.load_original_level(index))
+            open_original_level_action.setStatusTip(f'Open Mission {i} : {ORIGINAL_LEVEL_NAME[i]}')
             open_original_submenu.addAction(open_original_level_action)
 
         open_custom_level_action = QAction(f"Open Custom level", self)
@@ -101,6 +105,9 @@ class QWindow(QMainWindow):
         #     }
         # """)
         self.set_widget()
+
+        self.status_bar.showMessage('Ready', 5000)
+
 
     @staticmethod
     def backup_level(selected):

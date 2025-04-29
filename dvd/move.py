@@ -193,6 +193,14 @@ class Move(Section):
         # substream.read_raw()
         self.pathfinder = substream.read(PathFinder)
 
+        self.tree_structure = [(layer,
+                                [(main_area,
+                                  [(obstacle,
+                                    [])
+                                   for obstacle in main_area.obstacle_list])
+                                 for main_area in layer.main_area_list])
+                               for layer in self.layer_list]
+
     def _save(self, substream: WriteStream) -> None:
         nb_layer = len(self.layer_list)
         substream.write(UShort(nb_layer))
