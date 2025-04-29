@@ -24,8 +24,8 @@ class QWindow(QMainWindow):
         self.showMaximized()
         # self.setMinimumSize(800, 600)
 
-        self.current_level = None
-        # self.current_level = BackupedLevel(3)
+        # self.current_level = None
+        self.current_level = BackupedLevel(4)
         # self.current_level = Level("./dev/empty_level/empty_level_19")
 
         menu = self.menuBar()

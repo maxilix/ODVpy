@@ -46,42 +46,40 @@ class QMainControl(QTabWidget):
         self.setMinimumWidth(500)
         self.setTabPosition(QTabWidget.TabPosition.East)
         self.setMovable(True)
-        self.setTabsClosable(True)
+        self.setTabsClosable(False)
 
         self.currentChanged.connect(self.current_changed)
-        self.tabCloseRequested.connect(self.close_tab)
+        # self.tabCloseRequested.connect(self.close_tab)
 
         self.tab = dict()
         self.tab["DVM"] = QMapTabControl(self, level.dvm.level_map)
-        self.tab["MISC"] = None
-        self.tab["BGND"] = None
+        # self.tab["MISC"] = None
+        # self.tab["BGND"] = None
         self.tab["MOVE"] = QMoveTabControl(self, level.dvd.move)
-        self.tab["SGHT"] = QSghtTabControl(self, level.dvd.sght)
-        self.tab["MASK"] = QMaskTabControl(self, level.dvd.mask)
-        self.tab["WAYS"] = None
-        self.tab["ELEM"] = None
-        self.tab["FXBK"] = None
-        self.tab["MSIC"] = None
-        self.tab["SND"] = None
-        self.tab["PAT"] = None
-        self.tab["BOND"] = QBondTabControl(self, level.dvd.bond)
-        self.tab["MAT"] = None
-        self.tab["LIFT"] = QLiftTabControl(self, level.dvd.lift)
-        self.tab["AI"] = None
-        self.tab["BUIL"] = QBuilTabControl(self, [level.dvd.buil.buildings, level.dvd.buil.special_doors])
-        self.tab["SCRP"] = QScrpTabControl(self, level.dvd.scrp)
-        self.tab["JUMP"] = QJumpTabControl(self, level.dvd.jump)
-        self.tab["CART"] = None
-        self.tab["DLGS"] = None
-        self.tab["SCB"] = None # QScbTabControl(self, level.scb.classes)
+        # self.tab["SGHT"] = QSghtTabControl(self, level.dvd.sght)
+        # self.tab["MASK"] = QMaskTabControl(self, level.dvd.mask)
+        # self.tab["WAYS"] = None
+        # self.tab["ELEM"] = None
+        # self.tab["FXBK"] = None
+        # self.tab["MSIC"] = None
+        # self.tab["SND"] = None
+        # self.tab["PAT"] = None
+        # self.tab["BOND"] = QBondTabControl(self, level.dvd.bond)
+        # self.tab["MAT"] = None
+        # self.tab["LIFT"] = QLiftTabControl(self, level.dvd.lift)
+        # self.tab["AI"] = None
+        # self.tab["BUIL"] = QBuilTabControl(self, [level.dvd.buil.buildings, level.dvd.buil.special_doors])
+        # self.tab["SCRP"] = QScrpTabControl(self, level.dvd.scrp)
+        # self.tab["JUMP"] = QJumpTabControl(self, level.dvd.jump)
+        # self.tab["CART"] = None
+        # self.tab["DLGS"] = None
+        # self.tab["SCB"] = None # QScbTabControl(self, level.scb.classes)
 
-        initial_tabs = ["DVM"] + CONFIG.default_tabs
-        for name in initial_tabs:
-            self.add_tab(name)
-
-
-
-        # self.setCurrentWidget(self.bond_control)
+        # initial_tabs = ["DVM"] + CONFIG.default_tabs
+        # for name in initial_tabs:
+        #     self.add_tab(name)
+        for name in ["DVM", "MOVE"]:
+            self.addTab(self.tab[name], name)
 
         # button = scene.addWidget(QPushButton("Button 1"))
         # button.setFlag(button.GraphicsItemFlag.ItemIgnoresTransformations)
@@ -112,17 +110,17 @@ class QMainControl(QTabWidget):
     def current_changed(self, index):
         self.widget(index).update()
 
-    def close_tab(self, index):
-        if self.tabText(index) == "DVM":
-            print("DVM is not closable")
-        else:
-            self.widget(index).unload()
-            self.removeTab(index)
-
-    def add_tab(self, name):
-        self.addTab(self.tab[name], name)
-        self.tab[name].load()
-        self.setCurrentWidget(self.tab[name])
+    # def close_tab(self, index):
+    #     if self.tabText(index) == "DVM":
+    #         print("DVM is not closable")
+    #     else:
+    #         self.widget(index).unload()
+    #         self.removeTab(index)
+    #
+    # def add_tab(self, name):
+    #     self.addTab(self.tab[name], name)
+    #     self.tab[name].load()
+    #     self.setCurrentWidget(self.tab[name])
 
 
 

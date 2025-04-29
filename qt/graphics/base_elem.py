@@ -27,10 +27,10 @@ class OdvGraphicElement(object):
         return self.parentItem().sub_inspector
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton:
-            section = QSceneMenuSection(self, event)
-            event.shared_menu.add_section(section)
-            event.accept()
+        # if event.button() == Qt.MouseButton.RightButton:
+        #     section = QSceneMenuSection(self, event)
+        #     event.shared_menu.add_section(section)
+        #     event.accept()
         super().mousePressEvent(event)
 
     def scene_menu_local_actions(self, scene_position):

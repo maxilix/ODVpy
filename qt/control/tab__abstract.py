@@ -12,8 +12,8 @@ class QTabControl(QScrollArea):
         super().__init__()
         self.main_control = main_control
         self.setWidgetResizable(True)
-        self._scene_menu_priority = 2  # Nornal
-        self._scene_menu_exclusive = False
+        # self._scene_menu_priority = 2  # Nornal
+        # self._scene_menu_exclusive = False
 
     @property
     def scene(self):
@@ -23,41 +23,41 @@ class QTabControl(QScrollArea):
     def level(self):
         return self.main_control.level
 
-    def scene_menu_priority(self):
-        return self._scene_menu_priority + 0.5 * self.has_focus()
+    # def scene_menu_priority(self):
+    #     return self._scene_menu_priority + 0.5 * self.has_focus()
 
-    def scene_menu_enabled(self):
-        return self._scene_menu_priority > 0
+    # def scene_menu_enabled(self):
+    #     return self._scene_menu_priority > 0
 
-    def _set_scene_menu_priority(self, priority: 0 | 1 | 2 | 3):
-        assert priority in [0, 1, 2, 3]
-        self._scene_menu_priority = priority
+    # def _set_scene_menu_priority(self, priority: 0 | 1 | 2 | 3):
+    #     assert priority in [0, 1, 2, 3]
+    #     self._scene_menu_priority = priority
 
-    def scene_menu_exclusive(self):
-        return self._scene_menu_exclusive
+    # def scene_menu_exclusive(self):
+    #     return self._scene_menu_exclusive
 
-    def _set_scene_menu_exclusive(self, value: bool):
-        self._scene_menu_exclusive = value
+    # def _set_scene_menu_exclusive(self, value: bool):
+    #     self._scene_menu_exclusive = value
 
-    def exec_tab_menu(self):
-        menu = QMenu()
-        menu.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
-
-        priority_submenu = menu.addMenu("Priority")
-        a_priority = [QAction("Disable"), QAction("Low"), QAction("Normal"), QAction("High")]
-        for p, a in enumerate(a_priority):
-            a.setCheckable(True)
-            a.setChecked(self._scene_menu_priority == p)
-            a.triggered.connect(lambda state, priority=p: self._set_scene_menu_priority(priority))
-            priority_submenu.addAction(a)
-        a_exclusive = QAction("Exclusive")
-        a_exclusive.setCheckable(True)
-        a_exclusive.setChecked(self._scene_menu_exclusive)
-        a_exclusive.triggered.connect(self._set_scene_menu_exclusive)
-        priority_submenu.addSeparator()
-        priority_submenu.addAction(a_exclusive)
-
-        menu.exec(QCursor.pos())
+    # def exec_tab_menu(self):
+    #     menu = QMenu()
+    #     menu.setStyleSheet(":enabled {color: black} :disabled {color: gray}")
+    #
+    #     priority_submenu = menu.addMenu("Priority")
+    #     a_priority = [QAction("Disable"), QAction("Low"), QAction("Normal"), QAction("High")]
+    #     for p, a in enumerate(a_priority):
+    #         a.setCheckable(True)
+    #         a.setChecked(self._scene_menu_priority == p)
+    #         a.triggered.connect(lambda state, priority=p: self._set_scene_menu_priority(priority))
+    #         priority_submenu.addAction(a)
+    #     a_exclusive = QAction("Exclusive")
+    #     a_exclusive.setCheckable(True)
+    #     a_exclusive.setChecked(self._scene_menu_exclusive)
+    #     a_exclusive.triggered.connect(self._set_scene_menu_exclusive)
+    #     priority_submenu.addSeparator()
+    #     priority_submenu.addAction(a_exclusive)
+    #
+    #     menu.exec(QCursor.pos())
 
     def has_focus(self):
         return self.main_control.indexOf(self) == self.main_control.currentIndex()
@@ -78,6 +78,8 @@ class QTabControlGenericTree(QTabControl):
             self.odv_section_list = [odv_root_list]
         self.tree_items = dict()
         self.inspectors = dict()
+
+        self.load()
 
     def load(self):
         def build_tree_structure(tree_parent_item, odv_root):
