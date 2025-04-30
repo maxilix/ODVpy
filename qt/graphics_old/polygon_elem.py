@@ -2,26 +2,26 @@ from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QPolygonF, QPen, QPainterPath
 from PyQt6.QtWidgets import QGraphicsPolygonItem, QGraphicsPathItem, QGraphicsSceneMouseEvent
 
-from qt.graphics.base import OdvGraphic
-from qt.graphics.base_elem import OdvGraphicElement
-from qt.graphics.point_elem import OdvEditPointElement
+from qt.graphics_old.base_elem import OdvGraphicElement
+from qt.graphics_old.point_elem import OdvEditPointElement
 
 
-# class OdvFixPolygonElement(OdvGraphicElement, QGraphicsPolygonItem):
-class OdvFixPolygonElement(QGraphicsPolygonItem):
-    def __init__(self, parent_item: OdvGraphic, polygon: QPolygonF):
+class OdvFixPolygonElement(OdvGraphicElement, QGraphicsPolygonItem):
+    def __init__(self, parent_item, polygon: QPolygonF):
         super().__init__(parent_item)
+        if (ga := self.parentItem().grid_alignment) is not None:
+            polygon = polygon.truncated().translated(ga)
         self.setPolygon(polygon)
-        # self.setPen(self.sub_inspector.pen)
-        # self.setBrush(self.sub_inspector.light_brush)
-        # self.update()
+        self.setPen(self.sub_inspector.pen)
+        self.setBrush(self.sub_inspector.light_brush)
+        self.update()
 
 
 class OdvEditPolygonShapeElement(OdvGraphicElement, QGraphicsPathItem):
     def __init__(self, parent_item, p_list: list[OdvEditPointElement], movable: bool = False):
         super().__init__(parent_item)
-        # self.setPen(QPen(Qt.GlobalColor.transparent))
-        # self.setBrush(self.sub_inspector.light_brush)
+        self.setPen(QPen(Qt.GlobalColor.transparent))
+        self.setBrush(self.sub_inspector.light_brush)
         self.movable = movable
         self._drag_position = None
         self.p_list = p_list  # performs an update

@@ -2,18 +2,8 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QMouseEvent, QCursor, QAction
 from PyQt6.QtWidgets import QTabWidget, QMenu
 
-from config import CONFIG
-
-from qt.control.tab_bond import QBondTabControl
-from qt.control.tab_buil import QBuilTabControl
 from qt.control.tab_dvm import QMapTabControl
-from qt.control.tab_jump import QJumpTabControl
-from qt.control.tab_lift import QLiftTabControl
-from qt.control.tab_mask import QMaskTabControl
-from qt.control.tab_move import QMoveTabControl
-from qt.control.tab_scb import QScbTabControl
-from qt.control.tab_scrp import QScrpTabControl
-from qt.control.tab_sght import QSghtTabControl
+from qt.control_old.tab_move import QMoveTabControl
 
 
 # MISC - Miscellaneous
@@ -43,7 +33,7 @@ class QMainControl(QTabWidget):
         super().__init__(parent)
         self.scene = scene
         self.level = level
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(800)
         self.setTabPosition(QTabWidget.TabPosition.East)
         self.setMovable(True)
         self.setTabsClosable(False)
@@ -88,6 +78,7 @@ class QMainControl(QTabWidget):
 
 
     def mousePressEvent(self, event: QMouseEvent):
+        return
         if event.button() == Qt.MouseButton.RightButton:
             tab_index = self.tabBar().tabAt(self.tabBar().mapFromParent(event.pos()))
             if tab_index == -1:

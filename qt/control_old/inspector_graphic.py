@@ -1,11 +1,11 @@
 from PyQt6.QtCore import Qt, QLineF, QPointF
-from PyQt6.QtGui import QColor, QBrush, QPolygonF, QAction, QImage
+from PyQt6.QtGui import QColor, QBrush, QPolygonF, QAction
 from PyQt6.QtWidgets import QPushButton, QCheckBox, QWidget, QSlider, QHBoxLayout, QStackedLayout, QLabel, QVBoxLayout, \
     QFileDialog
 
 from common import Gateway
-from qt.control.inspector_abstract import SubInspector
-from qt.graphics import OdvThinPen, OdvLightBrush, OdvHighBrush, GraphicPolygon, GraphicLine, GraphicGateway, \
+from qt.control_old.inspector_abstract import SubInspector
+from qt.graphics_old import OdvThinPen, OdvLightBrush, OdvHighBrush, GraphicPolygon, GraphicLine, GraphicGateway, \
     GraphicMap, GraphicMask, GraphicPoint
 
 
@@ -252,7 +252,7 @@ class PixmapSubInspector(GraphicSubInspector):
             filenames = dialog.selectedFiles()
             if len(filenames) == 1:
                 self.current = filenames[0]
-                self.graphic.rest_map()
+                self.graphic.reset_map()
                 self.visibility_checkbox.setChecked(True)
                 self.opacity_slider.setValue(100)
                 self.global_update()

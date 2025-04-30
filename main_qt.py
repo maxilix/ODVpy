@@ -1,5 +1,3 @@
-import os
-
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QPalette, QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QWidget, \
@@ -14,6 +12,7 @@ from qt.info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
 from qt.scene import QScene
 from qt.viewport import QViewport
+
 
 
 class QWindow(QMainWindow):
@@ -217,12 +216,17 @@ def set_dark_mode(app):
     app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
 
 
-if __name__ == '__main__':
+def main():
     CONFIG.load()
     app = QApplication([])
     print(QStyleFactory.keys())
     app.setStyle('Fusion')
     # set_dark_mode(app)
-    window = QWindow()
-    window.show()
+    MAIN_WINDOW = QWindow()
+    MAIN_WINDOW.show()
     app.exec()
+
+
+
+if __name__ == "__main__":
+    main()

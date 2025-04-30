@@ -1,10 +1,9 @@
-from PyQt6.QtGui import QAction, QCursor
-from PyQt6.QtWidgets import QScrollArea, QMenu, QWidget, QVBoxLayout, QSizePolicy, \
+from PyQt6.QtWidgets import QScrollArea, QWidget, QVBoxLayout, QSizePolicy, \
     QStackedLayout
 
 from odv.odv_object import OdvRoot
-from qt.control.generic_tree import QGenericTree, QODVTreeItem
-from qt.control.inspector_abstract import Inspector
+from qt.control_old.generic_tree import QODVTreeItem, QGenericTree
+from qt.control_old.inspector_abstract import Inspector
 
 
 class QTabControl(QScrollArea):

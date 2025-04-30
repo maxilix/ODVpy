@@ -1,6 +1,6 @@
-from qt.control.inspector_abstract import Inspector
-from qt.control.inspector_generic import InfoSubInspector, LongTextSubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control import Inspector
+from qt.control import InfoSubInspector, LongTextSubInspector
+from qt.control_old.tab__abstract import QTabControlGenericTree
 from scb.scb_parser import ScbClassGroup, ScbClass, ScbFunction
 
 

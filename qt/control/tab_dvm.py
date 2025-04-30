@@ -1,9 +1,11 @@
 from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStyle, QLabel
 
-from dvm.dvm_parser import LevelMap
-from qt.control.subInspector import InfoSubInspector
-from qt.control.tab__abstract import QTabControl
+from common import Image
+from dvm.dvm_parser import LevelMap, DvmParser
+from qt.common.utils import image_to_qimage
+from qt.control.subInspector import InfoQInspectorWidget, PixmapQInspectorWidget
+from qt.control_old.tab__abstract import QTabControl
 
 #
 #
@@ -148,13 +150,12 @@ TITLE_SIZE = 22
 
 class QLevelMapInspector(QWidget):
 
-    def __init__(self, level_map):
+    def __init__(self, control, level_map):
         super().__init__()
-        # self.odv_object = odv_object
-        # self.init_actions()
+        self._control = control
 
         self.level_map = level_map
-        self.sub_inspector_group = dict()
+        # self.sub_inspector_group = dict()
         main_layout = QVBoxLayout(self)
 
         header_layout = QHBoxLayout()
@@ -193,8 +194,12 @@ class QLevelMapInspector(QWidget):
         #     }
         #     """)
 
-        self.infoSubInspector = InfoSubInspector(self, self.accessor_info)
-        main_layout.addWidget(self.infoSubInspector)
+        self.infoQIW = InfoQInspectorWidget(self, self.get_info)
+        main_layout.addWidget(self.infoQIW)
+
+        self.pixmapQIW = PixmapQInspectorWidget(self, self.get_map, self.set_map)
+        main_layout.addWidget(self.pixmapQIW)
+
         main_layout.addStretch()
 
         # self.sub_inspector_group["Info"] = [InfoSubInspector(self, "info")]
@@ -227,15 +232,28 @@ class QLevelMapInspector(QWidget):
         self.update()
 
     def update(self):
-        self.infoSubInspector.update()
+        self.infoQIW.update()
+        self.pixmapQIW.update()
 
 
-    def accessor_info(self, new=None):
+    def get_info(self):
         return f"size: {self.level_map.width} x {self.level_map.height}"
 
-    # @property
-    # def scene(self):
-    #     return self._tab_control.scene
+    def get_map(self):
+        return image_to_qimage(self.level_map.image)
+
+    def set_map(self, new_map_filename):
+        if new_map_filename.endswith(".dvm"):
+            dvm = DvmParser(new_map_filename)
+            self.level_map.image = dvm.level_map.image
+        else:
+            self.level_map.image = Image.from_file(new_map_filename)
+        return self.get_map()
+
+
+    @property
+    def scene(self):
+        return self._control.scene
     #
     # @property
     # def level(self):
@@ -430,7 +448,10 @@ class QMapTabControl(QTabControl):
         content = QWidget()
         layout = QVBoxLayout(content)
 
-        level_map_widget = QLevelMapInspector(self.level_map)
+        print("parent")
+        print(self.scene)
+
+        level_map_widget = QLevelMapInspector(self, self.level_map)
 
         layout.addWidget(level_map_widget)
         layout.addStretch()

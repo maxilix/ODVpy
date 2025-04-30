@@ -1,25 +1,25 @@
 from PyQt6.QtCore import QRectF, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from qt.graphics.line_elem import OdvEditLineElement
-from qt.graphics.point_elem import OdvEditPointElement
+from qt.graphics_old.line_elem import OdvEditLineElement
+from qt.graphics_old.point_elem import OdvEditPointElement
 
 
 class OdvGraphic(QGraphicsItem):
     grid_alignment = None
 
-    # def __init__(self, sub_inspector, *args, **kwargs):
-    #     # assert isinstance(sub_inspector, GraphicSubInspector)
-    #     self.sub_inspector = sub_inspector
-    #     super().__init__(*args, **kwargs)
-    #     self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
+    def __init__(self, sub_inspector, *args, **kwargs):
+        # assert isinstance(sub_inspector, GraphicSubInspector)
+        self.sub_inspector = sub_inspector
+        super().__init__(*args, **kwargs)
+        self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
 
     def boundingRect(self):
         return self.childrenBoundingRect()
 
-    # @property
-    # def visible(self):
-    #     return True
+    @property
+    def visible(self):
+        return self.sub_inspector.visibility_checkbox.isChecked()
 
     def remove(self, items):
         if items is not None:

@@ -1,14 +1,14 @@
 
 import gzip
 import bz2
-from typing import Self
 from math import ceil
+from typing import Self
 
 import cv2
 import numpy as np
 
-from .rw_stream import RWStreamable, RStreamable, ReadStream, WriteStream
 from .rw_base import UShort, UInt, Bytes, UChar
+from .rw_stream import RWStreamable, RStreamable, ReadStream
 
 
 class Pixel(RStreamable):
@@ -70,7 +70,7 @@ class Image(RWStreamable):
 		cv2.destroyAllWindows()
 
 	@classmethod
-	def from_file(cls, filename):
+	def from_file(cls, filename: str):
 		image = cv2.imread(filename, cv2.IMREAD_COLOR)
 		return cls(image)
 

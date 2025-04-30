@@ -1,12 +1,14 @@
-from PyQt6.QtGui import QColor, QPolygonF
+from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QStackedLayout
 
 from dvd.move import Layer, MainArea, Obstacle, Move
 from odv.odv_object import OdvRoot
-from qt.control.generic_tree import QODVTreeItem, QGenericTree
-from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.inspector_abstract import Inspector
-from qt.control.tab__abstract import QTabControlGenericTree, QTabControl
+from qt.control_old.generic_tree import QODVTreeItem, QGenericTree
+from qt.control_old.inspector_abstract import Inspector
+
+from qt.control_old.inspector_graphic import GeometrySubInspector
+
+from qt.control_old.tab__abstract import QTabControl
 
 
 class ObstacleInspector(Inspector):

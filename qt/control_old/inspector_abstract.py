@@ -1,9 +1,8 @@
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QWidget, QPushButton, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QFormLayout, \
-    QSizePolicy
+from PyQt6.QtWidgets import QWidget, QPushButton, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QFormLayout
 
-from qt.control.generic_tree import QODVTreeItem
+from qt.control_old.generic_tree import QODVTreeItem
 
 TITLE_SIZE = 22
 

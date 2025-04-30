@@ -2,11 +2,11 @@ from PyQt6.QtGui import QColor
 
 from common import *
 from dvd.lift import LiftArea, Lift
-from qt.control.inspector_abstract import Inspector
-from qt.control.inspector_generic import OdvObjectListSubInspector, IntegerBoxInspector, \
+from qt.control import Inspector
+from qt.control import OdvObjectListSubInspector, IntegerBoxInspector, \
     ConstantEnumListInspector
-from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control_old.inspector_graphic import GeometrySubInspector
+from qt.control_old.tab__abstract import QTabControlGenericTree
 
 LIFT_TYPE = {0: "???",
              1: "Stair",
