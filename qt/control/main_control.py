@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QMouseEvent, QCursor, QAction
 from PyQt6.QtWidgets import QTabWidget, QMenu
 
@@ -6,11 +6,11 @@ from config import CONFIG
 
 from qt.control.tab_bond import QBondTabControl
 from qt.control.tab_buil import QBuilTabControl
-from qt.control.tab_dvm import QMapTabControl
+from qt.control.tab_dvm import QMapTab
 from qt.control.tab_jump import QJumpTabControl
 from qt.control.tab_lift import QLiftTabControl
 from qt.control.tab_mask import QMaskTabControl
-from qt.control.tab_move import QMoveTabControl
+from qt.control.tab_move import QMoveTab
 from qt.control.tab_scb import QScbTabControl
 from qt.control.tab_scrp import QScrpTabControl
 from qt.control.tab_sght import QSghtTabControl
@@ -39,6 +39,9 @@ from qt.control.tab_sght import QSghtTabControl
 
 
 class QMainControl(QTabWidget):
+
+    sendStatus = pyqtSignal(str, int)
+
     def __init__(self, parent, scene, level):
         super().__init__(parent)
         self.scene = scene
@@ -46,36 +49,37 @@ class QMainControl(QTabWidget):
         self.setMinimumWidth(500)
         self.setTabPosition(QTabWidget.TabPosition.East)
         self.setMovable(True)
-        self.setTabsClosable(True)
+        # self.setTabsClosable(True)
 
         self.currentChanged.connect(self.current_changed)
         self.tabCloseRequested.connect(self.close_tab)
 
         self.tab = dict()
-        self.tab["DVM"] = QMapTabControl(self, level.dvm.level_map)
+        self.tab["DVM"] = QMapTab(self, level.dvm.level_map)
         self.tab["MISC"] = None
         self.tab["BGND"] = None
-        self.tab["MOVE"] = QMoveTabControl(self, level.dvd.move)
-        self.tab["SGHT"] = QSghtTabControl(self, level.dvd.sght)
-        self.tab["MASK"] = QMaskTabControl(self, level.dvd.mask)
-        self.tab["WAYS"] = None
-        self.tab["ELEM"] = None
-        self.tab["FXBK"] = None
-        self.tab["MSIC"] = None
-        self.tab["SND"] = None
-        self.tab["PAT"] = None
-        self.tab["BOND"] = QBondTabControl(self, level.dvd.bond)
-        self.tab["MAT"] = None
-        self.tab["LIFT"] = QLiftTabControl(self, level.dvd.lift)
-        self.tab["AI"] = None
-        self.tab["BUIL"] = QBuilTabControl(self, [level.dvd.buil.buildings, level.dvd.buil.special_doors])
-        self.tab["SCRP"] = QScrpTabControl(self, level.dvd.scrp)
-        self.tab["JUMP"] = QJumpTabControl(self, level.dvd.jump)
-        self.tab["CART"] = None
-        self.tab["DLGS"] = None
-        self.tab["SCB"] = None # QScbTabControl(self, level.scb.classes)
+        self.tab["MOVE"] = QMoveTab(self, level.dvd.move)
+        # self.tab["SGHT"] = QSghtTabControl(self, level.dvd.sght)
+        # self.tab["MASK"] = QMaskTabControl(self, level.dvd.mask)
+        # self.tab["WAYS"] = None
+        # self.tab["ELEM"] = None
+        # self.tab["FXBK"] = None
+        # self.tab["MSIC"] = None
+        # self.tab["SND"] = None
+        # self.tab["PAT"] = None
+        # self.tab["BOND"] = QBondTabControl(self, level.dvd.bond)
+        # self.tab["MAT"] = None
+        # self.tab["LIFT"] = QLiftTabControl(self, level.dvd.lift)
+        # self.tab["AI"] = None
+        # self.tab["BUIL"] = QBuilTabControl(self, [level.dvd.buil.buildings, level.dvd.buil.special_doors])
+        # self.tab["SCRP"] = QScrpTabControl(self, level.dvd.scrp)
+        # self.tab["JUMP"] = QJumpTabControl(self, level.dvd.jump)
+        # self.tab["CART"] = None
+        # self.tab["DLGS"] = None
+        # self.tab["SCB"] = None # QScbTabControl(self, level.scb.classes)
 
-        initial_tabs = ["DVM"] + CONFIG.default_tabs
+        # initial_tabs = ["DVM"] + CONFIG.default_tabs
+        initial_tabs = ["DVM", "MOVE"]
         for name in initial_tabs:
             self.add_tab(name)
 
@@ -102,8 +106,8 @@ class QMainControl(QTabWidget):
                         actions[-1].triggered.connect(lambda state, name=k: self.add_tab(name))
                 add_submenu.addActions(actions)
                 menu.exec(QCursor.pos())
-            elif tab_index == self.tabBar().currentIndex():
-                self.currentWidget().exec_tab_menu()
+            # elif tab_index == self.tabBar().currentIndex():
+            #     self.currentWidget().exec_tab_menu()
 
 
         super().mousePressEvent(event)
@@ -116,12 +120,12 @@ class QMainControl(QTabWidget):
         if self.tabText(index) == "DVM":
             print("DVM is not closable")
         else:
-            self.widget(index).unload()
+            # self.widget(index).unload()
             self.removeTab(index)
 
     def add_tab(self, name):
         self.addTab(self.tab[name], name)
-        self.tab[name].load()
+        # self.tab[name].load()
         self.setCurrentWidget(self.tab[name])
 
 

@@ -112,3 +112,33 @@ ORIGINAL_LEVEL_HASH = [
      "1153d19401c64ac1b8daf9c66b2aaf2f12b479dbf7bcdbaa3b724ad2dde40d17",
      "52108b0136c98cb5312f09fc7a8c6faef3ae9bb94cdc06282d535361a25a4a6e",
      "f228fddf779db5bcb1ffbd1ea417a1ce5eae4c65896ffd3ba62734bbc3f93d7a")]
+
+
+ORIGINAL_LEVEL_NAME = [
+    "Demo",
+    "An Old Friend",
+    "Southern Comfort",
+    "Smoke Signals",
+    "Hang'm High!",
+    "Doc McCoy's Cabin",
+    "High Stakes",
+    "A Woman's Weapons",
+    "Into the Lion's Den",
+    "Like a Thief in the Night",
+    "Lullaby for Four Aces",
+    "Ambush at Snake Pass",
+    "Escape from El Paso",
+    "The Walls of Fortezza",
+    "They Called Him Grizzly",
+    "Dance with the Devil",
+    "A Fistful of Dollars",
+    "To the Last Bullet",
+    "The Magnificent Six",
+    "Blood Money",
+    "Little China Girl",
+    "Piggies in the Middle",
+    "Showdown in Deadstone",
+    "At the Gates of Hell",
+    "Deaths Overture",
+    "Inferno",
+]

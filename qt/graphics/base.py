@@ -1,5 +1,8 @@
+from typing import Optional
+
 from PyQt6.QtCore import QRectF, QPointF
-from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtGui import QPainter
+from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
 
 from qt.graphics.line_elem import OdvEditLineElement
 from qt.graphics.point_elem import OdvEditPointElement
@@ -8,18 +11,19 @@ from qt.graphics.point_elem import OdvEditPointElement
 class OdvGraphic(QGraphicsItem):
     grid_alignment = None
 
-    def __init__(self, sub_inspector, *args, **kwargs):
-        # assert isinstance(sub_inspector, GraphicSubInspector)
-        self.sub_inspector = sub_inspector
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
 
     def boundingRect(self):
         return self.childrenBoundingRect()
 
-    @property
-    def visible(self):
-        return self.sub_inspector.visibility_checkbox.isChecked()
+    # def paint(self, painter, option, widget = ...) -> None:
+    #     pass
+
+    # @property
+    # def visible(self):
+    #     return True
 
     def remove(self, items):
         if items is not None:

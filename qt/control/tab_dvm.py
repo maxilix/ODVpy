@@ -1,10 +1,13 @@
+from PyQt6.QtWidgets import QLabel
+
 from common import Image
-from dvm.dvm_parser import LevelMap
+from dvm.dvm_parser import LevelMap, DvmParser
 from qt.common.utils import image_to_qimage
 from qt.control.inspector_graphic import PixmapSubInspector
-from qt.control.inspector_abstract import Inspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.widget_inspector import QInspectorWidget
+from qt.control.main_tab import QMainTab
 from qt.control.inspector_generic import InfoSubInspector
+from qt.control.widget_sub_inspector import QSubInspectorWidget, InfoQSIW, PixmapQSIW
 
 
 #
@@ -147,30 +150,41 @@ from qt.control.inspector_generic import InfoSubInspector
 
 
 
-class LevelMapInspector(Inspector):
+class LevelMapQIW(QInspectorWidget):
     # path color QColor(180, 110, 30)
     deletable = False
     child_name = ""  # cannot add child
 
-    def init_sub_inspector(self):
-        self.sub_inspector_group["Info"] = [InfoSubInspector(self, "info")]
-        self.sub_inspector_group["Map"] = [(psi:=PixmapSubInspector(self, "qimage"))]
-        psi.visibility_checkbox.setChecked(True)
-
-    @property
-    def info(self):
-        return f"size: {self.odv_object.width} x {self.odv_object.height}"
-
-    @property
-    def qimage(self):
-        # getter return a QImage
-        return image_to_qimage(self.odv_object.image)
-
-    @qimage.setter
-    def qimage(self, image_path):
-        # setter need an image path string
-        self.odv_object.image = Image.from_file(image_path)
 
 
-class QMapTabControl(QTabControlGenericTree):
-    inspector_types = {LevelMap: LevelMapInspector}
+    def __init__(self, tab, odv_object):
+        super().__init__(tab, odv_object)
+
+        self.level_map = odv_object
+
+        self.infoQSIW = InfoQSIW(self, self.get_info)
+        self.add_sub_inspector(self.infoQSIW)
+
+        self.mapQSIW = PixmapQSIW(self, self.get_map, self.set_map)
+        self.add_sub_inspector(self.mapQSIW)
+
+        self.update()
+
+
+    def get_info(self):
+        return f"size: {self.level_map.width} x {self.level_map.height}"
+
+    def get_map(self):
+        return image_to_qimage(self.level_map.image)
+
+    def set_map(self, new_map_filename):
+        if new_map_filename.endswith(".dvm"):
+            dvm = DvmParser(new_map_filename)
+            self.level_map.image = dvm.level_map.image
+        else:
+            self.level_map.image = Image.from_file(new_map_filename)
+        return self.get_map()
+
+
+class QMapTab(QMainTab):
+    inspector_types = {LevelMap: LevelMapQIW}

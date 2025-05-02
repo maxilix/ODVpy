@@ -2,19 +2,17 @@ from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QPolygonF, QPen, QPainterPath
 from PyQt6.QtWidgets import QGraphicsPolygonItem, QGraphicsPathItem, QGraphicsSceneMouseEvent
 
+from qt.graphics.base import OdvGraphic
 from qt.graphics.base_elem import OdvGraphicElement
 from qt.graphics.point_elem import OdvEditPointElement
 
 
-class OdvFixPolygonElement(OdvGraphicElement, QGraphicsPolygonItem):
-    def __init__(self, parent_item, polygon: QPolygonF):
+class OdvFixPolygonElement(QGraphicsPolygonItem):
+    def __init__(self, parent_item: OdvGraphic, polygon: QPolygonF):
         super().__init__(parent_item)
-        if (ga := self.parentItem().grid_alignment) is not None:
-            polygon = polygon.truncated().translated(ga)
         self.setPolygon(polygon)
-        self.setPen(self.sub_inspector.pen)
-        self.setBrush(self.sub_inspector.light_brush)
-        self.update()
+
+
 
 
 class OdvEditPolygonShapeElement(OdvGraphicElement, QGraphicsPathItem):

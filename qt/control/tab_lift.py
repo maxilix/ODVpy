@@ -2,11 +2,11 @@ from PyQt6.QtGui import QColor
 
 from common import *
 from dvd.lift import LiftArea, Lift
-from qt.control.inspector_abstract import Inspector
+from qt.control.widget_inspector import QInspectorWidget
 from qt.control.inspector_generic import OdvObjectListSubInspector, IntegerBoxInspector, \
     ConstantEnumListInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.main_tab import QMainTab
 
 LIFT_TYPE = {0: "???",
              1: "Stair",
@@ -14,7 +14,7 @@ LIFT_TYPE = {0: "???",
              3: "Wall"}
 
 
-class LiftAreaInspector(Inspector):
+class LiftAreaQInspectorWidget(QInspectorWidget):
     deletable = True
     child_name = ""  # cannot add child
 
@@ -34,7 +34,7 @@ class LiftAreaInspector(Inspector):
         ]
 
 
-class LiftInspector(Inspector):
+class LiftQInspectorWidget(QInspectorWidget):
     deletable = False
     child_name = "Lift Area"
 
@@ -53,6 +53,6 @@ class LiftInspector(Inspector):
         return new_lift_area
 
 
-class QLiftTabControl(QTabControlGenericTree):
-    inspector_types = {Lift: LiftInspector,
-                       LiftArea: LiftAreaInspector}
+class QLiftTabControl(QMainTab):
+    inspector_types = {Lift: LiftQInspectorWidget,
+                       LiftArea: LiftAreaQInspectorWidget}

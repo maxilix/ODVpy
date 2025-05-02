@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QPushButton, QCheckBox, QWidget, QSlider, QHBoxLayou
     QFileDialog
 
 from common import Gateway
-from qt.control.inspector_abstract import SubInspector
+from qt.control.widget_inspector import SubInspector
 from qt.graphics import OdvThinPen, OdvLightBrush, OdvHighBrush, GraphicPolygon, GraphicLine, GraphicGateway, \
     GraphicMap, GraphicMask, GraphicPoint
 
@@ -81,45 +81,45 @@ class GraphicSubInspector(SubInspector):
         self.global_update()
 
 
-    def scene_menu_name(self):
-        return self._inspector.scene_menu_name()
+    # def scene_menu_name(self):
+    #     return self._inspector.scene_menu_name()
 
-    def scene_menu_exclusive(self):
-        if isinstance(self, GeometrySubInspector):
-            return self.edit
-        else:
-            return self._inspector.scene_menu_exclusive()
+    # def scene_menu_exclusive(self):
+    #     if isinstance(self, GeometrySubInspector):
+    #         return self.edit
+    #     else:
+    #         return self._inspector.scene_menu_exclusive()
 
-    def scene_menu_enabled(self):
-        return self._inspector.scene_menu_enabled()
+    # def scene_menu_enabled(self):
+    #     return self._inspector.scene_menu_enabled()
 
-    def scene_menu_priority(self):
-        return self._inspector.scene_menu_priority()
+    # def scene_menu_priority(self):
+    #     return self._inspector.scene_menu_priority()
 
-    def scene_menu_common_actions(self, scene_position):
-        rop = []
-        if self.graphic.visible:
-            rop.append(self.a_hide)
-        else:
-            rop.append(self.a_show)
-        if isinstance(self, GeometrySubInspector):
-            if self.edit is True:
-                rop.append(self.a_save)
-                rop.append(self.a_cancel)
-            else:
-                rop.append(self.a_edit)
-        return rop + self._inspector.scene_menu_common_actions(scene_position)
+    # def scene_menu_common_actions(self, scene_position):
+    #     rop = []
+    #     if self.graphic.visible:
+    #         rop.append(self.a_hide)
+    #     else:
+    #         rop.append(self.a_show)
+    #     if isinstance(self, GeometrySubInspector):
+    #         if self.edit is True:
+    #             rop.append(self.a_save)
+    #             rop.append(self.a_cancel)
+    #         else:
+    #             rop.append(self.a_edit)
+    #     return rop + self._inspector.scene_menu_common_actions(scene_position)
 
-    def tree_menu_common_actions(self):
-        rop = []
-        rop.append(self.a_localise)
-        if isinstance(self, GeometrySubInspector):
-            if self.edit is True:
-                rop.append(self.a_save)
-                rop.append(self.a_cancel)
-            else:
-                rop.append(self.a_edit)
-        return rop + self._inspector.tree_menu_common_actions()
+    # def tree_menu_common_actions(self):
+    #     rop = []
+    #     rop.append(self.a_localise)
+    #     if isinstance(self, GeometrySubInspector):
+    #         if self.edit is True:
+    #             rop.append(self.a_save)
+    #             rop.append(self.a_cancel)
+    #         else:
+    #             rop.append(self.a_edit)
+    #     return rop + self._inspector.tree_menu_common_actions()
 
 
 class GeometrySubInspector(GraphicSubInspector):

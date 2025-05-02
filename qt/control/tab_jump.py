@@ -1,14 +1,14 @@
 from PyQt6.QtGui import QColor
 
 from dvd.jump import Jump, JumpArea
-from qt.control.inspector_abstract import Inspector
+from qt.control.widget_inspector import QInspectorWidget
 from qt.control.inspector_generic import OdvObjectListSubInspector, LongTextSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.main_tab import QMainTab
 from qt.graphics import GraphicMultiLine
 
 
-class JumpAreaInspector(Inspector):
+class JumpAreaQInspectorWidget(QInspectorWidget):
     deletable = True
     child_name = ""  # cannot add child
 
@@ -44,7 +44,7 @@ class JumpAreaInspector(Inspector):
         return rop[:-1]
 
 
-class JumpInspector(Inspector):
+class JumpQInspectorWidget(QInspectorWidget):
     deletable = False
     child_name = "Jump Area"
 
@@ -55,6 +55,6 @@ class JumpInspector(Inspector):
     #     return new_Jump_area
 
 
-class QJumpTabControl(QTabControlGenericTree):
-    inspector_types = {Jump: JumpInspector,
-                       JumpArea: JumpAreaInspector}
+class QJumpTabControl(QMainTab):
+    inspector_types = {Jump: JumpQInspectorWidget,
+                       JumpArea: JumpAreaQInspectorWidget}

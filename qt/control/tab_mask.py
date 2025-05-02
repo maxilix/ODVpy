@@ -2,14 +2,14 @@ from PyQt6.QtGui import QColor
 
 from dvd.mask import Mask, MaskEntry
 from qt.common.utils import maskimage_to_qimage
-from qt.control.inspector_abstract import Inspector
+from qt.control.widget_inspector import QInspectorWidget
 from qt.control.inspector_generic import InfoSubInspector
 from qt.control.inspector_graphic import MaskImageSubInspector, GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.main_tab import QMainTab
 from qt.graphics import GraphicMultiLine
 
 
-class MaskEntryInspector(Inspector):
+class MaskEntryQInspectorWidget(QInspectorWidget):
     odv_object: MaskEntry
     deletable = True
     child_name = ""  # cannot add child
@@ -41,7 +41,7 @@ class MaskEntryInspector(Inspector):
         # getter return a QImage
         return maskimage_to_qimage(self.odv_object.maskimage, (0,0,255))
 
-class MaskInspector(Inspector):
+class MaskQInspectorWidget(QInspectorWidget):
     deletable = False
     child_name = "Mask Image"
 
@@ -49,6 +49,6 @@ class MaskInspector(Inspector):
 
 
 
-class QMaskTabControl(QTabControlGenericTree):
-    inspector_types = {Mask: MaskInspector,
-                       MaskEntry: MaskEntryInspector}
+class QMaskTabControl(QMainTab):
+    inspector_types = {Mask: MaskQInspectorWidget,
+                       MaskEntry: MaskEntryQInspectorWidget}

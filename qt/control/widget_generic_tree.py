@@ -3,7 +3,7 @@ from PyQt6.QtGui import QContextMenuEvent, QCursor, QColor, QAction, QDropEvent
 from PyQt6.QtWidgets import QAbstractItemView, QTreeWidget, QTreeWidgetItem, QMenu
 
 
-class QODVTreeItem(QTreeWidgetItem):
+class QGenericTreeItem(QTreeWidgetItem):
     def __init__(self, tab_control, odv_object):
         super().__init__(None)
         self._tab_control = tab_control
@@ -23,15 +23,16 @@ class QODVTreeItem(QTreeWidgetItem):
 
     def update(self):
         self.setBold(False)
-        self.setColor()
+        self.setColor(QColor('black'))
         title = self.odv_object.name
-        if any(self.inspector_edit_state_list()):
-            title += " -Edit-"
-            self.setBold(True)
-        if self.inspector.valid_state is False:
-            title += " -INVALID-"
-            self.setBold(True)
-            self.setColor(QColor('red'))
+        # if any(self.inspector_edit_state_list()):
+        #     title += " -Edit-"
+        #     self.setBold(True)
+
+        # if self.inspector.valid_state is False:
+        #     title += " -INVALID-"
+        #     self.setBold(True)
+        #     self.setColor(QColor('red'))
 
         if len((vl:=[v.isChecked() for v in self.inspector_visibility_checkbox_list()]))>0:
             self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserCheckable)
@@ -79,18 +80,18 @@ class QODVTreeItem(QTreeWidgetItem):
                 checkbox.setCheckState(self.checkState(0))
             self.global_update()
 
-    def contextMenuEvent(self, event):
-        menu = QMenu()
-        for e in self.inspector.tree_menu_common_actions():
-            if isinstance(e, QAction):
-                menu.addAction(e)
-            else:
-                submenu = menu.addMenu(e[0])
-                submenu.addActions(e[1:])
-        menu.exec(QCursor.pos())
+    # def contextMenuEvent(self, event):
+    #     menu = QMenu()
+    #     for e in self.inspector.tree_menu_common_actions():
+    #         if isinstance(e, QAction):
+    #             menu.addAction(e)
+    #         else:
+    #             submenu = menu.addMenu(e[0])
+    #             submenu.addActions(e[1:])
+    #     menu.exec(QCursor.pos())
 
 
-class QGenericTree(QTreeWidget):
+class QGenericTreeWidget(QTreeWidget):
     def __init__(self):
         super().__init__()
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -136,10 +137,12 @@ class QGenericTree(QTreeWidget):
         if column == 0:
             item.clicked()
 
-    def contextMenuEvent(self, event: QContextMenuEvent):
-        item = self.itemAt(event.pos())
-        if item is not None:
-            item.contextMenuEvent(event)
+
+
+    # def contextMenuEvent(self, event: QContextMenuEvent):
+    #     item = self.itemAt(event.pos())
+    #     if item is not None:
+    #         item.contextMenuEvent(event)
 
     def dropEvent(self, event:QDropEvent):
         # TODO implement move mechanic here

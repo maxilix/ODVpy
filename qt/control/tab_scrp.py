@@ -1,13 +1,13 @@
 from PyQt6.QtGui import QColor
 
 from dvd.scrp import Scrp, Script
-from qt.control.inspector_abstract import Inspector
+from qt.control.widget_inspector import QInspectorWidget
 from qt.control.inspector_generic import InfoSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.main_tab import QMainTab
 
 
-class ScriptInspector(Inspector):
+class ScriptQInspectorWidget(QInspectorWidget):
     deletable = True
     child_name = ""  # cannot add child
 
@@ -22,7 +22,7 @@ class ScriptInspector(Inspector):
         ]
 
 
-class ScrpInspector(Inspector):
+class ScrpQInspectorWidget(QInspectorWidget):
     deletable = False
     child_name = "Script"
 
@@ -36,6 +36,6 @@ class ScrpInspector(Inspector):
     #     return new_bond_line
 
 
-class QScrpTabControl(QTabControlGenericTree):
-    inspector_types = {Scrp: ScrpInspector,
-                       Script: ScriptInspector}
+class QScrpTabControl(QMainTab):
+    inspector_types = {Scrp: ScrpQInspectorWidget,
+                       Script: ScriptQInspectorWidget}

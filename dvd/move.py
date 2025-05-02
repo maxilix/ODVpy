@@ -1,17 +1,17 @@
-from typing import Self
+from typing import Self, Iterator
 
 from common import *
 from debug import timeit
-from odv.odv_object import OdvRoot, OdvObject, OdvLeaf
+from odv.odv_object import OdvRoot, OdvObject, OdvLeaf, OdvObjectIterable
 from odv.pathfinder import PathFinder
 from .section import Section
 
 
-class Obstacle(OdvLeaf):
+class Obstacle(OdvObject):
     _poly: QPolygonF
 
-    def __str__(self):
-        return f"Obstacle {self.parent.main_area_id + self.i + 1}"
+    # def __str__(self):
+    #     return f"Obstacle {self.parent.main_area_id + self.i + 1}"
 
     # @property
     # def global_id(self):
@@ -32,8 +32,8 @@ class Obstacle(OdvLeaf):
             self._poly = QPolygonF(poly[::-1])
 
     @classmethod
-    def from_stream(cls, stream: ReadStream, *, parent):
-        rop = cls(parent)
+    def from_stream(cls, stream: ReadStream):
+        rop = cls()
         rop.poly = stream.read(QPolygonF)
         return rop
 
@@ -41,11 +41,12 @@ class Obstacle(OdvLeaf):
         stream.write(self.poly)
 
 
-class MainArea(OdvObject):
+class Sector(OdvObjectIterable):
     _poly: QPolygonF
+    obstacle_list: list[Obstacle]
 
-    def __str__(self):
-        return f"Main area {self.main_area_id}"
+    def __iter__(self) -> Iterator[Obstacle]:
+        return iter(self.obstacle_list)
 
     @property
     def main_area_id(self):
@@ -71,14 +72,15 @@ class MainArea(OdvObject):
             self._poly = QPolygonF(poly[::-1])
 
     @classmethod
-    def from_stream(cls, stream: ReadStream, *, parent) -> Self:
-        rop = cls(parent)
+    def from_stream(cls, stream: ReadStream) -> "Sector":
+        rop = cls()
         rop.poly = stream.read(QPolygonF)
         nb_segment = stream.read(UShort)
         segment_list = [stream.read(QLineF) for _ in range(nb_segment)]
         nb_obstacle = stream.read(UShort)
-        for _ in range(nb_obstacle):
-            rop.add_child(stream.read(Obstacle, parent=rop))
+        # for _ in range(nb_obstacle):
+        #     rop.add_child(stream.read(Obstacle, parent=rop))
+        rop.obstacle_list = [stream.read(Obstacle) for _ in range(nb_obstacle)]
         return rop
 
     def to_stream(self, substream: WriteStream) -> None:
@@ -128,19 +130,24 @@ class MainArea(OdvObject):
 
 
 
-class Layer(OdvObject):
+class Layer(OdvObjectIterable):
+    sector_list: list[Sector]
+
+    def __iter__(self) -> Iterator[Sector]:
+        return iter(self.sector_list)
 
     def total_area(self) -> int:
         return sum([(len(main_area) + 1) for main_area in self])
 
     @classmethod
-    def from_stream(cls, stream: ReadStream, *, parent) -> Self:
-        rop = cls(parent)
+    def from_stream(cls, stream: ReadStream) -> "Layer":
+        rop = cls()
         # total_area is rebuilt on demand
         total_area = stream.read(UShort)
-        nb_main_area = stream.read(UShort)
-        for _ in range(nb_main_area):
-            rop.add_child(stream.read(MainArea, parent=rop))
+        nb_sector = stream.read(UShort)
+        # for _ in range(nb_sector):
+        #     rop.add_child(stream.read(MainArea, parent=rop))
+        rop.sector_list = [stream.read(Sector) for _ in range(nb_sector)]
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
@@ -151,9 +158,13 @@ class Layer(OdvObject):
             stream.write(main_area)
 
 
-class Move(Section, OdvRoot):
+class Move(Section, OdvObjectIterable):
+
     _section_name = "MOVE"
     _section_version = 1
+
+    def __iter__(self) -> Iterator[Layer]:
+        return iter(self.layer_list)
 
     def main_area(self, index: int):
         i = 0
@@ -183,8 +194,9 @@ class Move(Section, OdvRoot):
 
     def _load(self, substream: ReadStream) -> None:
         nb_layer = substream.read(UShort)
-        for _ in range(nb_layer):
-            self.add_child(substream.read(Layer, parent=self))
+        # for _ in range(nb_layer):
+        #     self.add_child(substream.read(Layer, parent=self))
+        self.layer_list = [substream.read(Layer) for _ in range(nb_layer)]
         self.pathfinder = substream.read(PathFinder)
 
     def _save(self, substream: WriteStream) -> None:

@@ -2,10 +2,10 @@ from PyQt6.QtGui import QColor
 
 from common import UShort
 from dvd.bond import BondLine, Bond
-from qt.control.inspector_abstract import Inspector
+from qt.control.widget_inspector import QInspectorWidget
 from qt.control.inspector_generic import OdvObjectListSubInspector, IntegerTwinBoxInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.main_tab import QMainTab
 
 
 # class GraphicBondLine(QCGFixedLine):
@@ -41,7 +41,7 @@ from qt.control.tab__abstract import QTabControlGenericTree
 #         self.text_l = str(self.odv_object.left_id)
 
 
-class BondLineInspector(Inspector):
+class BondLineQInspectorWidget(QInspectorWidget):
     deletable = True
     child_name = ""  # cannot add child
 
@@ -60,7 +60,7 @@ class BondLineInspector(Inspector):
 
 
 
-class BondInspector(Inspector):
+class BondQInspectorWidget(QInspectorWidget):
     deletable = False
     child_name = "Bond Line"
 
@@ -75,6 +75,6 @@ class BondInspector(Inspector):
         return new_bond_line
 
 
-class QBondTabControl(QTabControlGenericTree):
-    inspector_types = {Bond: BondInspector,
-                       BondLine: BondLineInspector}
+class QBondTabControl(QMainTab):
+    inspector_types = {Bond: BondQInspectorWidget,
+                       BondLine: BondLineQInspectorWidget}

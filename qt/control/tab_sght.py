@@ -3,14 +3,14 @@ from PyQt6.QtGui import QColor
 
 from common import *
 from dvd.sght import Sght, SightObstacle
-from qt.control.inspector_abstract import Inspector
+from qt.control.widget_inspector import QInspectorWidget
 from qt.control.inspector_generic import InfoSubInspector, OdvObjectListSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.main_tab import QMainTab
 from qt.graphics.sight import GraphicSightObstacle
 
 
-class SightObstacleInspector(Inspector):
+class SightObstacleQInspectorWidget(QInspectorWidget):
     deletable = True
     child_name = ""  # cannot add child
 
@@ -37,7 +37,7 @@ class SightObstacleInspector(Inspector):
         return len(self.odv_object.vline_list)
 
 
-class SghtInspector(Inspector):
+class SghtQInspectorWidget(QInspectorWidget):
     deletable = False
     child_name = "Sight Obstacle"
 
@@ -56,6 +56,6 @@ class SghtInspector(Inspector):
     #     return new_lift_area
 
 
-class QSghtTabControl(QTabControlGenericTree):
-    inspector_types = {Sght: SghtInspector,
-                       SightObstacle: SightObstacleInspector}
+class QSghtTabControl(QMainTab):
+    inspector_types = {Sght: SghtQInspectorWidget,
+                       SightObstacle: SightObstacleQInspectorWidget}

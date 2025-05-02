@@ -2,6 +2,10 @@ import os
 import random
 import shutil
 
+def auto_id(key):
+    auto_id.id[key] = auto_id.id.get(key, -1) + 1
+    return auto_id.id[key]
+auto_id.id = dict()
 
 def extension(filename):
     try:

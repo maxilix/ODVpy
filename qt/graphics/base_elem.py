@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter
 
-from qt.control.scene_menu import QSceneMenuSection
+# from qt.control.scene_menu import QSceneMenuSection
 
 
 class OdvGraphicElement(object):
@@ -15,22 +15,22 @@ class OdvGraphicElement(object):
             painter.setRenderHints(QPainter.RenderHint.Antialiasing)
             super().paint(painter, option, widget)
 
-    @property
-    def visible(self):
-        if self.parentItem() is None:
-            return False
-        else:
-            return self.parentItem().visible or self.force_visible
+    # @property
+    # def visible(self):
+    #     if self.parentItem() is None:
+    #         return False
+    #     else:
+    #         return self.parentItem().visible or self.force_visible
 
-    @property
-    def sub_inspector(self):
-        return self.parentItem().sub_inspector
+    # @property
+    # def sub_inspector(self):
+    #     return self.parentItem().sub_inspector
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton:
-            section = QSceneMenuSection(self, event)
-            event.shared_menu.add_section(section)
-            event.accept()
+        # if event.button() == Qt.MouseButton.RightButton:
+        #     section = QSceneMenuSection(self, event)
+        #     event.shared_menu.add_section(section)
+        #     event.accept()
         super().mousePressEvent(event)
 
     def scene_menu_local_actions(self, scene_position):

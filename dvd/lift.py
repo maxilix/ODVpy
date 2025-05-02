@@ -2,17 +2,17 @@ from typing import Self
 
 from common import *
 from odv.odv_object import OdvRoot, OdvLeaf
-from .move import MainArea, Move
+from .move import Sector, Move
 from .section import Section
 
 
 class LiftArea(OdvLeaf):
     move: Move
     lift_type: UChar
-    main_area: MainArea
-    main_area_below: MainArea
+    main_area: Sector
+    main_area_below: Sector
     gateway_below: Gateway
-    main_area_above: MainArea
+    main_area_above: Sector
     gateway_above: Gateway
     # shape: QPolygonF
     perspective: UShort

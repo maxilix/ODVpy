@@ -2,18 +2,18 @@ from PyQt6.QtGui import QColor, QPolygonF
 
 from common import *
 from dvd.buil import Door, Building, SpecialDoors, Buildings
-from qt.control.inspector_abstract import Inspector
+from qt.control.widget_inspector import QInspectorWidget
 from qt.control.inspector_generic import IntegerBoxInspector, InfoSubInspector, ConstantEnumListInspector, \
     MultiCheckBoxInspector, CheckBoxInspector, IntegerTwinBoxInspector, OdvObjectListSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.main_tab import QMainTab
 
 DOOR_TYPE = {0: "Invisible Door",
              1: "Normal Door",
              2: "Trapdoor"}
 
 
-class DoorInspector(Inspector):
+class DoorQInspectorWidget(QInspectorWidget):
     deletable = True
     child_name = ""
 
@@ -68,7 +68,7 @@ class DoorInspector(Inspector):
 
 
 
-class BuildingInspector(Inspector):
+class BuildingQInspectorWidget(QInspectorWidget):
     deletable = True
     child_name = "Door"
 
@@ -99,7 +99,7 @@ class BuildingInspector(Inspector):
 
 
 
-class BuildingsInspector(Inspector):
+class BuildingsQInspectorWidget(QInspectorWidget):
     deletable = False
     child_name = "Building"
 
@@ -110,7 +110,7 @@ class BuildingsInspector(Inspector):
         new_building.character_id_list = []
         return new_building
 
-class SpecialDoorsInspector(Inspector):
+class SpecialDoorsQInspectorWidget(QInspectorWidget):
     deletable = False
     child_name = "Special Door"
 
@@ -136,9 +136,9 @@ class SpecialDoorsInspector(Inspector):
         return new_door
 
 
-class QBuilTabControl(QTabControlGenericTree):
-    inspector_types = {Buildings: BuildingsInspector,
-                       SpecialDoors: SpecialDoorsInspector,
-                       Building: BuildingInspector,
-                       Door: DoorInspector}
+class QBuilTabControl(QMainTab):
+    inspector_types = {Buildings: BuildingsQInspectorWidget,
+                       SpecialDoors: SpecialDoorsQInspectorWidget,
+                       Building: BuildingQInspectorWidget,
+                       Door: DoorQInspectorWidget}
 

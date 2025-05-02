@@ -2,7 +2,7 @@ from PyQt6.QtCore import QRectF
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent
 
 from common import *
-from qt.control.scene_menu import QSceneMenu
+# from qt.control.scene_menu import QSceneMenu
 
 
 class QScene(QGraphicsScene):
@@ -15,17 +15,17 @@ class QScene(QGraphicsScene):
     def move_to_item(self, item):
         self.viewport().move_to_item(item)
 
-    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
-        event.shared_menu = QSceneMenu()
-        super().mousePressEvent(event)
 
-        event.shared_menu.exec()
+    # def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
+        # event.shared_menu = QSceneMenu()
+        # super().mousePressEvent(event)
+        # event.shared_menu.exec()
 
 
-    def mouseDoubleClickEvent(self, event: QGraphicsSceneMouseEvent):
-        event.shared_menu = QSceneMenu()
-        super().mouseDoubleClickEvent(event)
-        event.shared_menu.exec()
+    # def mouseDoubleClickEvent(self, event: QGraphicsSceneMouseEvent):
+        # event.shared_menu = QSceneMenu()
+        # super().mouseDoubleClickEvent(event)
+        # event.shared_menu.exec()
 
     def new_centered_line(self, scale:float):
         r: QRectF = self.viewport().current_visible_scene_rect()

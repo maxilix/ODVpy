@@ -1,10 +1,10 @@
-from qt.control.inspector_abstract import Inspector
+from qt.control.widget_inspector import QInspectorWidget
 from qt.control.inspector_generic import InfoSubInspector, LongTextSubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.main_tab import QMainTab
 from scb.scb_parser import ScbClassGroup, ScbClass, ScbFunction
 
 
-class ScbFunctionInspector(Inspector):
+class ScbFunctionQInspectorWidget(QInspectorWidget):
     deletable = True
     child_name = ""  # cannot add child
 
@@ -28,7 +28,7 @@ class ScbFunctionInspector(Inspector):
         return rop[:-1]
 
 
-class ScbClassInspector(Inspector):
+class ScbClassQInspectorWidget(QInspectorWidget):
     deletable = True
     child_name = "Function"
 
@@ -37,7 +37,7 @@ class ScbClassInspector(Inspector):
 
 
 
-class ScbClassGroupInspector(Inspector):
+class ScbClassGroupQInspectorWidget(QInspectorWidget):
     deletable = False
     child_name = "Class"
 
@@ -51,7 +51,7 @@ class ScbClassGroupInspector(Inspector):
     #     return new_bond_line
 
 
-class QScbTabControl(QTabControlGenericTree):
-    inspector_types = {ScbClassGroup: ScbClassGroupInspector,
-                       ScbClass: ScbClassInspector,
-                       ScbFunction: ScbFunctionInspector}
+class QScbTabControl(QMainTab):
+    inspector_types = {ScbClassGroup: ScbClassGroupQInspectorWidget,
+                       ScbClass: ScbClassQInspectorWidget,
+                       ScbFunction: ScbFunctionQInspectorWidget}
