@@ -8,7 +8,7 @@ from .section import Section
 class Script(OdvLeaf):
     p: QPointF | QPolygonF
     layer_id: UShort
-    main_area: UShort
+    sector: UShort
     classname: str = ""
 
     def __str__(self):
@@ -30,7 +30,7 @@ class Script(OdvLeaf):
 
 
         rop.layer_id = stream.read(UShort)
-        rop.main_area = stream.read(UShort)
+        rop.sector = stream.read(UShort)
 
         if stream.read(UChar):
             classname_length = stream.read(UShort)

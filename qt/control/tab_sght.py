@@ -24,8 +24,8 @@ class SightObstacleInspector(Inspector):
 
         ]
 
-        self.sub_inspector_group["Main Areas"] = [
-            OdvObjectListSubInspector(self, "main_area", iterable=self.odv_object.move.main_area_iterator(include_None=True)),
+        self.sub_inspector_group["Sectors"] = [
+            OdvObjectListSubInspector(self, "sector", iterable=self.odv_object.move.sector_iterator(include_None=True)),
         ]
 
         self.sub_inspector_group["Geometry"] = [
@@ -46,9 +46,9 @@ class SghtInspector(Inspector):
     #     new_lift_area.move = self.odv_object.move
     #
     #     new_lift_area.lift_type = 1
-    #     new_lift_area.main_area = None
-    #     new_lift_area.main_area_below = None
-    #     new_lift_area.main_area_above = None
+    #     new_lift_area.sector = None
+    #     new_lift_area.sector_below = None
+    #     new_lift_area.sector_above = None
     #     new_lift_area.gateway_below = self._tab_control.scene.new_centered_gateway(scale=0.2)
     #     new_lift_area.gateway_above = self._tab_control.scene.new_centered_gateway(scale=0.2)
     #     new_lift_area.perspective = 0

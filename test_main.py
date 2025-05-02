@@ -39,7 +39,7 @@ for level_index in range(26):
     # buildings = level.dvd.buil.buildings
     # for building in buildings:
     #     for door in building:
-    #         if door.main_area_3.global_id != 0:
+    #         if door.sector_3.global_id != 0:
     #             print(f"L{level_index}: building {building.i}, door {door.i}")
 
     bond = level.dvd.bond
@@ -48,7 +48,7 @@ for level_index in range(26):
             # print("Ground")
             pass
         else:
-            print(f"{bond_entry.sight_obstacle_1.main_area.parent.i} {bond_entry.sight_obstacle_2.main_area.parent.i} - {bond_entry.layer.i}")
+            print(f"{bond_entry.sight_obstacle_1.sector.parent.i} {bond_entry.sight_obstacle_2.sector.parent.i} - {bond_entry.layer.i}")
 
 # level = Level("./dev/empty_level/empty_level_02")
 # mask = level.dvd.mask

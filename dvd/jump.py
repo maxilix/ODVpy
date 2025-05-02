@@ -3,7 +3,7 @@ from typing import Self
 from common import *
 from common import ReadStream
 from odv.odv_object import OdvRoot, OdvLeaf
-from .move import MainArea, Move
+from .move import Sector, Move
 
 from .section import Section
 
@@ -34,8 +34,8 @@ class JumpStart(RWStreamable):
 
 class JumpArea(OdvLeaf):
     move: Move
-    roof_main_area: MainArea
-    ground_main_area: MainArea
+    roof_sector: Sector
+    ground_sector: Sector
     landing_polygon: QPolygonF
     jump_start_list: list[JumpStart]
 
@@ -45,29 +45,29 @@ class JumpArea(OdvLeaf):
         rop.move = move
 
         layer_id = stream.read(UShort)
-        rop.roof_main_area = move.main_area(stream.read(UShort))
-        assert rop.roof_main_area.parent.i == layer_id
+        rop.roof_sector = move.sector(stream.read(UShort))
+        assert rop.roof_sector.parent.i == layer_id
 
         nb_point = stream.read(UShort)
         rop.jump_start_list = [stream.read(JumpStart) for _ in range(nb_point)]
 
         layer_id = stream.read(UShort)
-        rop.ground_main_area = move.main_area(stream.read(UShort))
-        assert rop.ground_main_area.parent.i == layer_id
+        rop.ground_sector = move.sector(stream.read(UShort))
+        assert rop.ground_sector.parent.i == layer_id
 
         rop.landing_polygon = stream.read(QPolygonF)
 
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
-        stream.write(UShort(self.roof_main_area.parent.i))  # layer id
-        stream.write(UShort(self.roof_main_area.main_area_id))
+        stream.write(UShort(self.roof_sector.parent.i))  # layer id
+        stream.write(UShort(self.roof_sector.sector_id))
         n = len(self.jump_start_list)
         stream.write(UShort(n))
         for jump_start in self.jump_start_list:
             stream.write(jump_start)
-        stream.write(UShort(self.ground_main_area.parent.i))  # layer id
-        stream.write(UShort(self.ground_main_area.main_area_id))
+        stream.write(UShort(self.ground_sector.parent.i))  # layer id
+        stream.write(UShort(self.ground_sector.sector_id))
         stream.write(self.landing_polygon)
 
 

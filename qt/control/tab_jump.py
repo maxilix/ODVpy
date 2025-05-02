@@ -18,9 +18,9 @@ class JumpAreaInspector(Inspector):
             LongTextSubInspector(self, "text"),
         ]
         self.sub_inspector_group["Properties"] = [
-            OdvObjectListSubInspector(self, "roof_main_area", "Roof Area", iterable=self.odv_object.move.main_area_iterator(include_None=False)),
-            OdvObjectListSubInspector(self, "ground_main_area", "Ground Area",
-                                      iterable=self.odv_object.move.main_area_iterator(include_None=False)),
+            OdvObjectListSubInspector(self, "roof_sector", "Roof Sector", iterable=self.odv_object.move.sector_iterator(include_None=False)),
+            OdvObjectListSubInspector(self, "ground_sector", "Ground Sector",
+                                      iterable=self.odv_object.move.sector_iterator(include_None=False)),
         ]
         self.sub_inspector_group["Graphics"] = [
             GeometrySubInspector(self, "landing_polygon", "Landing", color=QColor(255, 255, 255)),

@@ -1,6 +1,6 @@
 from PyQt6.QtGui import QColor, QPolygonF
 
-from dvd.move import Layer, MainArea, Obstacle, Move
+from dvd.move import Layer, Sector, Obstacle, Move
 from qt.control.inspector_graphic import GeometrySubInspector
 from qt.control.inspector_abstract import Inspector
 from qt.control.tab__abstract import QTabControlGenericTree
@@ -17,7 +17,7 @@ class ObstacleInspector(Inspector):
         ]
 
 
-class MainAreaInspector(Inspector):
+class SectorInspector(Inspector):
     # path color QColor(180, 110, 30)
     deletable = True
     child_name = "Obstacle"
@@ -38,9 +38,9 @@ class LayerInspector(Inspector):
     child_name = "Main Area"
 
     def new_odv_child(self):
-        new_main_area = MainArea(self.odv_object)
-        new_main_area.poly = self._tab_control.scene.new_centered_polygon(scale=0.9)
-        return new_main_area
+        new_sector = Sector(self.odv_object)
+        new_sector.poly = self._tab_control.scene.new_centered_polygon(scale=0.9)
+        return new_sector
 
 
 
@@ -55,5 +55,5 @@ class MoveInspector(Inspector):
 class QMoveTabControl(QTabControlGenericTree):
     inspector_types = {Move: MoveInspector,
                        Layer: LayerInspector,
-                       MainArea: MainAreaInspector,
+                       Sector: SectorInspector,
                        Obstacle: ObstacleInspector}

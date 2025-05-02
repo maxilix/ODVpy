@@ -2,17 +2,17 @@ from typing import Self
 
 from common import *
 from odv.odv_object import OdvRoot, OdvLeaf
-from .move import MainArea, Move
+from .move import Sector, Move
 from .section import Section
 
 
 class LiftArea(OdvLeaf):
     move: Move
     lift_type: UChar
-    main_area: MainArea
-    main_area_below: MainArea
+    sector: Sector
+    sector_below: Sector
     gateway_below: Gateway
-    main_area_above: MainArea
+    sector_above: Sector
     gateway_above: Gateway
     # shape: QPolygonF
     perspective: UShort
@@ -23,17 +23,17 @@ class LiftArea(OdvLeaf):
         rop = cls(parent)
         rop.move = move
 
-        rop.main_area = move.main_area(stream.read(UShort))
+        rop.sector = move.sector(stream.read(UShort))
         rop.lift_type = stream.read(UChar)
         # 0: ????
         # 1: stair
         # 2: ladder
         # 3: wall
 
-        rop.main_area_below = move.main_area(stream.read(UShort))
+        rop.sector_below = move.sector(stream.read(UShort))
         under_layer_id = stream.read(UShort)  # layer id
 
-        rop.main_area_above = move.main_area(stream.read(UShort))
+        rop.sector_above = move.sector(stream.read(UShort))
         over_layer_id = stream.read(UShort)  # layer id
 
         shape = stream.read(QPolygonF)  # seems useless, isn't always defined
@@ -45,14 +45,14 @@ class LiftArea(OdvLeaf):
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
-        stream.write(UShort(self.main_area.main_area_id))
+        stream.write(UShort(self.sector.sector_id))
         stream.write(UChar(self.lift_type))
 
-        stream.write(UShort(self.main_area_below.main_area_id))
-        stream.write(UShort(self.main_area_below.parent.i))  # layer id
+        stream.write(UShort(self.sector_below.sector_id))
+        stream.write(UShort(self.sector_below.parent.i))  # layer id
 
-        stream.write(UShort(self.main_area_above.main_area_id))
-        stream.write(UShort(self.main_area_above.parent.i))  # layer id
+        stream.write(UShort(self.sector_above.sector_id))
+        stream.write(UShort(self.sector_above.parent.i))  # layer id
 
         # stream.write(self.shape)
         stream.write(UShort(0))  # write null polygon as shape

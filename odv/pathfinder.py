@@ -458,12 +458,12 @@ class PathFinder(RWStreamable):
 
         for layer in motion:
             self.polygon_list.append([])
-            for main_area in layer:
+            for sector in layer:
                 self.polygon_list[-1].append([])
                 # main polygon must be defined counter-clockwise
-                if _check_and_add(QPolygonF(main_area.poly), clockwise=False) is False:
+                if _check_and_add(QPolygonF(sector.poly), clockwise=False) is False:
                     return False
-                for obstacle in main_area:
+                for obstacle in sector:
                     # obstacle polygons must be defined clockwise
                     if _check_and_add(QPolygonF(obstacle.poly), clockwise=True) is False:
                         return False
@@ -545,7 +545,7 @@ class PathFinder(RWStreamable):
 
 
     @timeit
-    def does_main_area_contain(self, i, j, poly: QPolygonF):
+    def does_sector_contain(self, i, j, poly: QPolygonF):
         if abs(signed_double_area(poly)) - abs(signed_double_area(self.polygon_list[i][j][0].intersected(poly))) > 0.2:
             # the area of intersection with the main polygon is smaller than the area of the polygon
             return False
@@ -653,7 +653,7 @@ class PathFinder(RWStreamable):
                                 for pf_index in range(len(self)):
                                     viability = Viability([], [])
                                     for trace, sq, eq in self._get_traces(pf_index, i, j, k1, l1, k2, l2):
-                                        if self.does_main_area_contain(i, j, trace):
+                                        if self.does_sector_contain(i, j, trace):
                                             viability.t1.append(eq)
                                             viability.t2.append(sq)
 

@@ -2,7 +2,7 @@ from typing import Self
 
 from common import *
 from odv.odv_object import OdvRoot, OdvObject, OdvLeaf
-from .move import Move, MainArea
+from .move import Move, Sector
 
 from .section import Section
 
@@ -22,8 +22,8 @@ class Door(OdvLeaf):
     unk_bool_8: UChar
     shape: QPolygonF
     gateway: Gateway
-    main_area_1: MainArea
-    main_area_3: MainArea
+    sector_1: Sector
+    sector_3: Sector
     anim_id: UShort
     allowed_sens: (UChar, UChar)
 
@@ -46,19 +46,19 @@ class Door(OdvLeaf):
         assert nb_access == 3
 
         p1 = stream.read(QPointF)
-        rop.main_area_1 = move.main_area(stream.read(UShort))
+        rop.sector_1 = move.sector(stream.read(UShort))
         layer_id_1 = stream.read(UShort)
-        assert rop.main_area_1.parent.i == layer_id_1
+        assert rop.sector_1.parent.i == layer_id_1
 
         p2 = stream.read(QPointF)
-        main_area_2 = move.main_area(stream.read(UShort))
+        sector_2 = move.sector(stream.read(UShort))
         layer_id_2 = stream.read(UShort)
-        assert main_area_2.parent.i == layer_id_2
+        assert sector_2.parent.i == layer_id_2
 
         p3 = stream.read(QPointF)
-        rop.main_area_3 = move.main_area(stream.read(UShort))
+        rop.sector_3 = move.sector(stream.read(UShort))
         layer_id_3 = stream.read(UShort)
-        assert rop.main_area_3.parent.i == layer_id_3
+        assert rop.sector_3.parent.i == layer_id_3
 
         rop.gateway = Gateway(p1, p2, p3)
 
@@ -87,14 +87,14 @@ class Door(OdvLeaf):
         stream.write(self.shape)
         stream.write(UShort(3))  # nb access
         stream.write(self.gateway.p1)
-        stream.write(UShort(self.main_area_1.main_area_id))
-        stream.write(UShort(self.main_area_1.parent.i))
+        stream.write(UShort(self.sector_1.sector_id))
+        stream.write(UShort(self.sector_1.parent.i))
         stream.write(self.gateway.p2)
-        stream.write(UShort(self.main_area_1.main_area_id))  # rewrite main_area_1 global id
-        stream.write(UShort(self.main_area_1.parent.i))   # rewrite main_area_1 layer id
+        stream.write(UShort(self.sector_1.sector_id))  # rewrite sector_1 global id
+        stream.write(UShort(self.sector_1.parent.i))   # rewrite sector_1 layer id
         stream.write(self.gateway.p3)
-        stream.write(UShort(self.main_area_3.main_area_id))  # TODO test with main_area_1 info again for non special door
-        stream.write(UShort(self.main_area_3.parent.i))   # TODO same
+        stream.write(UShort(self.sector_3.sector_id))
+        stream.write(UShort(self.sector_3.parent.i))
 
         stream.write(UShort(self.anim_id))
         if self.anim_id != 0xffff:

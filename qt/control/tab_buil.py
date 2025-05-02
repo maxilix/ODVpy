@@ -48,9 +48,9 @@ class DoorInspector(Inspector):
                 GeometrySubInspector(self, "shape", color=QColor(0, 140, 255)),
             ]
 
-        self.sub_inspector_group["Main Areas"] = [
-            OdvObjectListSubInspector(self, "main_area_1", "From", iterable=self.odv_object.move.main_area_iterator(include_None=False)),
-            OdvObjectListSubInspector(self, "main_area_3", "To", iterable=self.odv_object.move.main_area_iterator(include_None=False)),
+        self.sub_inspector_group["Sectors"] = [
+            OdvObjectListSubInspector(self, "sector_1", "From", iterable=self.odv_object.move.sector_iterator(include_None=False)),
+            OdvObjectListSubInspector(self, "sector_3", "To", iterable=self.odv_object.move.sector_iterator(include_None=False)),
         ]
         self.sub_inspector_group["Gateway"] = [
             GeometrySubInspector(self, "gateway", color=QColor(220, 200, 80)),
@@ -91,8 +91,8 @@ class BuildingInspector(Inspector):
         new_door.unk_bool_8 = 0
         new_door.shape = self._tab_control.scene.new_centered_polygon(scale=0.1)
         new_door.gateway = self._tab_control.scene.new_centered_gateway(scale=0.2)
-        new_door.main_area_1 = None
-        new_door.main_area_3 = None
+        new_door.sector_1 = None
+        new_door.sector_3 = None
         new_door.anim_id = UShort.max()
         new_door.allowed_sens = (0,0)
         return new_door
@@ -129,8 +129,8 @@ class SpecialDoorsInspector(Inspector):
         new_door.unk_bool_8 = 0
         new_door.shape = QPolygonF()
         new_door.gateway = self._tab_control.scene.new_centered_gateway(scale=0.2)
-        new_door.main_area_1 = None
-        new_door.main_area_3 = None
+        new_door.sector_1 = None
+        new_door.sector_3 = None
         new_door.anim_id = UShort.max()
         new_door.allowed_sens = (0,0)
         return new_door

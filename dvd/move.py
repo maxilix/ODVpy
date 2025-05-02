@@ -11,11 +11,11 @@ class Obstacle(OdvLeaf):
     _poly: QPolygonF
 
     def __str__(self):
-        return f"Obstacle {self.parent.main_area_id + self.i + 1}"
+        return f"Obstacle {self.parent.sector_id + self.i + 1}"
 
     # @property
     # def global_id(self):
-    #     return self.parent.main_area_id + self.i + 1
+    #     return self.parent.sector_id + self.i + 1
 
     @property
     def poly(self) -> QPolygonF:
@@ -41,19 +41,19 @@ class Obstacle(OdvLeaf):
         stream.write(self.poly)
 
 
-class MainArea(OdvObject):
+class Sector(OdvObject):
     _poly: QPolygonF
 
     def __str__(self):
-        return f"Main area {self.main_area_id}"
+        return f"Sector {self.sector_id}"
 
     @property
-    def main_area_id(self):
+    def sector_id(self):
         rop = 0
         for layer_index in range(self.parent.i):
-            rop += self.parent.parent[layer_index].total_area()
-        for mainArea_index in range(self.i):
-            rop += 1 + len(self.parent[mainArea_index])
+            rop += self.parent.parent[layer_index].total_polygon()
+        for sector_index in range(self.i):
+            rop += 1 + len(self.parent[sector_index])
         return rop
 
     @property
@@ -130,34 +130,34 @@ class MainArea(OdvObject):
 
 class Layer(OdvObject):
 
-    def total_area(self) -> int:
-        return sum([(len(main_area) + 1) for main_area in self])
+    def total_polygon(self) -> int:
+        return sum([(len(sector) + 1) for sector in self])
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
         rop = cls(parent)
         # total_area is rebuilt on demand
         total_area = stream.read(UShort)
-        nb_main_area = stream.read(UShort)
-        for _ in range(nb_main_area):
-            rop.add_child(stream.read(MainArea, parent=rop))
+        nb_sector = stream.read(UShort)
+        for _ in range(nb_sector):
+            rop.add_child(stream.read(Sector, parent=rop))
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
-        stream.write(UShort(self.total_area()))
-        nb_main_area = len(self)
-        stream.write(UShort(nb_main_area))
-        for main_area in self:
-            stream.write(main_area)
+        stream.write(UShort(self.total_polygon()))
+        nb_sector = len(self)
+        stream.write(UShort(nb_sector))
+        for sector in self:
+            stream.write(sector)
 
 
 class Move(Section, OdvRoot):
     _section_name = "MOVE"
     _section_version = 1
 
-    def main_area(self, index: int):
+    def sector(self, index: int):
         i = 0
-        while (ta_i := self[i].total_area()) <= index:
+        while (ta_i := self[i].total_polygon()) <= index:
             i += 1
             index -= ta_i
         j = 0
@@ -168,18 +168,18 @@ class Move(Section, OdvRoot):
         rop = self[i][j]
         return rop
 
-    def main_area_iterator(self, *, include_None):
-        class MAI:
+    def sector_iterator(self, *, include_None):
+        class SI:
             def __iter__(subself):
                 if include_None:
-                    return iter([None] + [ma for layer in self for ma in layer])
+                    return iter([None] + [s for layer in self for s in layer])
                 else:
-                    return iter(ma for layer in self for ma in layer)
+                    return iter(s for layer in self for s in layer)
             def __getitem__(self, item):
                 return list(iter(self))[item]
             def __len__(self):
                 return len(list(iter(self)))
-        return MAI()
+        return SI()
 
     def _load(self, substream: ReadStream) -> None:
         nb_layer = substream.read(UShort)

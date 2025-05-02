@@ -2,7 +2,7 @@ from typing import Self
 
 from common import *
 from odv.odv_object import OdvLeaf, OdvRoot
-from .move import Move, MainArea
+from .move import Move, Sector
 from .section import Section
 
 
@@ -35,7 +35,7 @@ class SightLine(RWStreamable):
 class SightObstacle(OdvLeaf):
     move: Move
     vline_list: list[SightLine]
-    main_area: MainArea | None
+    sector: Sector | None
     unk_char_1: UChar
     unk_char_2: UChar
     unk_char_3: UChar
@@ -45,10 +45,10 @@ class SightObstacle(OdvLeaf):
         pass
 
     def __str__(self):
-        if self.main_area is None:
+        if self.sector is None:
             return super().__str__()
         else:
-            return f"{super().__str__()} - {self.walkable_sight_id}"
+            return f"{super().__str__()} walkable{self.walkable_sight_id}"
 
     @property
     def walkable_sight_id(self):
@@ -82,19 +82,19 @@ class SightObstacle(OdvLeaf):
         max_y = stream.read(Float)
         assert max_y == max(vl.y for vl in rop.vline_list)
 
-        has_main_area_above = stream.read(UChar)
-        if has_main_area_above:
+        has_sector_above = stream.read(UChar)
+        if has_sector_above:
             layer_id = stream.read(UShort)
-            rop.main_area = move.main_area(stream.read(UShort))
-            assert rop.main_area.parent.i == layer_id
+            rop.sector = move.sector(stream.read(UShort))
+            assert rop.sector.parent.i == layer_id
         else:
-            rop.main_area = None
+            rop.sector = None
 
         rop.unk_char_1 = stream.read(UChar)
         rop.unk_char_2 = stream.read(UChar)
         rop.unk_char_3 = stream.read(UChar)
         rop.unk_char_4 = stream.read(UChar)
-        # unk_char_i == 1, 0, 1, 0   ==>   the obstacle is roughly defined and contains sub-obstacles
+        # unk_char_i == 1, 0, 1, 0   =>   the obstacle is roughly defined and contains sub-obstacles
 
 
         unk_float_1 = stream.read(Float)
@@ -120,10 +120,10 @@ class SightObstacle(OdvLeaf):
         stream.write(Float(max(vl.z_top for vl in self.vline_list)))
         stream.write(Float(max(vl.y for vl in self.vline_list)))
 
-        if self.main_area is not None:
+        if self.sector is not None:
             stream.write(UChar(1))
-            stream.write(UShort(self.main_area.parent.i))
-            stream.write(UShort(self.main_area.main_area_id))
+            stream.write(UShort(self.sector.parent.i))
+            stream.write(UShort(self.sector.sector_id))
         else:
             stream.write(UChar(0))
 
@@ -155,7 +155,7 @@ class Sght(Section, OdvRoot):
     def walkable_sight_iterator(self):
         class WSI:
             def __iter__(subself):
-                return iter([self.ground_sight] + [s for s in self if s.main_area is not None])
+                return iter([self.ground_sight] + [s for s in self if s.sector is not None])
             def __getitem__(self, item):
                 return list(iter(self))[item]
             def __len__(self):
