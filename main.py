@@ -1,7 +1,5 @@
-import os
-
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QPalette, QColor
+from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QWidget, \
     QVBoxLayout
 
@@ -14,6 +12,7 @@ from qt.info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
 from qt.scene import QScene
 from qt.viewport import QViewport
+from settings import *
 
 
 class QWindow(QMainWindow):
@@ -24,9 +23,11 @@ class QWindow(QMainWindow):
         self.showMaximized()
         # self.setMinimumSize(800, 600)
 
-        self.current_level = None
-        # self.current_level = BackupedLevel(3)
+        # self.current_level = None
+        self.current_level = BackupedLevel(4)
         # self.current_level = Level("./dev/empty_level/empty_level_19")
+
+        self.status_bar = self.statusBar()
 
         menu = self.menuBar()
         # ============================== File menu ==============================
@@ -39,6 +40,7 @@ class QWindow(QMainWindow):
             else:
                 open_original_level_action = QAction(f"Level {i}", self)
             open_original_level_action.triggered.connect(lambda state, index=i: self.load_original_level(index))
+            open_original_level_action.setStatusTip(f'Open Mission {i} : {ORIGINAL_LEVEL_NAME[i]}')
             open_original_submenu.addAction(open_original_level_action)
 
         open_custom_level_action = QAction(f"Open Custom level", self)
@@ -95,12 +97,10 @@ class QWindow(QMainWindow):
             restore_submenu.addAction(restore_action)
         # ============================== Mod manager menu =======================
 
-        self.setStyleSheet("""
-            QMenu::item:!enabled {
-                color: gray;
-            }
-        """)
         self.set_widget()
+
+        self.status_bar.showMessage('Ready', 5000)
+
 
     @staticmethod
     def backup_level(selected):
@@ -169,12 +169,15 @@ class QWindow(QMainWindow):
         else:
             self.insert_current_level_action.setEnabled(True)
             main_widget = QSplitter(self)
+            main_widget.setOrientation(Qt.Orientation.Horizontal)
+            main_widget.setChildrenCollapsible(False)
 
             visualizer = QWidget(main_widget)
             info_bar = QInfoBar(visualizer)
             scene = QScene(visualizer)
             viewport = QViewport(scene, self.current_level.dvm.level_map, info_bar)
             control = QMainControl(main_widget, scene, self.current_level)
+            control.sendStatus.connect(self.status_bar.showMessage)
             info_bar.set_info(level_index=self.current_level.index)
 
             # print(viewport.zoom)
@@ -193,34 +196,34 @@ class QWindow(QMainWindow):
 
             main_widget.addWidget(visualizer)
             main_widget.addWidget(control)
-            main_widget.setChildrenCollapsible(False)
 
         self.setCentralWidget(main_widget)
 
 
-def set_dark_mode(app):
-    dark_palette = QPalette()
-    dark_palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
-    dark_palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))
-    dark_palette.setColor(QPalette.ColorRole.Base, QColor(25, 25, 25))
-    dark_palette.setColor(QPalette.ColorRole.AlternateBase, QColor(53, 53, 53))
-    dark_palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(255, 255, 220))
-    dark_palette.setColor(QPalette.ColorRole.ToolTipText, QColor(255, 255, 255))
-    dark_palette.setColor(QPalette.ColorRole.Text, QColor(255, 255, 255))
-    dark_palette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
-    dark_palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))
-    dark_palette.setColor(QPalette.ColorRole.BrightText, QColor(255, 0, 0))
-    dark_palette.setColor(QPalette.ColorRole.Highlight, QColor(142, 45, 197))
-    dark_palette.setColor(QPalette.ColorRole.HighlightedText, QColor(0, 0, 0))
-
-    app.setPalette(dark_palette)
-    app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
+# def set_dark_mode(app):
+#     dark_palette = QPalette()
+#     dark_palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
+#     dark_palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))
+#     dark_palette.setColor(QPalette.ColorRole.Base, QColor(25, 25, 25))
+#     dark_palette.setColor(QPalette.ColorRole.AlternateBase, QColor(53, 53, 53))
+#     dark_palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(255, 255, 220))
+#     dark_palette.setColor(QPalette.ColorRole.ToolTipText, QColor(255, 255, 255))
+#     dark_palette.setColor(QPalette.ColorRole.Text, QColor(255, 255, 255))
+#     dark_palette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
+#     dark_palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))
+#     dark_palette.setColor(QPalette.ColorRole.BrightText, QColor(255, 0, 0))
+#     dark_palette.setColor(QPalette.ColorRole.Highlight, QColor(142, 45, 197))
+#     dark_palette.setColor(QPalette.ColorRole.HighlightedText, QColor(0, 0, 0))
+#
+#     app.setPalette(dark_palette)
+#     app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
 
 
 if __name__ == '__main__':
     CONFIG.load()
     app = QApplication([])
-    # set_dark_mode(app)
+    # print(QStyleFactory.keys())
+    app.setStyle('Fusion')
     window = QWindow()
     window.show()
     app.exec()

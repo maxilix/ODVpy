@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QMouseEvent, QCursor, QAction
 from PyQt6.QtWidgets import QTabWidget, QMenu
 
@@ -39,6 +39,9 @@ from qt.control.tab_sght import QSghtTabControl
 
 
 class QMainControl(QTabWidget):
+
+    sendStatus = pyqtSignal(str, int)
+
     def __init__(self, parent, scene, level):
         super().__init__(parent)
         self.scene = scene
