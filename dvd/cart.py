@@ -1,11 +1,11 @@
 from typing import Self
 
 from common import *
-from odv.odv_object import OdvLeaf, OdvRoot
+from odv.odv_object import OdvObject, OdvObjectIterable
 
 from .section import Section
 
-class MobileElement(OdvLeaf):
+class MobileElement(OdvObject):
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
@@ -18,7 +18,7 @@ class MobileElement(OdvLeaf):
 
 
 
-class Cart(Section, OdvRoot):
+class Cart(Section, OdvObjectIterable):
     _section_name = "CART"
     _section_version = 5
 

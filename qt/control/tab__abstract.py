@@ -2,7 +2,7 @@ from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtWidgets import QScrollArea, QMenu, QWidget, QVBoxLayout, QSizePolicy, \
     QStackedLayout
 
-from odv.odv_object import OdvRoot
+from odv.odv_object import OdvObjectIterable
 from qt.control.generic_tree import QGenericTree, QODVTreeItem
 from qt.control.inspector_abstract import Inspector
 
@@ -81,7 +81,7 @@ class QTabControlGenericTree(QTabControl):
 
     def load(self):
         def build_tree_structure(tree_parent_item, odv_root):
-            if not isinstance(odv_root, OdvRoot):
+            if not isinstance(odv_root, OdvObjectIterable):
                 return
             for odv_object in odv_root:
                 self.tree_items[odv_object] = QODVTreeItem(self, odv_object)
@@ -106,7 +106,7 @@ class QTabControlGenericTree(QTabControl):
             self.tree.addTopLevelItem(self.tree_items[odv_section])
             self.inspectors[odv_section] = self.inspector_types.get(type(odv_section), Inspector)(self, odv_section)
             self.inspector_stack_layout.addWidget(self.inspectors[odv_section])
-            if isinstance(odv_section, OdvRoot):
+            if isinstance(odv_section, OdvObjectIterable):
                 build_tree_structure(self.tree_items[odv_section], odv_section)
 
         assert len(self.tree_items) == len(self.inspectors)
@@ -115,7 +115,7 @@ class QTabControlGenericTree(QTabControl):
         layout.addWidget(self.inspector_stack_widget)
 
         # add tree widget if multiple section or any itérable section
-        if len(self.odv_section_list) > 1 or any([isinstance(odv_section, OdvRoot) for odv_section in self.odv_section_list]):
+        if len(self.odv_section_list) > 1 or any([isinstance(odv_section, OdvObjectIterable) for odv_section in self.odv_section_list]):
             layout.addWidget(self.tree)
         else:
             layout.addStretch()

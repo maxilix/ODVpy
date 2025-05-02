@@ -1,12 +1,12 @@
 from typing import Self
 
 from common import *
-from odv.odv_object import OdvRoot, OdvLeaf
+from odv.odv_object import OdvObjectIterable, OdvObject
 from .move import Sector, Move
 from .section import Section
 
 
-class LiftArea(OdvLeaf):
+class LiftArea(OdvObject):
     move: Move
     lift_type: UChar
     sector: Sector
@@ -63,7 +63,7 @@ class LiftArea(OdvLeaf):
         stream.write(UShort(self.perspective))
 
 
-class Lift(Section, OdvRoot):
+class Lift(Section, OdvObjectIterable):
     _section_name = "LIFT"
     _section_version = 2
 

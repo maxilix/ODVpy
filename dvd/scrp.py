@@ -1,11 +1,11 @@
 from typing import Self
 
 from common import *
-from odv.odv_object import OdvRoot, OdvLeaf
+from odv.odv_object import OdvObjectIterable, OdvObject
 from .section import Section
 
 
-class Script(OdvLeaf):
+class Script(OdvObject):
     p: QPointF | QPolygonF
     layer_id: UShort
     sector: UShort
@@ -44,7 +44,7 @@ class Script(OdvLeaf):
 
 
 
-class Scrp(Section, OdvRoot):
+class Scrp(Section, OdvObjectIterable):
     _section_name = "SCRP"
     _section_version = 1
 

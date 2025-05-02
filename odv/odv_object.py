@@ -4,76 +4,75 @@ from typing import Iterator, Self, Any
 from common import RWStreamable
 
 
-class OdvBase(RWStreamable, ABC):
+class OdvObject(RWStreamable, ABC):
+    _odv_name: str
+    _odv_parent: Self | None
 
-    def __init__(self):
-        # self._name cannot be initialized to self.__str__() because this function generally
-        # uses the index of self in the list of children of the parent odv_object,
-        # and this list does not yet exist when the child odv_object is created.
-        self._odv_name = None
+    def __init__(self, odv_parent: Self | None = None):
+        # _odv_name is initialized to empty string,
+        # name property return _odv_name if it was overwritten, else return __str__
+        self._odv_name = ""
 
-    def __str__(self):
-        return f"{self.__class__.__name__}"
-
-    @property
-    def name(self):
-        if self._odv_name is None:
-            return self.__str__()
-        return self._odv_name
-
-    @name.setter
-    def name(self, value):
-        self._odv_name = value
-
-
-class OdvRoot(OdvBase, ABC):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._odv_children = []
-
-    def __iter__(self) -> Iterator[Any]:
-        return iter(self._odv_children)
-
-    def __getitem__(self, index: int) -> Any:
-        return self._odv_children[index]
-
-    def __len__(self) -> int:
-        return len(self._odv_children)
-
-    def add_child(self, child: Any):
-        self._odv_children.append(child)
-
-    def remove_child(self, child: Any):
-        self._odv_children.remove(child)
-
-    def index(self, odv_child) -> int:
-        return self._odv_children.index(odv_child)
-
-
-class OdvLeaf(OdvBase, ABC):
-    def __init__(self, parent, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._odv_parent = parent
+        # parent must be an OdvObject or None
+        assert isinstance(odv_parent, OdvObject) or odv_parent is None
+        # parent type cannot be changed after initialization (see parent setter)
+        self._odv_parent = odv_parent
 
     def __str__(self):
         indexes = ""
-        odv_leaf = self
-        while isinstance(odv_leaf, OdvLeaf):
-            indexes = f"{odv_leaf.i} {indexes}"
-            odv_leaf = odv_leaf.parent
-        return f"{self.__class__.__name__} {indexes}"
+        odv_child = self
+        while isinstance(odv_child.parent, OdvObjectIterable):
+            indexes = f" {odv_child.i}{indexes}"
+            odv_child = odv_child.parent
+        return f"{self.__class__.__name__}{indexes}"
 
     @property
     def parent(self):
         return self._odv_parent
 
+    @parent.setter
+    def parent(self, new_odv_parent):
+        assert type(self._odv_parent) == type(new_odv_parent)
+        self._odv_parent = new_odv_parent
+
+    @property
+    def name(self):
+        if self._odv_name == "":
+            return self.__str__()
+        return self._odv_name
+
+    @name.setter
+    def name(self, new_name):
+        self._odv_name = new_name
+
     @property
     def i(self):
-        if self._odv_parent is None:
-            raise Exception("ODV_Root as no parent")
+        if self.parent is None:
+            raise Exception(f"{self.name} as no parent")
+        elif not isinstance(self.parent, OdvObjectIterable):
+            raise Exception(f"{self.name} is not an OdvObjectIterable")
         else:
-            return self._odv_parent.index(self)
+            return list(iter(self.parent)).index(self)
 
 
-class OdvObject(OdvRoot, OdvLeaf, ABC):
-    pass
+class OdvObjectIterable(OdvObject, ABC):
+
+    @abstractmethod
+    def __iter__(self) -> Iterator[Any]:
+        pass
+
+    def __getitem__(self, index: int) -> OdvObject:
+        for i,e in enumerate(self):
+            if i == index:
+                return e
+        raise IndexError
+
+    def __len__(self) -> int:
+        i=0
+        for i,e in enumerate(self):
+            pass
+        return i + 1
+
+    # def index(self, odv_child) -> int:
+    #     return list(iter(self)).index(odv_child)
+

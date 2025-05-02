@@ -2,12 +2,12 @@ from typing import Self
 
 from common import *
 from debug import timeit
-from odv.odv_object import OdvRoot, OdvObject, OdvLeaf
+from odv.odv_object import OdvObjectIterable, OdvObject
 from odv.pathfinder import PathFinder
 from .section import Section
 
 
-class Obstacle(OdvLeaf):
+class Obstacle(OdvObject):
     _poly: QPolygonF
 
     def __str__(self):
@@ -41,11 +41,15 @@ class Obstacle(OdvLeaf):
         stream.write(self.poly)
 
 
-class Sector(OdvObject):
+class Sector(OdvObjectIterable):
     _poly: QPolygonF
+    obstacle_list: list[Obstacle]
 
     def __str__(self):
         return f"Sector {self.sector_id}"
+
+    def __iter__(self):
+        return iter(self.obstacle_list)
 
     @property
     def sector_id(self):
@@ -77,8 +81,9 @@ class Sector(OdvObject):
         nb_segment = stream.read(UShort)
         segment_list = [stream.read(QLineF) for _ in range(nb_segment)]
         nb_obstacle = stream.read(UShort)
-        for _ in range(nb_obstacle):
-            rop.add_child(stream.read(Obstacle, parent=rop))
+        # for _ in range(nb_obstacle):
+        #     rop.add_child(stream.read(Obstacle, parent=rop))
+        rop.obstacle_list = [stream.read(Obstacle, parent=rop) for _ in range(nb_obstacle)]
         return rop
 
     def to_stream(self, substream: WriteStream) -> None:
@@ -92,7 +97,7 @@ class Sector(OdvObject):
 
         nb_obstacle = len(self)
         substream.write(UShort(nb_obstacle))
-        for obstacle in self:
+        for obstacle in self.obstacle_list:
             substream.write(obstacle)
 
     # @property
@@ -128,7 +133,11 @@ class Sector(OdvObject):
 
 
 
-class Layer(OdvObject):
+class Layer(OdvObjectIterable):
+    sector_list: list[Sector]
+
+    def __iter__(self):
+        return iter(self.sector_list)
 
     def total_polygon(self) -> int:
         return sum([(len(sector) + 1) for sector in self])
@@ -136,24 +145,31 @@ class Layer(OdvObject):
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
         rop = cls(parent)
-        # total_area is rebuilt on demand
-        total_area = stream.read(UShort)
+        # total_polygon is rebuilt on demand
+        total_polygon = stream.read(UShort)
         nb_sector = stream.read(UShort)
-        for _ in range(nb_sector):
-            rop.add_child(stream.read(Sector, parent=rop))
+        # for _ in range(nb_sector):
+        #     rop.add_child(stream.read(Sector, parent=rop))
+        rop.sector_list = [stream.read(Sector, parent=rop) for _ in range(nb_sector)]
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:
         stream.write(UShort(self.total_polygon()))
         nb_sector = len(self)
         stream.write(UShort(nb_sector))
-        for sector in self:
+        for sector in self.sector_list:
             stream.write(sector)
 
 
-class Move(Section, OdvRoot):
+class Move(Section, OdvObjectIterable):
     _section_name = "MOVE"
     _section_version = 1
+
+    layer_list: list[Layer]
+    path_finder: PathFinder
+
+    def __iter__(self):
+        return iter(self.layer_list)
 
     def sector(self, index: int):
         i = 0
@@ -183,14 +199,15 @@ class Move(Section, OdvRoot):
 
     def _load(self, substream: ReadStream) -> None:
         nb_layer = substream.read(UShort)
-        for _ in range(nb_layer):
-            self.add_child(substream.read(Layer, parent=self))
+        # for _ in range(nb_layer):
+        #     self.add_child(substream.read(Layer, parent=self))
+        self.layer_list = [substream.read(Layer, parent=self) for _ in range(nb_layer)]
         self.pathfinder = substream.read(PathFinder)
 
     def _save(self, substream: WriteStream) -> None:
         nb_layer = len(self)
         substream.write(UShort(nb_layer))
-        for layer in self:
+        for layer in self.layer_list:
             substream.write(layer)
 
         self.pathfinder.rebuild(self)

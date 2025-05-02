@@ -1,14 +1,14 @@
 from typing import Self
 
 from common import *
-from odv.odv_object import OdvRoot, OdvObject, OdvLeaf
+from odv.odv_object import OdvObjectIterable, OdvObject
 from .move import Move, Sector
 
 from .section import Section
 
 # TODO separate buildings door and special door
 
-class Door(OdvLeaf):
+class Door(OdvObject):
     move: Move
     door_type: UChar
     enable: UChar
@@ -102,7 +102,7 @@ class Door(OdvLeaf):
             stream.write(UChar(self.allowed_sens[1]))
 
 
-class Building(OdvObject):
+class Building(OdvObjectIterable):
     move: Move
     unk1: UShort
     character_id_list: list[UShort]
@@ -131,7 +131,7 @@ class Building(OdvObject):
             stream.write(door)
 
 
-class Buildings(OdvRoot):
+class Buildings(OdvObjectIterable):
     move: Move
 
     @classmethod
@@ -150,7 +150,7 @@ class Buildings(OdvRoot):
             stream.write(building)
 
 
-class SpecialDoors(OdvRoot):
+class SpecialDoors(OdvObjectIterable):
     move: Move
 
     @classmethod
@@ -169,7 +169,7 @@ class SpecialDoors(OdvRoot):
             stream.write(door)
 
 
-class Buil(Section):
+class Buil(Section, OdvObjectIterable):
     _section_name = "BUIL"
     _section_version = 4
 

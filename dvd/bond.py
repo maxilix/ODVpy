@@ -1,13 +1,13 @@
 from typing import Self
 
 from common import *
-from odv.odv_object import OdvRoot, OdvLeaf
+from odv.odv_object import OdvObjectIterable, OdvObject
 from .move import Layer, Move
 from .section import Section
 from .sght import Sght, SightObstacle
 
 
-class BondLine(OdvLeaf):
+class BondLine(OdvObject):
     move: Move
     sght: Sght
     line: QLineF
@@ -34,7 +34,7 @@ class BondLine(OdvLeaf):
         stream.write(UShort(self.layer.i))
 
 
-class Bond(Section, OdvRoot):
+class Bond(Section, OdvObjectIterable):
     _section_name = "BOND"
     _section_version = 2
 

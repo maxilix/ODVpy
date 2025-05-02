@@ -2,7 +2,7 @@ from typing import Self
 
 from common import *
 from common import ReadStream
-from odv.odv_object import OdvRoot, OdvLeaf
+from odv.odv_object import OdvObjectIterable, OdvObject
 from .move import Sector, Move
 
 from .section import Section
@@ -32,7 +32,7 @@ class JumpStart(RWStreamable):
         stream.write(Short(self.u3))
 
 
-class JumpArea(OdvLeaf):
+class JumpArea(OdvObject):
     move: Move
     roof_sector: Sector
     ground_sector: Sector
@@ -72,7 +72,7 @@ class JumpArea(OdvLeaf):
 
 
 
-class Jump(Section, OdvRoot):
+class Jump(Section, OdvObjectIterable):
     _section_name = "JUMP"
     _section_version = 1
 
