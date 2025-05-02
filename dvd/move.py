@@ -193,5 +193,5 @@ class Move(Section, OdvRoot):
         for layer in self:
             substream.write(layer)
 
-        # self.pathfinder.rebuild()
+        self.pathfinder.rebuild(self)
         substream.write(self.pathfinder)

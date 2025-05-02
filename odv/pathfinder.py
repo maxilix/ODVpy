@@ -215,29 +215,28 @@ class Viability(RWStreamable):
 class Link(RWStreamable):
 
     def __init__(self,
-                 pathfinders: Any,  # should be a PathFinders
-                 cp1_indexes: (UShort | int, UShort | int, UShort | int, UShort | int),
-                 cp2_indexes: (UShort | int, UShort | int, UShort | int, UShort | int),
+                 dp1_indexes: (UShort | int, UShort | int, UShort | int, UShort | int),
+                 dp2_indexes: (UShort | int, UShort | int, UShort | int, UShort | int),
                  length: Float,
-                 viability_index_list: [UShort | int]):
-        self.cp1_indexes = cp1_indexes
-        self.cp2_indexes = cp2_indexes
+                 viability_index_list: list[UShort | int]):
+        self.dp1_indexes = dp1_indexes
+        self.dp2_indexes = dp2_indexes
         self.length = length
         self.viability_index_list = viability_index_list
 
     @classmethod
-    def from_stream(cls, stream, *, pathfinders):
+    def from_stream(cls, stream):
         indexes2 = tuple(stream.read(UShort) for _ in range(4))
         indexes1 = tuple(stream.read(UShort) for _ in range(4))
         length = stream.read(Float)
         nb_pathfinder = stream.read(UShort)
         viability_index_list = [stream.read(UShort) for _ in range(nb_pathfinder)]
-        return cls(pathfinders, indexes1, indexes2, length, viability_index_list)
+        return cls(indexes1, indexes2, length, viability_index_list)
 
     def to_stream(self, stream):
-        for index in self.cp2_indexes:
+        for index in self.dp2_indexes:
             stream.write(UShort(index))
-        for index in self.cp1_indexes:
+        for index in self.dp1_indexes:
             stream.write(UShort(index))
         stream.write(Float(self.length))
         nb_pathfinder = len(self.viability_index_list)
@@ -246,15 +245,14 @@ class Link(RWStreamable):
             stream.write(UShort(viability_index))
 
 
-class CrossingPoint(RWStreamable):
+class DockingPoint(RWStreamable):
 
     def __init__(self,
-                 pathfinders: Any,  # should be a PathFinders
-                 accesses: [UChar | int],
+                 accesses: list[UChar | int],
                  point: QPointF,
                  vector_to_next: QPointF,
                  vector_from_previous: QPointF,
-                 link_index_list: [UShort | int]):
+                 link_index_list: list[UShort | int]):
         self.accesses = accesses
         self.point = point
         self.vector_to_next = vector_to_next
@@ -270,7 +268,7 @@ class CrossingPoint(RWStreamable):
         return self.point.y()
 
     @classmethod
-    def from_stream(cls, stream, *, pathfinders):
+    def from_stream(cls, stream):
         nb_pathfinder = stream.read(UShort)
         accesses = [stream.read(UChar) for _ in range(nb_pathfinder)]
         # each access (in accesses) define if obstacles are present around the point
@@ -295,7 +293,7 @@ class CrossingPoint(RWStreamable):
 
         nb_path_link = stream.read(UShort)
         path_link_index_list = [stream.read(UShort) for _ in range(nb_path_link)]
-        return cls(pathfinders, accesses, point, vector_to_next, vector_from_previous, path_link_index_list)
+        return cls(accesses, point, vector_to_next, vector_from_previous, path_link_index_list)
 
     def to_stream(self, stream):
         nb_pathfinder = UShort(len(self.accesses))  # w
@@ -316,16 +314,16 @@ class PathFinder(RWStreamable):
     polygon_list: list[list[list[QPolygonF]]] = []
     size_vectors: list[dict] = []
     size_list: list[tuple[float, float]] = []
-    crossing_point_list: list[list[list[list[CrossingPoint]]]] = []
+    docking_point_list: list[list[list[list[DockingPoint]]]] = []
     link_list: list[Link] = []
     viability_list: list[Viability] = []
 
     def __len__(self):
         return len(self.size_list)
 
-    def get_crossing_point(self, indexes):
+    def get_docking_point(self, indexes):
         assert len(indexes) == 4
-        return self.crossing_point_list[indexes[0]][indexes[1]][indexes[2]][indexes[3]]
+        return self.docking_point_list[indexes[0]][indexes[1]][indexes[2]][indexes[3]]
 
     def get_link(self, index):
         return self.link_list[index]
@@ -338,28 +336,28 @@ class PathFinder(RWStreamable):
         rop = cls()
 
         nb_pathfinder = stream.read(UShort)
-        rop.size_list = [[stream.read(Float), stream.read(Float)] for _ in range(nb_pathfinder)]
+        rop.size_list = [(stream.read(Float), stream.read(Float)) for _ in range(nb_pathfinder)]
 
-        # part 1 : crossing points
+        # part 1 : docking points
         nb_layer = stream.read(UShort)
-        rop.crossing_point_list = []
+        rop.docking_point_list = []
 
         for layer_index in range(nb_layer):
-            rop.crossing_point_list.append([])
+            rop.docking_point_list.append([])
             nb_sublayer = stream.read(UShort)
             for sublayer_index in range(nb_sublayer):
-                rop.crossing_point_list[layer_index].append([])
+                rop.docking_point_list[layer_index].append([])
                 nb_area = stream.read(UShort)
                 for area_index in range(nb_area):
-                    rop.crossing_point_list[layer_index][sublayer_index].append([])
-                    nb_crossing_point = stream.read(UShort)
-                    for crossing_point_index in range(nb_crossing_point):
-                        rop.crossing_point_list[layer_index][sublayer_index][area_index].append(
-                            stream.read(CrossingPoint, pathfinders=rop))
+                    rop.docking_point_list[layer_index][sublayer_index].append([])
+                    nb_docking_point = stream.read(UShort)
+                    for docking_point_index in range(nb_docking_point):
+                        rop.docking_point_list[layer_index][sublayer_index][area_index].append(
+                            stream.read(DockingPoint))
 
         # part 2 : path links
         nb_path_link = stream.read(UShort)
-        rop.link_list = [stream.read(Link, pathfinders=rop) for _ in range(nb_path_link)]
+        rop.link_list = [stream.read(Link) for _ in range(nb_path_link)]
 
         # part 3 : link viability
         nb_link_viability = stream.read(UShort)
@@ -374,19 +372,19 @@ class PathFinder(RWStreamable):
             substream.write(Float(size[0]))
             substream.write(Float(size[1]))
 
-        nb_layer = len(self.crossing_point_list)
+        nb_layer = len(self.docking_point_list)
         substream.write(UShort(nb_layer))
-        for cp_layer in self.crossing_point_list:
-            nb_sublayer = len(cp_layer)
+        for dp_layer in self.docking_point_list:
+            nb_sublayer = len(dp_layer)
             substream.write(UShort(nb_sublayer))
-            for cp_sublayer in cp_layer:
-                nb_area = len(cp_sublayer)
+            for dp_sublayer in dp_layer:
+                nb_area = len(dp_sublayer)
                 substream.write(UShort(nb_area))
-                for cp_area in cp_sublayer:
-                    nb_crossing_point = len(cp_area)
-                    substream.write(UShort(nb_crossing_point))
-                    for crossing_point in cp_area:
-                        substream.write(crossing_point)
+                for dp_area in dp_sublayer:
+                    nb_docking_point = len(dp_area)
+                    substream.write(UShort(nb_docking_point))
+                    for docking_point in dp_area:
+                        substream.write(docking_point)
 
         nb_link = len(self.link_list)
         substream.write(UShort(nb_link))
@@ -421,9 +419,9 @@ class PathFinder(RWStreamable):
         print("\b\b Done.")
 
         print("Evaluating docking point location...", end="")
-        self._rebuild_crossing_points()
+        self._rebuild_docking_points()
         print("\b\b Done.")
-        print(f"  {sum([sum([sum([len(cp_l) for cp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in self.crossing_point_list])} docking point found.")
+        print(f"  {sum([sum([sum([len(dp_l) for dp_l in area_l]) for area_l in sublayer_l]) for sublayer_l in self.docking_point_list])} docking point found.")
 
         print("Generating links...", end="")
         self._rebuild_links(max_link_length)
@@ -469,30 +467,30 @@ class PathFinder(RWStreamable):
                         return False
 
     @timeit
-    def _rebuild_crossing_points(self):
+    def _rebuild_docking_points(self):
         """
-        rebuild all the crossing point list
+        rebuild all the docking point list
         """
 
-        self.crossing_point_list = []
+        self.docking_point_list = []
         for i, pll in enumerate(self.polygon_list):
-            self.crossing_point_list.append([])
+            self.docking_point_list.append([])
             for j, pl in enumerate(pll):
-                self.crossing_point_list[i].append([])
+                self.docking_point_list[i].append([])
                 for k, p in enumerate(pl):
-                    self.crossing_point_list[i][j].append([])
-                    # 1 - define crossing point list of polygon i j k
-                    self._rebuild_crossing_points_of(i, j, k)
+                    self.docking_point_list[i][j].append([])
+                    # 1 - define docking point list of polygon i j k
+                    self._rebuild_docking_points_of(i, j, k)
                     # 2 - build accesses
-                    for l, cp in enumerate(self.crossing_point_list[i][j][k]):
+                    for l, dp in enumerate(self.docking_point_list[i][j][k]):
                         self._rebuild_accesses_of(i, j, k, l)
-                    # 3 - remove cp with complete no access
-                    self.crossing_point_list[i][j][k] =\
-                        [cp for cp in self.crossing_point_list[i][j][k] if sum(cp.accesses) > 0]
+                    # 3 - remove dp with complete no access
+                    self.docking_point_list[i][j][k] =\
+                        [dp for dp in self.docking_point_list[i][j][k] if sum(dp.accesses) > 0]
 
     @timeit
-    def _rebuild_crossing_points_of(self, i, j, k):
-        self.crossing_point_list[i][j][k] = []
+    def _rebuild_docking_points_of(self, i, j, k):
+        self.docking_point_list[i][j][k] = []
         poly = self.polygon_list[i][j][k]
         n = poly.count()
         for index in range(poly.count()):
@@ -501,13 +499,12 @@ class PathFinder(RWStreamable):
             np = poly[(index + 1) % n]  # next point
             theta = QLineF(cp, pp).angleTo(QLineF(cp, np))
 
-            if theta < 180:  # this point is a crossing point
-                self.crossing_point_list[i][j][k].append(CrossingPoint(self,
-                                                                       [],
-                                                                       cp,
-                                                                       np - cp,
-                                                                       cp - pp,
-                                                                       []))
+            if theta < 180:  # this point is a docking point
+                self.docking_point_list[i][j][k].append(DockingPoint([],
+                                                                     cp,
+                                                                     np - cp,
+                                                                     cp - pp,
+                                                                     []))
 
     @timeit
     def _rebuild_accesses_of(self, i, j, k, l):
@@ -520,12 +517,12 @@ class PathFinder(RWStreamable):
                 rop = rop.translated(0, -2 * s[1])  # go to Nort
             return QPolygonF(rop)
 
-        cp = self.crossing_point_list[i][j][k][l]
+        dp = self.docking_point_list[i][j][k][l]
         for size in self.size_list:
             access = 0
             dqa = 8*size[0]*size[1]  # double of quarter rectangle
             for d in [1,2,4,8]:
-                r = rect_at(cp.x, cp.y, size, d)
+                r = rect_at(dp.x, dp.y, size, d)
                 if dqa - abs(signed_double_area(self.polygon_list[i][j][0].intersected(r))) > 0.2:
                     # the area of intersection with the main polygon is smaller than the area of the rectangle
                     continue
@@ -541,7 +538,7 @@ class PathFinder(RWStreamable):
                 if touch_other_obstacles:
                     continue
                 access += d
-            cp.accesses.append(access)
+            dp.accesses.append(access)
 
 
     @timeit
@@ -558,15 +555,15 @@ class PathFinder(RWStreamable):
 
     @timeit
     def _get_traces(self, pf_index, i, j, k1, l1, k2, l2):
-        cp1 = self.crossing_point_list[i][j][k1][l1]
-        cp2 = self.crossing_point_list[i][j][k2][l2]
-        combine_quarts = [(sq, eq) for sq in [1, 2, 4, 8] if cp1.accesses[pf_index] & sq
-                                   for eq in [1, 2, 4, 8] if cp2.accesses[pf_index] & eq]
+        dp1 = self.docking_point_list[i][j][k1][l1]
+        dp2 = self.docking_point_list[i][j][k2][l2]
+        combine_quarts = [(sq, eq) for sq in [1, 2, 4, 8] if dp1.accesses[pf_index] & sq
+                                   for eq in [1, 2, 4, 8] if dp2.accesses[pf_index] & eq]
 
         rop = []
         for sq, eq in combine_quarts:
-            c1 = cp1.point + self.size_vectors[pf_index][sq]
-            c2 = cp2.point + self.size_vectors[pf_index][eq]
+            c1 = dp1.point + self.size_vectors[pf_index][sq]
+            c2 = dp2.point + self.size_vectors[pf_index][eq]
             path_vector = QLineF(c1, c2)
             a = path_vector.angle()
 
@@ -581,8 +578,8 @@ class PathFinder(RWStreamable):
                 # this combination of quarters is irrelevant depending on the angle
                 continue
 
-            p = path_vector.angleTo(QLineF(QPointF(0,0), -cp1.vector_from_previous))
-            n = QLineF(QPointF(0,0), cp1.vector_to_next).angleTo(path_vector)
+            p = path_vector.angleTo(QLineF(QPointF(0,0), -dp1.vector_from_previous))
+            n = QLineF(QPointF(0,0), dp1.vector_to_next).angleTo(path_vector)
             if not ((sq == 1 and (0 <= a < 90 and p > 180 or 180 < a <= 270 and n > 180)) or
                     (sq == 2 and (270 <= a < 360 and p > 180 or 90 < a <= 180 and n > 180)) or
                     (sq == 4 and (180 <= a < 270 and p > 180 or 0 < a <= 90 and n > 180)) or
@@ -590,8 +587,8 @@ class PathFinder(RWStreamable):
                 # start condition failed
                 continue
 
-            p = (path_vector.angleTo(QLineF(QPointF(0,0), -cp2.vector_from_previous)) + 180) % 360
-            n = (QLineF(QPointF(0,0), cp2.vector_to_next).angleTo(path_vector) + 180) % 360
+            p = (path_vector.angleTo(QLineF(QPointF(0,0), -dp2.vector_from_previous)) + 180) % 360
+            n = (QLineF(QPointF(0,0), dp2.vector_to_next).angleTo(path_vector) + 180) % 360
             if not ((eq == 1 and (180 <= a < 270 and p > 180 or 0 < a <= 90 and n > 180)) or
                     (eq == 2 and (90 <= a < 180 and p > 180 or (270 < a < 360 or a == 0) and n > 180)) or
                     (eq == 4 and (0 <= a < 90 and p > 180 or 180 < a <= 270 and n > 180)) or
@@ -630,24 +627,23 @@ class PathFinder(RWStreamable):
         self.link_list = []
         self.viability_list = [Viability([], [])]  # 0xff at index 0
 
-        for i, cp_lll in enumerate(self.crossing_point_list):
-            for j, cp_ll in enumerate(cp_lll):
-                for k1, cp1_l in enumerate(cp_ll):
-                    for l1, cp1 in enumerate(cp1_l):
-                        for k2, cp2_l in enumerate(cp_ll):
-                            for l2, cp2 in enumerate(cp2_l):
-                                if QLineF(cp1.point, cp2.point).length() > max_link_length:
+        for i, dp_lll in enumerate(self.docking_point_list):
+            for j, dp_ll in enumerate(dp_lll):
+                for k1, dp1_l in enumerate(dp_ll):
+                    for l1, dp1 in enumerate(dp1_l):
+                        for k2, dp2_l in enumerate(dp_ll):
+                            for l2, dp2 in enumerate(dp2_l):
+                                if QLineF(dp1.point, dp2.point).length() > max_link_length:
                                     continue
-                                if (cp2.x == cp1.x and cp2.y > cp1.y or
-                                    cp2.y == cp1.y and cp2.x > cp1.x or
-                                    cp2.x > cp1.x and cp2.y > cp1.y or
-                                    cp2.x > cp1.x and cp2.y < cp1.y) is False:
+                                if (dp2.x == dp1.x and dp2.y > dp1.y or
+                                    dp2.y == dp1.y and dp2.x > dp1.x or
+                                    dp2.x > dp1.x and dp2.y > dp1.y or
+                                    dp2.x > dp1.x and dp2.y < dp1.y) is False:
                                     continue
 
-                                link = Link(self,
-                                            (i, j, k1, l1),
+                                link = Link((i, j, k1, l1),
                                             (i, j, k2, l2),
-                                            QLineF(cp1.point, cp2.point).length(),
+                                            QLineF(dp1.point, dp2.point).length(),
                                             [])
 
                                 for pf_index in range(len(self)):
@@ -665,12 +661,12 @@ class PathFinder(RWStreamable):
 
                                 if sum(link.viability_index_list) > 0:  # if at least one viability has been appended
                                     self.link_list.append(link)
-                                    cp1.link_index_list.append(len(self.link_list) - 1)
-                                    reversed_link = Link(self, link.cp2_indexes, link.cp1_indexes, link.length, [])
+                                    dp1.link_index_list.append(len(self.link_list) - 1)
+                                    reversed_link = Link(link.dp2_indexes, link.dp1_indexes, link.length, [])
                                     for viability in link.viability_index_list:
                                         reversed_viability = Viability(self.viability_list[viability].t2,
                                                                        self.viability_list[viability].t1)
                                         self.viability_list.append(reversed_viability)
                                         reversed_link.viability_index_list.append(len(self.viability_list) - 1)
                                     self.link_list.append(reversed_link)
-                                    cp2.link_index_list.append(len(self.link_list) - 1)
+                                    dp2.link_index_list.append(len(self.link_list) - 1)
