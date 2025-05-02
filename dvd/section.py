@@ -69,8 +69,8 @@ class Section(RWStreamable):
         self._loaded = False
         # log.info(f"Section {self.section} initialized.")
 
-    def __str__(self):
-        return f"{self._section_name} Section"
+    # def __str__(self):
+    #     return f"{self._section_name} Section"
 
     @property
     def version(self):

@@ -1,9 +1,9 @@
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QStackedLayout
 
-from dvd.move import Layer, MainArea, Obstacle, Move
+from dvd.move import Layer, Sector, Obstacle, Move
 from odv.odv_object import OdvRoot
-from qt.control_old.generic_tree import QODVTreeItem, QGenericTree
+from qt.control.widget_generic_tree import QGenericTreeItem, QGenericTreeWidget
 from qt.control_old.inspector_abstract import Inspector
 
 from qt.control_old.inspector_graphic import GeometrySubInspector
@@ -43,7 +43,7 @@ class LayerInspector(Inspector):
     child_name = "Main Area"
 
     def new_odv_child(self):
-        new_main_area = MainArea(self.odv_object)
+        new_main_area = Sector(self.odv_object)
         new_main_area.poly = self._tab_control.scene.new_centered_polygon(scale=0.9)
         return new_main_area
 
@@ -64,7 +64,7 @@ class MoveInspector(Inspector):
 class QMoveTabControl(QTabControl):
     inspector_types = {Move: MoveInspector,
                        Layer: LayerInspector,
-                       MainArea: MainAreaInspector,
+                       Sector: MainAreaInspector,
                        Obstacle: ObstacleInspector}
 
     def __init__(self, parent, odv_root_list):
@@ -83,7 +83,7 @@ class QMoveTabControl(QTabControl):
             if not isinstance(odv_root, OdvRoot):
                 return
             for odv_object in odv_root:
-                self.tree_items[odv_object] = QODVTreeItem(self, odv_object)
+                self.tree_items[odv_object] = QGenericTreeItem(self, odv_object)
                 tree_parent_item.addChild(self.tree_items[odv_object])
                 self.inspectors[odv_object] = self.inspector_types.get(type(odv_object), Inspector)(self, odv_object)
                 self.inspector_stack_layout.addWidget(self.inspectors[odv_object])
@@ -92,7 +92,7 @@ class QMoveTabControl(QTabControl):
 
         content = QWidget()
         layout = QVBoxLayout(content)
-        self.tree = QGenericTree()
+        self.tree = QGenericTreeWidget()
         self.tree.itemSelectionChanged.connect(self.item_selection_changed)
         self.tree.setMinimumHeight(300)
 
@@ -101,7 +101,7 @@ class QMoveTabControl(QTabControl):
         self.inspector_stack_layout = QStackedLayout(self.inspector_stack_widget)
 
         for odv_section in self.odv_section_list:
-            self.tree_items[odv_section] = QODVTreeItem(self, odv_section)
+            self.tree_items[odv_section] = QGenericTreeItem(self, odv_section)
             self.tree.addTopLevelItem(self.tree_items[odv_section])
             self.inspectors[odv_section] = self.inspector_types.get(type(odv_section), Inspector)(self, odv_section)
             self.inspector_stack_layout.addWidget(self.inspectors[odv_section])

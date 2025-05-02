@@ -3,8 +3,7 @@ from math import floor
 from config import CONFIG
 from dvd.sght import GroundSight
 from odv.level import BackupedLevel, Level
-import numpy as np
-import matplotlib.pyplot as plt
+
 
 
 CONFIG.load()
@@ -21,6 +20,8 @@ level = Level("./dev/empty_level/empty_level_02")
 
 
 move = level.dvd.move
+print(len(move))
+exit()
 move.pathfinder.rebuild(move, max_link_length=30000, print_times=True)
 level.insert_in_game()
 

@@ -1,10 +1,10 @@
 from typing import Self
 
 from common import *
-from odv.odv_object import OdvBase
+from odv.odv_object import OdvObject
 
 
-class LevelMap(OdvBase):
+class LevelMap(OdvObject):
 	def __init__(self, image):
 		super().__init__()
 		self.image = image

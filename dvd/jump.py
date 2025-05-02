@@ -3,7 +3,7 @@ from typing import Self
 from common import *
 from common import ReadStream
 from odv.odv_object import OdvRoot, OdvLeaf
-from .move import MainArea, Move
+from .move import Sector, Move
 
 from .section import Section
 
@@ -34,8 +34,8 @@ class JumpStart(RWStreamable):
 
 class JumpArea(OdvLeaf):
     move: Move
-    roof_main_area: MainArea
-    ground_main_area: MainArea
+    roof_main_area: Sector
+    ground_main_area: Sector
     landing_polygon: QPolygonF
     jump_start_list: list[JumpStart]
 

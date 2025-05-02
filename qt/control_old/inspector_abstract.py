@@ -2,7 +2,7 @@ from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QWidget, QPushButton, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QFormLayout
 
-from qt.control_old.generic_tree import QODVTreeItem
+from qt.control.widget_generic_tree import QGenericTreeItem
 
 TITLE_SIZE = 22
 
@@ -112,7 +112,7 @@ class Inspector(QWidget):
         return self._tab_control.level
 
     @property
-    def tree_item(self) -> QODVTreeItem:
+    def tree_item(self) -> QGenericTreeItem:
         return self._tab_control.tree_items[self.odv_object]
 
     @property
@@ -185,7 +185,7 @@ class Inspector(QWidget):
         odv_child = self.new_odv_child()
         self.odv_object.add_child(odv_child)
 
-        self._tab_control.tree_items[odv_child] = QODVTreeItem(self._tab_control, odv_child)
+        self._tab_control.tree_items[odv_child] = QGenericTreeItem(self._tab_control, odv_child)
         self.tree_item.addChild(self._tab_control.tree_items[odv_child])
 
         self._tab_control.inspectors[odv_child] = self._tab_control.inspector_types.get(type(odv_child), Inspector)(self._tab_control, odv_child)

@@ -2,7 +2,7 @@ from typing import Self
 
 from common import *
 from odv.odv_object import OdvRoot, OdvObject, OdvLeaf
-from .move import Move, MainArea
+from .move import Move, Sector
 
 from .section import Section
 
@@ -22,8 +22,8 @@ class Door(OdvLeaf):
     unk_bool_8: UChar
     shape: QPolygonF
     gateway: Gateway
-    main_area_1: MainArea
-    main_area_3: MainArea
+    main_area_1: Sector
+    main_area_3: Sector
     anim_id: UShort
     allowed_sens: (UChar, UChar)
 

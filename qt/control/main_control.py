@@ -1,9 +1,11 @@
-from PyQt6.QtCore import Qt
+from typing import Optional
+
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QMouseEvent, QCursor, QAction
 from PyQt6.QtWidgets import QTabWidget, QMenu
 
-from qt.control.tab_dvm import QMapTabControl
-from qt.control_old.tab_move import QMoveTabControl
+from qt.control.tab_dvm import QDvmTab
+from qt.control.tab_move import QMoveTab
 
 
 # MISC - Miscellaneous
@@ -28,7 +30,10 @@ from qt.control_old.tab_move import QMoveTabControl
 # DLGS -
 
 
-class QMainControl(QTabWidget):
+class QControl(QTabWidget):
+
+    sendStatus = pyqtSignal(str, int)
+
     def __init__(self, parent, scene, level):
         super().__init__(parent)
         self.scene = scene
@@ -42,10 +47,10 @@ class QMainControl(QTabWidget):
         # self.tabCloseRequested.connect(self.close_tab)
 
         self.tab = dict()
-        self.tab["DVM"] = QMapTabControl(self, level.dvm.level_map)
+        self.tab["DVM"] = QDvmTab(self, level.dvm.level_map)
         # self.tab["MISC"] = None
         # self.tab["BGND"] = None
-        self.tab["MOVE"] = QMoveTabControl(self, level.dvd.move)
+        self.tab["MOVE"] = QMoveTab(self, level.dvd.move)
         # self.tab["SGHT"] = QSghtTabControl(self, level.dvd.sght)
         # self.tab["MASK"] = QMaskTabControl(self, level.dvd.mask)
         # self.tab["WAYS"] = None

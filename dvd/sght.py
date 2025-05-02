@@ -2,7 +2,7 @@ from typing import Self
 
 from common import *
 from odv.odv_object import OdvLeaf, OdvRoot
-from .move import Move, MainArea
+from .move import Move, Sector
 from .section import Section
 
 
@@ -35,7 +35,7 @@ class SightLine(RWStreamable):
 class SightObstacle(OdvLeaf):
     move: Move
     vline_list: list[SightLine]
-    main_area: MainArea | None
+    main_area: Sector | None
     unk_char_1: UChar
     unk_char_2: UChar
     unk_char_3: UChar

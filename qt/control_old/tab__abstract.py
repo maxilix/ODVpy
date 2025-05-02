@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QScrollArea, QWidget, QVBoxLayout, QSizePolicy, \
     QStackedLayout
 
 from odv.odv_object import OdvRoot
-from qt.control_old.generic_tree import QODVTreeItem, QGenericTree
+from qt.control.widget_generic_tree import QGenericTreeItem, QGenericTreeWidget
 from qt.control_old.inspector_abstract import Inspector
 
 
@@ -85,7 +85,7 @@ class QTabControlGenericTree(QTabControl):
             if not isinstance(odv_root, OdvRoot):
                 return
             for odv_object in odv_root:
-                self.tree_items[odv_object] = QODVTreeItem(self, odv_object)
+                self.tree_items[odv_object] = QGenericTreeItem(self, odv_object)
                 tree_parent_item.addChild(self.tree_items[odv_object])
                 self.inspectors[odv_object] = self.inspector_types.get(type(odv_object), Inspector)(self, odv_object)
                 self.inspector_stack_layout.addWidget(self.inspectors[odv_object])
@@ -94,7 +94,7 @@ class QTabControlGenericTree(QTabControl):
 
         content = QWidget()
         layout = QVBoxLayout(content)
-        self.tree = QGenericTree()
+        self.tree = QGenericTreeWidget()
         self.tree.itemSelectionChanged.connect(self.item_selection_changed)
         self.tree.setMinimumHeight(300)
 
@@ -103,7 +103,7 @@ class QTabControlGenericTree(QTabControl):
         self.inspector_stack_layout = QStackedLayout(self.inspector_stack_widget)
 
         for odv_section in self.odv_section_list:
-            self.tree_items[odv_section] = QODVTreeItem(self, odv_section)
+            self.tree_items[odv_section] = QGenericTreeItem(self, odv_section)
             self.tree.addTopLevelItem(self.tree_items[odv_section])
             self.inspectors[odv_section] = self.inspector_types.get(type(odv_section), Inspector)(self, odv_section)
             self.inspector_stack_layout.addWidget(self.inspectors[odv_section])
