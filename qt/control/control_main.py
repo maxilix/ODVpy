@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QMouseEvent, QCursor, QAction, QDropEvent
 from PyQt6.QtWidgets import QTabWidget, QMenu, QWidget, QSplitter, QVBoxLayout, QComboBox, QLabel, QTreeWidgetItem, \
-    QHBoxLayout, QTreeWidget, QAbstractItemView, QPushButton
+    QHBoxLayout, QTreeWidget, QAbstractItemView, QPushButton, QStackedLayout
 
 from config import CONFIG
 from odv.data_section import Move, Misc, Bgnd
@@ -159,7 +159,7 @@ class QSection(object):
             new_tree_item.setText(0, odv_current_object.name)
             if odv_parent_object is None:
                 pass
-                # self.main_control.tree.addTopLevelItem(new_tree_item)
+                self.tree.addTopLevelItem(new_tree_item)
             else:
                 self._d[odv_parent_object][0].addChild(new_tree_item)
             self._d[odv_current_object] = (new_tree_item, self.inspectors[type(odv_current_object)])
@@ -169,7 +169,8 @@ class QSection(object):
                     recursive_load(odv_child_object, odv_current_object)
 
         recursive_load(self.section, None)
-        self.loaded = True
+
+
 
 
 
@@ -225,19 +226,22 @@ class QControl(QWidget):
         self.section_full_name_label = QLabel()
         line_layout.addWidget(self.section_full_name_label)
         line_layout.addStretch()
-        self.load_unload_button = QPushButton()
-        self.load_unload_button.setText("Load")
-        self.load_unload_button.clicked.connect(self.load_unload_button_clicked)
-        line_layout.addWidget(self.load_unload_button)
+        # self.load_unload_button = QPushButton()
+        # self.load_unload_button.setText("Load")
+        # self.load_unload_button.clicked.connect(self.load_unload_button_clicked)
+        # line_layout.addWidget(self.load_unload_button)
         sections_layout.addLayout(line_layout)
         sections_layout.addStretch()
 
         top_layout.addWidget(section_widget)
-        self.tree = QGenericTree()
-        self.tree.setMinimumWidth(250)
-        self.tree.setMaximumWidth(400)
+        self.tree_stack_layout = QStackedLayout()
+        # self.tree_stack.setMinimumWidth(250)
+        # self.tree_stack.setMaximumWidth(400)
         # self.tree.setMaximumHeight(400)
-        top_layout.addWidget(self.tree)
+        for q_section in self.q_section.values():
+            self.tree_stack_layout.addWidget(q_section.tree)
+        top_layout.addLayout(self.tree_stack_layout)
+        self.tree_stack_layout.setCurrentWidget(self.q_section["MISC"].tree)
 
         main_layout.addWidget(top_widget)
 
@@ -252,28 +256,23 @@ class QControl(QWidget):
     def current_section_changed(self, section_index):
         section_name = odv_section_list[section_index]
         self.section_full_name_label.setText(section_name)
-        self.tree.takeTopLevelItem(0)
-        if (qs:=self.q_section[section_name]).loaded is True:
-            self.load_unload_button.setText("Unload")
-            self.tree.addTopLevelItem(qs.section_tree_item())
-        else:
-            self.load_unload_button.setText("Load")
+        self.tree_stack_layout.setCurrentWidget(self.q_section[section_name].tree)
 
         # if section_index == 2:
         #     build_tree_structure(self.tree, self.level.dvd.move.tree_structure)
         # self.tree.setEnabled(self.tree.topLevelItemCount() > 0)
 
-    def load_unload_button_clicked(self):
-        qs = self.current_q_section
-        if qs.loaded is True:
-            self.load_unload_button.setText("Load")
-            self.tree.takeTopLevelItem(0)  # remove top level item without clear memory
-            qs.unload()
-        else:
-            qs.load()
-            self.load_unload_button.setText("Unload")
-            self.tree.takeTopLevelItem(0)  # remove top level item without clear memory
-            self.tree.addTopLevelItem(qs.section_tree_item())
+    # def load_unload_button_clicked(self):
+    #     qs = self.current_q_section
+    #     if qs.loaded is True:
+    #         self.load_unload_button.setText("Load")
+    #         self.tree_stack.takeTopLevelItem(0)  # remove top level item without clear memory
+    #         qs.unload()
+    #     else:
+    #         qs.load()
+    #         self.load_unload_button.setText("Unload")
+    #         self.tree_stack.takeTopLevelItem(0)  # remove top level item without clear memory
+    #         self.tree_stack.addTopLevelItem(qs.section_tree_item())
 
 
 

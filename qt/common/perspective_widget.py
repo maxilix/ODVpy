@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QLabel
 from PyQt6.QtGui import QPainter, QPen, QColor, QBrush
 from PyQt6.QtCore import Qt, QPointF
 import math
@@ -12,6 +12,7 @@ class QPerspective(QWidget):
         self.perspective = 0  # Initial angle (0 - 15, representing 16 positions)
 
     def paintEvent(self, event):
+        super().paintEvent(event)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
@@ -67,8 +68,11 @@ class QPerspective(QWidget):
         self.perspective = round((angle + 90) / (360.0 / 16)) % 16
 
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
+if __name__ == '__main__':
+    app = QApplication([])
+    app.setStyle('Fusion')
+    window = QMainWindow()
     widget = QPerspective()
-    widget.show()
+    window.setCentralWidget(widget)
+    window.show()
     sys.exit(app.exec())

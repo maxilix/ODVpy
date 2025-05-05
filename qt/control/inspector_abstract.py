@@ -267,11 +267,11 @@ class Inspector(QWidget):
         return rop
 
     def has_focus(self):
-        return self._tab_control.has_focus() and self._tab_control.tree.currentItem() == self.tree_item
+        return self._tab_control.has_focus() and self._tab_control.tree_stack.currentItem() == self.tree_item
 
     def take_focus(self):
         self._tab_control.take_focus()
-        self._tab_control.tree.setCurrentItem(self.tree_item)
+        self._tab_control.tree_stack.setCurrentItem(self.tree_item)
         self.update()
 
 

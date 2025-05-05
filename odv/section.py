@@ -72,15 +72,11 @@ class Section(RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         name = stream.read(String, 4)
-        try:
-            assert name == cls._section_name
-        except AssertionError:
+        if name != cls._section_name:
             raise ValueError(f"Name mismatch: {name} and {cls._section_name}")
         size = stream.read(UInt)
         version = stream.read(Version)
-        try:
-            assert version == cls._section_version
-        except AssertionError:
+        if version != cls._section_version:
             raise ValueError(f"{cls._section_name} version mismatch: {version} and {cls._section_version}")
         data = stream.read(Bytes, size - 4)  # minus version size
         return cls(data)
@@ -112,7 +108,7 @@ class Section(RWStreamable):
         self._save(substream)
         new_data = substream.get_value()
         if new_data == b'':
-            # assume _save() do nothing, self._data dont change
+            # assume _save() do nothing, self._data don't change
             pass
         else:
             self._data = new_data
