@@ -1,8 +1,5 @@
-import shutil
-
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QLabel, QFileDialog, \
-    QMessageBox
+from PyQt6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QLabel, QFileDialog
 
 from odv.level import Level, original_name
 from qt.common.simple_messagebox import QErrorBox, QInfoBox

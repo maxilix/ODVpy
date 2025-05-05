@@ -1,6 +1,5 @@
 import hashlib
 import os
-import random
 
 from common import extension
 from odv.level import original_name

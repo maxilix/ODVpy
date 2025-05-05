@@ -1,5 +1,5 @@
 from common import Image
-from dvm.dvm_parser import LevelMap
+from odv.parser.dvm_parser import LevelMap
 from qt.common.utils import image_to_qimage
 from qt.control.inspector_graphic import PixmapSubInspector
 from qt.control.inspector_abstract import Inspector

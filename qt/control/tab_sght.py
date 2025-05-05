@@ -1,8 +1,6 @@
-from PyQt6.QtCore import QRectF
 from PyQt6.QtGui import QColor
 
-from common import *
-from dvd.sght import Sght, SightObstacle
+from odv.data_section.sght import Sght, SightObstacle
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import InfoSubInspector, OdvObjectListSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector

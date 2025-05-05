@@ -1,7 +1,7 @@
-from PyQt6.QtGui import QColor, QPolygonF
+from PyQt6.QtGui import QColor
 
 from common import *
-from dvd.buil import Door, Building, SpecialDoors, Buildings
+from odv.data_section.buil import Door, Building, SpecialDoors, Buildings
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import IntegerBoxInspector, InfoSubInspector, ConstantEnumListInspector, \
     MultiCheckBoxInspector, CheckBoxInspector, IntegerTwinBoxInspector, OdvObjectListSubInspector

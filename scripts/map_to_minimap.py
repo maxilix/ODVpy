@@ -1,14 +1,8 @@
 import os
 
-from minimap.regression import poly_reg, apply_poly
-
 os.chdir("../")
 
 import cv2
-
-from odv.level import BackupedLevel
-
-
 
 # map_size_x = []
 # map_size_y = []

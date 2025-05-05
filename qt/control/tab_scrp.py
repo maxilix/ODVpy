@@ -1,6 +1,6 @@
 from PyQt6.QtGui import QColor
 
-from dvd.scrp import Scrp, Script
+from odv.data_section.scrp import Scrp, Script
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import InfoSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector

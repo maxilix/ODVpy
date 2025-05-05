@@ -5,5 +5,4 @@ from .exception import *
 from .rw_object import Version, Padding, Gateway
 from .geometry import Gateway
 from .rw_image import Pixel, Image, MaskImage
-from .parser import Parser
 from .utils import *

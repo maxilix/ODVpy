@@ -1,11 +1,6 @@
-from math import floor
-
 from config import CONFIG
-from dvd.sght import GroundSight
+from odv.data_section.sght import GroundSight
 from odv.level import BackupedLevel, Level
-import numpy as np
-import matplotlib.pyplot as plt
-
 
 CONFIG.load()
 

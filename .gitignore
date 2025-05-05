@@ -8,15 +8,14 @@ ign_*
 aspr*
 
 # others
-dvd/_bidictmaps.py
-dvd/_bitmap.py
-dvd/_common.py
-
-dvd/_sght.py
-dvd/_ways.py
-dvd/_elem.py
-dvd/_fxbk.py
-dvd/_msic.py
+odv/data_section/_bidictmaps.py
+odv/data_section/_bitmap.py
+odv/data_section/_common.py
+odv/data_section/_sght.py
+odv/data_section/_ways.py
+odv/data_section/_elem.py
+odv/data_section/_fxbk.py
+odv/data_section/_msic.py
 
 ### venv template
 # Virtualenv

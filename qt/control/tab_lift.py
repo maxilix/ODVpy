@@ -1,7 +1,7 @@
 from PyQt6.QtGui import QColor
 
 from common import *
-from dvd.lift import LiftArea, Lift
+from odv.data_section.lift import LiftArea, Lift
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import OdvObjectListSubInspector, IntegerBoxInspector, \
     ConstantEnumListInspector

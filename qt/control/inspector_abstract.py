@@ -40,7 +40,7 @@ class Inspector(QWidget):
     draggable = False
     child_name = ""
 
-    def __init__(self, tab_control, odv_object):
+    def __init__(self, tab_control, odv_object=None):
         super().__init__()
         self._tab_control = tab_control
         self.odv_object = odv_object
@@ -65,7 +65,10 @@ class Inspector(QWidget):
         header_layout.addWidget(self.settings_button)
 
         self.title = QLabel(self)
-        self.title.setText(self.odv_object.name)
+        if self.odv_object is not None:
+            self.title.setText(self.odv_object.name)
+        else:
+            self.title.setText("No linked objects")
         f = self.title.font()
         f.setPointSizeF(TITLE_SIZE)
         self.title.setFont(f)

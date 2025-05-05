@@ -1,9 +1,8 @@
 from PyQt6.QtGui import QColor
 
-from common import UShort
-from dvd.bond import BondLine, Bond
+from odv.data_section.bond import BondLine, Bond
 from qt.control.inspector_abstract import Inspector
-from qt.control.inspector_generic import OdvObjectListSubInspector, IntegerTwinBoxInspector
+from qt.control.inspector_generic import OdvObjectListSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
 from qt.control.tab__abstract import QTabControlGenericTree
 

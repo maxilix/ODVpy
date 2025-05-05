@@ -2,12 +2,11 @@ import hashlib
 import os
 import re
 
-from scb.scb_parser import ScbParser
+from .parser import DvdParser, DvmParser
 from settings import *
 from config import CONFIG
 
-from dvd import DvdParser
-from dvm import DvmParser
+
 
 from common import copy, InvalidHashError
 
@@ -39,7 +38,7 @@ class Level(object):
 
         self._dvd = None
         self._dvm = None
-        self._scb = None
+        # self._scb = None
         # self._stf = None
 
     @property
@@ -48,11 +47,11 @@ class Level(object):
             self._dvd = DvdParser(self.abs_name + ".dvd")
         return self._dvd
 
-    @property
-    def scb(self):
-        if self._scb is None:
-            self._scb = ScbParser(self.abs_name + ".scb")
-        return self._scb
+    # @property
+    # def scb(self):
+    #     if self._scb is None:
+    #         self._scb = ScbParser(self.abs_name + ".scb")
+    #     return self._scb
 
     @property
     def dvm(self):

@@ -1,6 +1,6 @@
-from PyQt6.QtGui import QColor, QPolygonF
+from PyQt6.QtGui import QColor
 
-from dvd.move import Layer, Sector, Obstacle, Move
+from odv.data_section.move import Layer, Sector, Obstacle, Move
 from qt.control.inspector_graphic import GeometrySubInspector
 from qt.control.inspector_abstract import Inspector
 from qt.control.tab__abstract import QTabControlGenericTree

@@ -7,7 +7,7 @@ from common import *
 from config import CONFIG
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
-from qt.control.tab__main import QMainControl
+from qt.control.control_main import QControl
 from qt.info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
 from qt.scene import QScene
@@ -20,8 +20,8 @@ class QWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle('ODVpy Editor')
-        self.showMaximized()
-        # self.setMinimumSize(800, 600)
+        # self.showMaximized()
+        self.setMinimumSize(800, 600)
 
         # self.current_level = None
         self.current_level = BackupedLevel(4)
@@ -176,7 +176,7 @@ class QWindow(QMainWindow):
             info_bar = QInfoBar(visualizer)
             scene = QScene(visualizer)
             viewport = QViewport(scene, self.current_level.dvm.level_map, info_bar)
-            control = QMainControl(main_widget, scene, self.current_level)
+            control = QControl(main_widget, scene, self.current_level)
             control.sendStatus.connect(self.status_bar.showMessage)
             info_bar.set_info(level_index=self.current_level.index)
 

@@ -1,5 +1,4 @@
 from odv.level import BackupedLevel
-import numpy as np
 from collections import defaultdict
 from PIL import Image
 

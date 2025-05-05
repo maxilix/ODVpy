@@ -1,6 +1,6 @@
 from PyQt6.QtGui import QColor
 
-from dvd.mask import Mask, MaskEntry
+from odv.data_section.mask import Mask, MaskEntry
 from qt.common.utils import maskimage_to_qimage
 from qt.control.inspector_abstract import Inspector
 from qt.control.inspector_generic import InfoSubInspector
