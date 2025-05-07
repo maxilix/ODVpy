@@ -2,9 +2,9 @@ from common import Image
 from odv.parser.dvm_parser import LevelMap
 from qt.common.utils import image_to_qimage
 from qt.control.inspector_graphic import PixmapSubInspector
-from qt.control.inspector_abstract import Inspector
-from qt.control.tab__abstract import QTabControlGenericTree
-from qt.control.inspector_generic import InfoSubInspector
+from qt.control.generic_inspector import Inspector
+from qt.control.control_section import QTabControlGenericTree
+from qt.control._sub_inspector import InfoSubInspector
 
 
 #

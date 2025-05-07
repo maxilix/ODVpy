@@ -1,10 +1,10 @@
 from PyQt6.QtGui import QColor
 
 from odv.data_section.sght import Sght, SightObstacle
-from qt.control.inspector_abstract import Inspector
-from qt.control.inspector_generic import InfoSubInspector, OdvObjectListSubInspector
+from qt.control.generic_inspector import Inspector
+from qt.control._sub_inspector import InfoSubInspector, OdvObjectListSubInspector
 from qt.control.inspector_graphic import GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.control_section import QTabControlGenericTree
 from qt.graphics.sight import GraphicSightObstacle
 
 

@@ -2,7 +2,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QComboBox, QSpinBox, QPushButton, QHBoxLayout, QLabel, QCheckBox, QGridLayout, \
     QPlainTextEdit
 
-from qt.control.inspector_abstract import SubInspector
+from qt.control.generic_inspector import SubInspector
 
 
 class OdvObjectListSubInspector(SubInspector):

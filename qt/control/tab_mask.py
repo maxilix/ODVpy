@@ -2,10 +2,10 @@ from PyQt6.QtGui import QColor
 
 from odv.data_section.mask import Mask, MaskEntry
 from qt.common.utils import maskimage_to_qimage
-from qt.control.inspector_abstract import Inspector
-from qt.control.inspector_generic import InfoSubInspector
+from qt.control.generic_inspector import Inspector
+from qt.control._sub_inspector import InfoSubInspector
 from qt.control.inspector_graphic import MaskImageSubInspector, GeometrySubInspector
-from qt.control.tab__abstract import QTabControlGenericTree
+from qt.control.control_section import QTabControlGenericTree
 from qt.graphics import GraphicMultiLine
 
 

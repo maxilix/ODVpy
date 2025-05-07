@@ -148,6 +148,11 @@ class Sght(Section, OdvObjectIterable):
     _section_version = 6
 
     move: Move
+    ground_sight: GroundSight
+    sight_obstacle_list: list[SightObstacle]
+
+    def __iter__(self):
+        return iter(self.sight_obstacle_list)
 
     def walkable_sight(self, index):
         return self.walkable_sight_iterator()[index]
@@ -156,22 +161,23 @@ class Sght(Section, OdvObjectIterable):
         class WSI:
             def __iter__(subself):
                 return iter([self.ground_sight] + [s for s in self if s.sector is not None])
-            def __getitem__(self, item):
-                return list(iter(self))[item]
-            def __len__(self):
-                return len(list(iter(self)))
+            def __getitem__(subself, item):
+                return list(iter(subself))[item]
+            def __len__(subself):
+                return len(list(iter(subself)))
         return WSI()
 
     def _load(self, substream: ReadStream, * , move) -> None:
         self.move = move
         self.ground_sight = GroundSight()
         nb_sight_obstacle = substream.read(UShort)
-        for _ in range(nb_sight_obstacle):
-            self.add_child(substream.read(SightObstacle, parent=self, move=move))
+        self.sight_obstacle_list = [substream.read(SightObstacle, parent=self, move=move) for _ in range(nb_sight_obstacle)]
+        # for _ in range(nb_sight_obstacle):
+        #     self.add_child(substream.read(SightObstacle, parent=self, move=move))
 
     def _save(self, substream: WriteStream) -> None:
         nb_sight_obstacle = len(self)
         substream.write(UShort(nb_sight_obstacle))
-        for sight_obstacle in self:
+        for sight_obstacle in self.sight_obstacle_list:
             substream.write(sight_obstacle)
 

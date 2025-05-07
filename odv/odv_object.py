@@ -71,7 +71,7 @@ class OdvObjectIterable(OdvObject, ABC):
         i=0
         for i,e in enumerate(self):
             pass
-        return i + 1
+        return i
 
     # def index(self, odv_child) -> int:
     #     return list(iter(self)).index(odv_child)

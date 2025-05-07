@@ -1,6 +1,6 @@
 from common import WriteStream
 
-from ..data_section import Move, Misc, Bgnd
+from ..data_section import Move, Misc, Bgnd, Sght
 from .parser import Parser
 
 
@@ -14,7 +14,7 @@ class DvdParser(Parser):
         self._misc = self.stream.read(Misc)
         self._bgnd = self.stream.read(Bgnd)
         self._move = self.stream.read(Move)
-        # self._sght = self.stream.read(Sght)
+        self._sght = self.stream.read(Sght)
         # self._mask = self.stream.read(Mask)
         # self._ways = self.stream.read(Ways)
         # self._elem = self.stream.read(Elem)

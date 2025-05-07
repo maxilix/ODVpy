@@ -140,7 +140,7 @@ class Layer(OdvObjectIterable):
         return iter(self.sector_list)
 
     def total_polygon(self) -> int:
-        return sum([(len(sector) + 1) for sector in self])
+        return sum([(len(sector.obstacle_list) + 1) for sector in self.sector_list])
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent) -> Self:
@@ -172,16 +172,17 @@ class Move(Section, OdvObjectIterable):
         return iter(self.layer_list)
 
     def sector(self, index: int):
-        i = 0
-        while (ta_i := self[i].total_polygon()) <= index:
-            i += 1
-            index -= ta_i
-        j = 0
-        while (ta_j := (1 + len(self[i][j]))) <= index:
-            j += 1
-            index -= ta_j
+        layer_index = 0
+        while (tp_i := self.layer_list[layer_index].total_polygon()) <= index:
+            layer_index += 1
+            index -= tp_i
+        sector_index = 0
+        while (tp_j := (1 + len(self.layer_list[layer_index].sector_list[sector_index]))) <= index:
+            sector_index += 1
+            index -= tp_j
+
         assert index == 0
-        rop = self[i][j]
+        rop = self.layer_list[layer_index].sector_list[sector_index]
         return rop
 
     def sector_iterator(self, *, include_None):

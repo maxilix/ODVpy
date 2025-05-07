@@ -7,17 +7,30 @@ CONFIG.load()
 
 
 
-level = Level("./dev/empty_level/empty_level_02")
+# level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/03_Red_River/level_03")
 # level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)
-# level = BackupedLevel(1)
+level = BackupedLevel(4)
 
 
 
 move = level.dvd.move
-move.pathfinder.rebuild(move, max_link_length=30000, print_times=True)
-level.insert_in_game()
+print(f"{move[1][0]}\n"
+      f"{len(move[1][0].obstacle_list)}\n"
+      f"{move[1][1]}\n\n")
+
+print(move)
+for l in move:
+    print(f"   {l}")
+    for s in l:
+        print(f"      {s}")
+        for o in s:
+            print(f"          {o}")
+sght = level.dvd.sght
+
+# move.pathfinder.rebuild(move, max_link_length=30000, print_times=True)
+# level.insert_in_game()
 
 exit()
 

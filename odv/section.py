@@ -3,26 +3,26 @@ from abc import ABC, abstractmethod
 from common import *
 
 # 20 dvd sections in order
-odv_section_list = ["MISC",
-                    "BGND",
-                    "MOVE",
-                    "SGHT",
-                    "MASK",
-                    "WAYS",
-                    "ELEM",
-                    "FXBK",
-                    "MSIC",
-                    "SND ",
-                    "PAT ",
-                    "BOND",
-                    "MAT ",
-                    "LIFT",
-                    "AI  ",
-                    "BUIL",
-                    "SCRP",
-                    "JUMP",
-                    "CART",
-                    "DLGS"]
+section_fullname = {"MISC": "General Parameters",
+                    "BGND": "Maps",
+                    "MOVE": "Movement Areas",
+                    "SGHT": "3D Elements",
+                    "MASK": "Visual Masks",
+                    "WAYS": "Patrols",
+                    "ELEM": "Elements",
+                    "FXBK": "Sound Effects",
+                    "MSIC": "Musics",
+                    "SND ": "Sounds",
+                    "PAT ": "Patches",
+                    "BOND": "Bonds",
+                    "MAT ": "Materials",
+                    "LIFT": "Vertical Links",
+                    "AI  ": "AI Tactics",
+                    "BUIL": "Buildings",
+                    "SCRP": "Scipts",
+                    "JUMP": "Jump Zones",
+                    "CART": "Moving Objects",
+                    "DLGS": "Dialogs"}
 
 """
 DVM/BGND    Loading map             Chargement de la carte
@@ -68,6 +68,10 @@ class Section(RWStreamable):
     @property
     def version(self):
         return self._section_version
+
+    @property
+    def fullname(self):
+        return section_fullname[self._section_name]
 
     @classmethod
     def from_stream(cls, stream):
