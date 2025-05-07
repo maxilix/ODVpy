@@ -2,9 +2,12 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QMouseEvent, QCursor, QAction
 from PyQt6.QtWidgets import QTabWidget, QMenu
 
+from odv.level import data_section_type
 from qt.control.control_section import QSectionControl
+from qt.control.tab_bgnd import QBgndControl
 from qt.control.tab_misc import QMiscControl
 from qt.control.tab_move import QMoveControl
+from settings import data_section_flag
 
 
 class QControl(QTabWidget):
@@ -48,9 +51,9 @@ class QControl(QTabWidget):
 
         self.tab = dict()
         # self.tab["DVM"] = QMapTabControl(self, level.dvm.level_map)
-        self.tab["MISC"] = QMiscControl(self, level.dvd.misc)
-        # self.tab["BGND"] = QSectionControl(self, level.dvd.bgnd)
-        self.tab["MOVE"] = QMoveControl(self, level.dvd.move)
+        self.tab["MISC"] = QMiscControl(self, level.data["MISC"])
+        self.tab["BGND"] = QBgndControl(self, level.data["BGND"])
+        self.tab["MOVE"] = QMoveControl(self, level.data["MOVE"])
         # self.tab["SGHT"] = QSectionControl(self, level.dvd.sght)
         # self.tab["MASK"] = QMaskTabControl(self, level.dvd.mask)
         # self.tab["WAYS"] = None
@@ -70,11 +73,9 @@ class QControl(QTabWidget):
         # self.tab["DLGS"] = None
         # self.tab["SCB"] = None # QScbTabControl(self, level.scb.classes)
 
-        # initial_tabs = ["DVM"] + CONFIG.default_tabs
-        initial_tabs = ["MISC", "MOVE"]
-        for name in initial_tabs:
-            self.add_tab(name)
-        self.setCurrentWidget(self.tab["MISC"])
+        self.add_tab("BGND")
+        self.setCurrentWidget(self.tab["BGND"])
+        self.scene.center_view(zoom=0.6)
 
         # button = scene.addWidget(QPushButton("Button 1"))
         # button.setFlag(button.GraphicsItemFlag.ItemIgnoresTransformations)
@@ -108,11 +109,19 @@ class QControl(QTabWidget):
     #     self.widget(index).update()
 
     def close_tab(self, name):
-        if name == "DVM":
-            print("DVM is not closable")
+        if name == "BGND":
+            print("BGND cannot be closed")
         else:
             print(f"close {name}")
 
     def add_tab(self, name):
+        # new_tab_index = data_section_flag.index(name)
+        # local_index = 0
+        # while data_section_flag.index(self.tabText(local_index)) < data_section_flag.index(name):
+        #     local_index += 1
+        # self.insertTab(local_index, self.tab[name], name)
+
         self.addTab(self.tab[name], name)
+        self.tab[name].load()
         self.setCurrentWidget(self.tab[name])
+

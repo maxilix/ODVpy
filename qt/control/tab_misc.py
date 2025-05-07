@@ -16,8 +16,8 @@ class MiscInspector(Inspector):
 class MiscItem(QGenericTreeItem):
     inspector_type = MiscInspector
 
-    def __init__(self, misc:Misc):
-        super().__init__(misc)
+    def __init__(self,section_control, misc:Misc):
+        super().__init__(section_control, misc)
         self.misc = misc
 
     @property

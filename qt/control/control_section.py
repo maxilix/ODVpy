@@ -217,15 +217,11 @@ class QSectionControl(QWidget):
         main_layout.addWidget(inspector_stack_widget)
 
 
-
-
-        self.load()
-
     def load(self):
         def recursive_load(odv_current_object, odv_parent_object=None):
             item_type = self.item_types.get(type(odv_current_object), QGenericTreeItem)
 
-            new_tree_item = item_type(odv_current_object)
+            new_tree_item = item_type(self, odv_current_object)
             if item_type not in self.inspectors:
                 self.inspectors[item_type] = item_type.inspector_type()
                 self.inspector_stack_layout.addWidget(self.inspectors[item_type])
@@ -254,6 +250,10 @@ class QSectionControl(QWidget):
             inspector = self.inspectors[type(selected[0])]
             inspector.item_list = selected
             self.inspector_stack_layout.setCurrentWidget(inspector)
+
+    @property
+    def scene(self):
+        return self.control.scene
 
 
 

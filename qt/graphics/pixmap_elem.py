@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QGraphicsPixmapItem
 from qt.graphics.base_elem import OdvGraphicElement
 
 
-class OdvFixPixmapElement(OdvGraphicElement, QGraphicsPixmapItem):
+class OdvFixPixmapElement(QGraphicsPixmapItem):
     def __init__(self, parent_item, pixmap: QPixmap):
         super().__init__(parent_item)
         self.setPixmap(pixmap)

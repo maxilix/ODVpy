@@ -65,8 +65,8 @@ class LayerInspector(Inspector):
 class LayerItem(QGenericTreeItem):
     inspector_type = LayerInspector
 
-    def __init__(self, layer:Layer):
-        super().__init__(layer)
+    def __init__(self, section_control, layer:Layer):
+        super().__init__(section_control, layer)
         self.layer = layer
 
     @property

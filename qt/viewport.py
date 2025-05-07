@@ -1,26 +1,22 @@
-from PyQt6.QtCore import Qt, QPointF, QPropertyAnimation, pyqtProperty, QParallelAnimationGroup, QRectF, \
-    QVariantAnimation, QSequentialAnimationGroup, QEasingCurve, QPoint, QSizeF, QRect, QSize, QEvent, pyqtSlot, \
-    pyqtSignal
-from PyQt6.QtGui import QPixmap, QBrush, QPen, QMouseEvent
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsRectItem, QGraphicsSceneMouseEvent, \
-    QMenu
+from PyQt6.QtCore import Qt, QPropertyAnimation, pyqtProperty, QParallelAnimationGroup, QRectF, QEasingCurve
+from PyQt6.QtGui import QMouseEvent
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsItem
 
 
 class QViewport(QGraphicsView):
-    view_changed = pyqtSignal(QRectF)
+    # view_changed = pyqtSignal(QRectF)
 
-    def __init__(self, scene, level_map, info_bar):
+    def __init__(self, scene, info_bar):
         super().__init__(scene)
-        self.level_map = level_map
         self.info_bar = info_bar
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
-        self.horizontalScrollBar().valueChanged.connect(
-            lambda: self.view_changed.emit(self.current_visible_scene_rect()))
-        self.verticalScrollBar().valueChanged.connect(
-            lambda: self.view_changed.emit(self.current_visible_scene_rect()))
+        # self.horizontalScrollBar().valueChanged.connect(
+        #     lambda: self.view_changed.emit(self.current_visible_scene_rect()))
+        # self.verticalScrollBar().valueChanged.connect(
+        #     lambda: self.view_changed.emit(self.current_visible_scene_rect()))
 
         self.setMouseTracking(True)
         self.drag_position = None
@@ -29,13 +25,6 @@ class QViewport(QGraphicsView):
         self.zoom_shift_factor = 1.0
         self.zoom_max = 50
         self.zoom_min = 0.5
-
-        # init a too large scene rectangle, to init position
-        self.setSceneRect(QRectF(-self.level_map.width, -self.level_map.height, 3*self.level_map.width, 3*self.level_map.height))
-        # init view position
-        self.zoom = 1.5
-        self.x = self.level_map.width // 2
-        self.y = self.level_map.height // 2
 
     def adjust_margins(self):
         cr = self.current_visible_scene_rect()
@@ -71,31 +60,28 @@ class QViewport(QGraphicsView):
         super().mouseMoveEvent(event)
 
     def wheelEvent(self, event):
-        mouse_view_pos = event.position().toPoint()
-        mouse_scene_pos = self.mapToScene(mouse_view_pos)
-
         delta = event.angleDelta().y()
         if delta > 0 and self.zoom < self.zoom_max:
             self.zoom *= self.zoom_factor
         elif delta < 0 and self.zoom > self.zoom_min:
             self.zoom /= self.zoom_factor
         else:
-            pass
+            pass  # do not change the zoom
 
         self.adjust_margins()
-
+        mouse_view_pos = event.position().toPoint()
+        mouse_scene_pos = self.mapToScene(mouse_view_pos)
         h = self.horizontalScrollBar()
         v = self.verticalScrollBar()
         self.x = mouse_scene_pos.x() + (h.pageStep() / 2 - mouse_view_pos.x()) / (self.zoom_shift_factor * self.zoom)
         self.y = mouse_scene_pos.y() + (v.pageStep() / 2 - mouse_view_pos.y()) / (self.zoom_shift_factor * self.zoom)
 
-        # self.control.mousse_event(mouse_scene_pos, event)
         event.ignore()
-
 
     @pyqtProperty(float)
     def zoom(self):
-        if self.level_map.height >= self.level_map.width:
+        # Todo Use self.sceneRect()
+        if True:#self.level_map.height >= self.level_map.width:
             v = self.verticalScrollBar()
             vertical_zoom = (v.maximum() - v.minimum() + v.pageStep()) / self.sceneRect().height()
             return vertical_zoom
@@ -103,7 +89,6 @@ class QViewport(QGraphicsView):
             h = self.horizontalScrollBar()
             horizontal_zoom = (h.maximum() - h.minimum() + h.pageStep()) / self.sceneRect().width()
             return horizontal_zoom
-
 
     @zoom.setter
     def zoom(self, new_zoom):
@@ -178,7 +163,7 @@ class QViewport(QGraphicsView):
             anim_zoom.setEasingCurve(QEasingCurve.Type.InOutCubic)
             anims.append(anim_zoom)
 
-        group = QParallelAnimationGroup(self)
+        group = QParallelAnimationGroup(self)  # Todo remove "self"
         for anim in anims:
             group.addAnimation(anim)
         group.start()

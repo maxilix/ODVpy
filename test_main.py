@@ -1,5 +1,4 @@
 from config import CONFIG
-from odv.data_section.sght import GroundSight
 from odv.level import BackupedLevel, Level
 
 CONFIG.load()
@@ -14,24 +13,7 @@ CONFIG.load()
 level = BackupedLevel(4)
 
 
-
-move = level.dvd.move
-print(f"{move[1][0]}\n"
-      f"{len(move[1][0].obstacle_list)}\n"
-      f"{move[1][1]}\n\n")
-
-print(move)
-for l in move:
-    print(f"   {l}")
-    for s in l:
-        print(f"      {s}")
-        for o in s:
-            print(f"          {o}")
-sght = level.dvd.sght
-
-# move.pathfinder.rebuild(move, max_link_length=30000, print_times=True)
-# level.insert_in_game()
-
+bgnd = level.bgnd
 exit()
 
 

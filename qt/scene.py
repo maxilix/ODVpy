@@ -7,7 +7,13 @@ from qt.control.scene_menu import QSceneMenu
 
 class QScene(QGraphicsScene):
 
-
+    def center_view(self, zoom=1.5):
+        r = self.sceneRect().center()
+        x = r.x()
+        y = r.y()
+        self.viewport().x = x
+        self.viewport().y = y
+        self.viewport().zoom = zoom
 
     def viewport(self):
         return self.views()[0]

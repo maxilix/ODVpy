@@ -8,8 +8,9 @@ from qt.control.generic_inspector import Inspector
 class QGenericTreeItem(QTreeWidgetItem):
     inspector_type = Inspector
 
-    def __init__(self, odv_object):
+    def __init__(self,section_control, odv_object):
         super().__init__()
+        self.section_control = section_control
         self.odv_object = odv_object
         self.sub_inspector_list = []
         # self.current_state = None
@@ -62,6 +63,10 @@ class QGenericTreeItem(QTreeWidgetItem):
     @property
     def name(self):
         return self.odv_object.name
+
+    @property
+    def scene(self):
+        return self.section_control.scene
 
 
 

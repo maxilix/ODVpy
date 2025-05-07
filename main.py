@@ -175,7 +175,7 @@ class QWindow(QMainWindow):
             visualizer = QWidget(main_widget)
             info_bar = QInfoBar(visualizer)
             scene = QScene(visualizer)
-            viewport = QViewport(scene, self.current_level.dvm.level_map, info_bar)
+            viewport = QViewport(scene, info_bar)
             control = QControl(main_widget, scene, self.current_level)
             control.sendStatus.connect(self.status_bar.showMessage)
             info_bar.set_info(level_index=self.current_level.index)

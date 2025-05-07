@@ -8,18 +8,16 @@ from qt.graphics.point_elem import OdvEditPointElement
 class OdvGraphic(QGraphicsItem):
     grid_alignment = None
 
-    def __init__(self, sub_inspector, *args, **kwargs):
-        # assert isinstance(sub_inspector, GraphicSubInspector)
-        self.sub_inspector = sub_inspector
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
 
     def boundingRect(self):
         return self.childrenBoundingRect()
 
-    @property
-    def visible(self):
-        return self.sub_inspector.visibility_checkbox.isChecked()
+    # @property
+    # def visible(self):
+    #     return self.sub_inspector.visibility_checkbox.isChecked()
 
     def remove(self, items):
         if items is not None:
