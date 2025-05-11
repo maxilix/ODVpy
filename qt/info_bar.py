@@ -1,36 +1,35 @@
-
 from math import floor
 
-from PyQt6.QtCore import QSize
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QLabel, QWidget, QHBoxLayout
 
 
-class QInfoBar(QLabel):
+class QInfoBar(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._x = 0
         self._y = 0
-        self._zoom = 1
-        self._level_index = -1
+        self._zoom = 0
 
-        self.update()
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
 
-    def set_info(self, **kwargs):
-        if "x" in kwargs:
-            self._x = kwargs["x"]
-        if "y" in kwargs:
-            self._y = kwargs["y"]
-        if "zoom" in kwargs:
-            self._zoom = kwargs["zoom"]
-        if "level_index" in kwargs:
-            self._level_index = kwargs["level_index"]
-        self.update()
+        self.position_label = QLabel()
+        main_layout.addWidget(self.position_label)
 
-    def update(self):
-        self.setText(f"x:{floor(self._x)}\t"
-                     f"y:{floor(self._y)}\t"
-                     f"zoom:{round(self._zoom*100)}%\t"
-                     f"level:{self._level_index:02}\t")
+        main_layout.addStretch()
 
+        self.tree_items_label = QLabel()
+        main_layout.addWidget(self.tree_items_label)
 
+    def set_xy(self,x,y):
+        self._x = x
+        self._y = y
+        self.position_label.setText(f"({floor(self._x)} , {floor(self._y)})   {round(self._zoom*100)}%")
+
+    def set_zoom(self,zoom):
+        self._zoom = zoom
+        self.position_label.setText(f"({floor(self._x)} , {floor(self._y)})   {round(self._zoom*100)}%")
+
+    def set_tree_items(self, items):
+        self.tree_items_label.setText(" - ".join([i.name for i in items]))

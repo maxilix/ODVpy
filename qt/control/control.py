@@ -2,12 +2,10 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QMouseEvent, QCursor, QAction
 from PyQt6.QtWidgets import QTabWidget, QMenu
 
-from odv.level import data_section_type
-from qt.control.control_section import QSectionControl
 from qt.control.tab_bgnd import QBgndControl
 from qt.control.tab_misc import QMiscControl
 from qt.control.tab_move import QMoveControl
-from settings import data_section_flag
+
 
 
 class QControl(QTabWidget):
@@ -50,7 +48,6 @@ class QControl(QTabWidget):
         # self.currentChanged.connect(self.current_changed)
 
         self.tab = dict()
-        # self.tab["DVM"] = QMapTabControl(self, level.dvm.level_map)
         self.tab["MISC"] = QMiscControl(self, level.data["MISC"])
         self.tab["BGND"] = QBgndControl(self, level.data["BGND"])
         self.tab["MOVE"] = QMoveControl(self, level.data["MOVE"])
@@ -73,8 +70,10 @@ class QControl(QTabWidget):
         # self.tab["DLGS"] = None
         # self.tab["SCB"] = None # QScbTabControl(self, level.scb.classes)
 
+        self.add_tab("MISC")
         self.add_tab("BGND")
-        self.setCurrentWidget(self.tab["BGND"])
+        self.add_tab("MOVE")
+        self.setCurrentWidget(self.tab["MOVE"])
         self.scene.center_view(zoom=0.6)
 
         # button = scene.addWidget(QPushButton("Button 1"))
@@ -105,9 +104,6 @@ class QControl(QTabWidget):
 
         super().mousePressEvent(event)
 
-    # def current_changed(self, index):
-    #     self.widget(index).update()
-
     def close_tab(self, name):
         if name == "BGND":
             print("BGND cannot be closed")
@@ -124,4 +120,3 @@ class QControl(QTabWidget):
         self.addTab(self.tab[name], name)
         self.tab[name].load()
         self.setCurrentWidget(self.tab[name])
-

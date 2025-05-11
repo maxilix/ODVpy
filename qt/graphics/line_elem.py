@@ -1,6 +1,6 @@
-from PyQt6.QtCore import QLineF, QRectF
-from PyQt6.QtGui import QAction, QTransform, QPainter
-from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem
+from PyQt6.QtCore import QLineF, QRectF, Qt
+from PyQt6.QtGui import QAction, QTransform, QPainter, QCursor
+from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QMenu
 
 from qt.graphics import QGraphicsLargeLineItem
 from qt.graphics.base_elem import OdvGraphicElement
@@ -55,20 +55,20 @@ class OdvArrowElement(OdvGraphicElement, QGraphicsItem):
         return self.shape().boundingRect()
 
 
-class OdvFixLineElement(OdvGraphicElement, QGraphicsLargeLineItem):
+class OdvFixLineElement(QGraphicsLargeLineItem):
     def __init__(self, parent_item, line: QLineF):
         super().__init__(parent_item)
         if (ga := self.parentItem().grid_alignment) is not None:
             line = line.truncated().translated(ga)
         self.setLine(line)
-        self.setPen(self.sub_inspector.pen)
+        self.setPen(parent_item.thin_pen)
         self.update()
 
 
-class OdvEditLineElement(OdvGraphicElement, QGraphicsLargeLineItem):
+class OdvEditLineElement(QGraphicsLargeLineItem):
     def __init__(self, parent_item, p1: OdvEditPointElement, p2: OdvEditPointElement, secable: bool = False):  # , deletable: bool = False):
         super().__init__(parent_item)
-        self.setPen(self.sub_inspector.pen)
+        self.setPen(parent_item.thin_pen)
         self.secable = secable
         # set the private attribute directly to perform a single update
         self._p1 = p1
@@ -106,10 +106,14 @@ class OdvEditLineElement(OdvGraphicElement, QGraphicsLargeLineItem):
             self.setLine(QLineF())
         super().update(rect)
 
-    def scene_menu_local_actions(self, scene_position):
-        rop = []
-        if self.secable is True:
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.RightButton:
+            scene_position = self.mapToScene(event.pos())
+            menu = QMenu()
             a_add_point = QAction("Add Point")
             a_add_point.triggered.connect(lambda: self.parentItem().add_point(scene_position, self))
-            rop.append(a_add_point)
-        return rop
+            menu.addAction(a_add_point)
+            menu.exec(QCursor.pos())
+            event.accept()
+        else:
+            super().mousePressEvent(event)

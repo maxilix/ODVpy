@@ -2,18 +2,18 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QDropEvent
 from PyQt6.QtWidgets import QTreeWidgetItem, QAbstractItemView, QTreeWidget
 
+from qt.common.utils import bounding_rect_of
 from qt.control.generic_inspector import Inspector
 
 
 class QGenericTreeItem(QTreeWidgetItem):
     inspector_type = Inspector
 
-    def __init__(self,section_control, odv_object):
+    def __init__(self, section_control, odv_object):
         super().__init__()
         self.section_control = section_control
-        self.odv_object = odv_object
-        self.sub_inspector_list = []
-        # self.current_state = None
+        self._odv_object = odv_object
+        self._graphics = []
 
     def setBold(self, value):
         f = self.font(0)
@@ -35,38 +35,77 @@ class QGenericTreeItem(QTreeWidgetItem):
         #     self.setBold(True)
         #     self.setColor(QColor('red'))
 
-        # if len((vl:=[v.isChecked() for v in self.inspector_visibility_checkbox_list()]))>0:
-        #     self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-        #     if all(vl):
-        #         self.current_state = Qt.CheckState.Checked
-        #     elif any(vl):
-        #         self.current_state = Qt.CheckState.PartiallyChecked
-        #     else:
-        #         self.current_state = Qt.CheckState.Unchecked
-        #     self.setCheckState(0, self.current_state)
-        # else:
-        #     self.current_state = None
-        #     title = "      " + title
-        #     self.setFlags(self.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
-        #     self.current_state = Qt.CheckState.Unchecked
+        if len(self._graphics) > 0:
+            self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            self.setCheckState(0, self.graphics_visibility_state())
+        else:
+            self.setFlags(self.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
+            title = "      " + title
         self.setText(0, title)
 
+    def clicked(self):
+        if Qt.ItemFlag.ItemIsUserCheckable in self.flags() and self.graphics_visibility_state() != self.checkState(0):
+            # current state is obsolete, checkbox has changed
+            if self.checkState(0) == Qt.CheckState.Checked:
+                self.show_graphics()
+            else:
+                self.hide_graphics()
+            self.section_control.update_current_inspector()
 
-    # def clicked(self):
-    #     if self.current_state != self.checkState(0):
-    #         # current state is obsolete, checkbox has changed
-    #         # current state will be updated by the global update
-    #         for checkbox in self.inspector_visibility_checkbox_list():
-    #             checkbox.setCheckState(self.checkState(0))
-    #         self.global_update()
+    def double_clicked(self):
+        self.localise_graphics()
 
     @property
     def name(self):
-        return self.odv_object.name
+        return self._odv_object.name
 
-    @property
-    def scene(self):
-        return self.section_control.scene
+    # @property
+    # def scene(self):
+    #     return self.section_control.scene
+
+    def add_graphic(self, graphic_item):
+        self._graphics.append(graphic_item)
+        self.section_control.scene.addItem(graphic_item)
+
+    def remove_graphic(self, graphic_item):
+        self._graphics.remove(graphic_item)
+        self.section_control.scene.removeItem(graphic_item)
+
+    def graphics_visibility_state(self):
+        l = [g.isVisible() for g in self._graphics]
+        if all(l):
+            return Qt.CheckState.Checked
+        elif any(l):
+            return Qt.CheckState.PartiallyChecked
+        else:
+            return Qt.CheckState.Unchecked
+
+    def show_graphics(self):
+        for g in self._graphics:
+            g.setVisible(True)
+        self.setCheckState(0, Qt.CheckState.Checked)
+
+    def hide_graphics(self):
+        for g in self._graphics:
+            g.setVisible(False)
+        self.setCheckState(0, Qt.CheckState.Unchecked)
+
+    def localise_graphics(self):
+        if self._graphics:
+            self.show_graphics()
+            rect = bounding_rect_of(self._graphics)
+            self.section_control.scene.move_to_rect(rect)
+            self.section_control.update_current_inspector()
+
+    def focus(self):
+        self.treeWidget().clearSelection()
+        parent = self.parent()
+        while parent:
+            parent.setExpanded(True)
+            parent = parent.parent()
+        self.setSelected(True)
+        self.treeWidget().scrollToItem(self)
+        self.section_control.control.setCurrentWidget(self.section_control)
 
 
 
@@ -75,6 +114,7 @@ class QGenericTree(QTreeWidget):
         super().__init__()
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setStyleSheet("""QTreeWidget:disabled{ background-color: #b0b0b0; }""")
 
         self.setColumnCount(1)
         self.setHeaderHidden(True)
@@ -115,13 +155,12 @@ class QGenericTree(QTreeWidget):
     @staticmethod
     def item_clicked(item, column):
         if column == 0:
-            print("clicked")
-            # item.clicked()
+            item.clicked()
 
     @staticmethod
     def item_double_clicked(item, column):
         if column == 0:
-            print("double clicked")
+            item.double_clicked()
 
     # def contextMenuEvent(self, event: QContextMenuEvent):
     #     item = self.itemAt(event.pos())
@@ -138,4 +177,3 @@ class QGenericTree(QTreeWidget):
         # if self.dragging_item.draggable is True:
         super().startDrag(supportedActions)
         # self.dragging_item = None
-

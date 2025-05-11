@@ -7,7 +7,7 @@ from common import *
 from config import CONFIG
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
-from qt.control.control_main import QControl
+from qt.control.control import QControl
 from qt.info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
 from qt.scene import QScene
@@ -20,7 +20,7 @@ class QWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle('ODVpy Editor')
-        # self.showMaximized()
+        self.showMaximized()
         self.setMinimumSize(800, 600)
 
         # self.current_level = None
@@ -168,7 +168,7 @@ class QWindow(QMainWindow):
             main_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         else:
             self.insert_current_level_action.setEnabled(True)
-            main_widget = QSplitter(self)
+            main_widget = QSplitter()
             main_widget.setOrientation(Qt.Orientation.Horizontal)
             main_widget.setChildrenCollapsible(False)
 
@@ -178,7 +178,6 @@ class QWindow(QMainWindow):
             viewport = QViewport(scene, info_bar)
             control = QControl(main_widget, scene, self.current_level)
             control.sendStatus.connect(self.status_bar.showMessage)
-            info_bar.set_info(level_index=self.current_level.index)
 
             # print(viewport.zoom)
             # viewport.zoom = 0.5  # set zoom first, as it defines the margins around the dvm

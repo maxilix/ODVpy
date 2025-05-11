@@ -3,21 +3,22 @@ from PyQt6.QtGui import QPolygonF, QPen, QPainterPath
 from PyQt6.QtWidgets import QGraphicsPolygonItem, QGraphicsPathItem, QGraphicsSceneMouseEvent
 
 from qt.graphics.base import OdvGraphic
-from qt.graphics.base_elem import OdvGraphicElement
 from qt.graphics.point_elem import OdvEditPointElement
 
 
 class OdvFixPolygonElement(QGraphicsPolygonItem):
     def __init__(self, parent_item: OdvGraphic, polygon: QPolygonF):
         super().__init__(parent_item)
-        self.setPolygon(polygon)
+        self.setPolygon(polygon.translated(parent_item.grid_alignment))
+        self.setPen(parent_item.thin_pen)
+        self.setBrush(parent_item.light_brush)
 
 
-class OdvEditPolygonShapeElement(OdvGraphicElement, QGraphicsPathItem):
+class OdvEditPolygonShapeElement(QGraphicsPathItem):
     def __init__(self, parent_item, p_list: list[OdvEditPointElement], movable: bool = False):
         super().__init__(parent_item)
         self.setPen(QPen(Qt.GlobalColor.transparent))
-        self.setBrush(self.sub_inspector.light_brush)
+        self.setBrush(parent_item.light_brush)
         self.movable = movable
         self._drag_position = None
         self.p_list = p_list  # performs an update
@@ -41,21 +42,24 @@ class OdvEditPolygonShapeElement(OdvGraphicElement, QGraphicsPathItem):
         super().update(rect)
 
     def mouseDoubleClickEvent(self, event):
-        if self.visible and self.movable and event.button() == Qt.MouseButton.LeftButton:
-            self._drag_position = self.mapToScene(event.pos()).truncated()
-            self.setBrush(self.sub_inspector.high_brush)
+        if self.movable and event.button() == Qt.MouseButton.LeftButton:
+            if len(self.p_list) > 20:
+                print(f"WARN : impossible to drag large polygons ({len(self.p_list)} points > 20)")
+            else:
+                self._drag_position = self.mapToScene(event.pos()).truncated()
+                # self.setBrush(self.sub_inspector.high_brush)
         else:
             super().mouseDoubleClickEvent(event)
 
     def mouseReleaseEvent(self, event):
-        if self.visible and self.movable:
+        if self.movable:
             self._drag_position = None
-            self.setBrush(self.sub_inspector.light_brush)
+            # self.setBrush(self.sub_inspector.light_brush)
         else:
             super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
-        if self.visible and self.movable and self._drag_position is not None:
+        if self.movable and self._drag_position is not None:
             delta = self.mapToScene(event.pos()).truncated() - self._drag_position
             for p in self.p_list:
                 p.move(delta)

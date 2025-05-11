@@ -30,7 +30,7 @@ def QPointF_to_stream(self, stream):
         raise
 
 def QPointF___str__(self):
-    return f'({round(self.x())}, {round(self.y())})'
+    return f'({round(self.x(),1)}, {round(self.y(),1)})'
 
 def QPointF___hash__(self):
     return hash((self.x(), self.y()))

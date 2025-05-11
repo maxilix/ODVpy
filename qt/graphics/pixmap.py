@@ -1,9 +1,8 @@
 from PyQt6.QtGui import QImage, QPixmap, QPolygonF, QColor
 
-from qt.graphics import OdvPen, OdvBrush
-from qt.graphics.base import OdvGraphic
+from qt.graphics import OdvPen, OdvLightBrush
+from qt.graphics.base import OdvGraphic, OdvShadow
 from qt.graphics.pixmap_elem import OdvFixPixmapElement
-from qt.graphics.polygon_elem import OdvFixPolygonElement
 
 
 class GraphicMask(OdvGraphic):
@@ -30,38 +29,12 @@ class GraphicMask(OdvGraphic):
 
 
 class GraphicMap(OdvGraphic):
-    def __init__(self, initial_image: QImage):
-        super().__init__()
-        self._image = initial_image
-        self.map_item = None
-        self.map_rect = None
-        self.reset()
+    thin_pen = OdvPen(color=QColor("black"), width=1)
 
-    @property
-    def image(self) -> QImage:
-        return self._image
-
-    @image.setter
-    def image(self, image: QImage):
-        self._image = image
-
-    def reset(self):
-        self.remove(self.map_item)
-        self.remove(self.map_rect)
-
-        self.map_item = OdvFixPixmapElement(self, QPixmap(self.image))
+    def __init__(self, item, image: QImage):
+        super().__init__(item)
+        self.map_item = OdvFixPixmapElement(self, QPixmap(image))
         self.map_item.setZValue(0.1)
-        self.map_rect = OdvFixPolygonElement(self, QPolygonF(self.image.rect().toRectF()))
-        self.map_rect.setPen(OdvPen(color=QColor(0,0,0), width=1))
-        self.map_rect.setBrush(OdvBrush(color=QColor(0,0,0), alpha=30))
-        self.map_rect.force_visible = True
-        self.map_rect.setZValue(0)
-
-        # self.update()
-
-    def setVisible(self, visible: bool):
-        self.map_item.setVisible(visible)
-
-    def setOpacity(self, opacity):
-        # opacity only affect map_item
-        self.map_item.setOpacity(opacity)
+        self.shadow = OdvShadow(item, QPolygonF(image.rect().toRectF()))
+        self.shadow.setPen(OdvPen(color=QColor("black"), width=1))
+        self.shadow.setBrush(OdvLightBrush(color=QColor("black")))

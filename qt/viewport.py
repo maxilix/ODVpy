@@ -1,10 +1,10 @@
-from PyQt6.QtCore import Qt, QPropertyAnimation, pyqtProperty, QParallelAnimationGroup, QRectF, QEasingCurve
+from PyQt6.QtCore import Qt, QPropertyAnimation, pyqtProperty, QParallelAnimationGroup, QRectF, QEasingCurve, pyqtSignal
 from PyQt6.QtGui import QMouseEvent
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsItem
 
 
 class QViewport(QGraphicsView):
-    # view_changed = pyqtSignal(QRectF)
+    view_changed = pyqtSignal(QRectF)
 
     def __init__(self, scene, info_bar):
         super().__init__(scene)
@@ -13,10 +13,10 @@ class QViewport(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
-        # self.horizontalScrollBar().valueChanged.connect(
-        #     lambda: self.view_changed.emit(self.current_visible_scene_rect()))
-        # self.verticalScrollBar().valueChanged.connect(
-        #     lambda: self.view_changed.emit(self.current_visible_scene_rect()))
+        self.horizontalScrollBar().valueChanged.connect(
+            lambda: self.view_changed.emit(self.current_visible_scene_rect()))
+        self.verticalScrollBar().valueChanged.connect(
+            lambda: self.view_changed.emit(self.current_visible_scene_rect()))
 
         self.setMouseTracking(True)
         self.drag_position = None
@@ -33,7 +33,7 @@ class QViewport(QGraphicsView):
         self.setSceneRect(r)
 
     def resizeEvent(self, event):
-        self.adjust_margins()
+        # self.adjust_margins()
         super().resizeEvent(event)
 
     def mousePressEvent(self, event):
@@ -51,7 +51,7 @@ class QViewport(QGraphicsView):
     def mouseMoveEvent(self, event: QMouseEvent):
         self.adjust_margins()
         mouse_scene_pos = self.mapToScene(event.pos())
-        self.info_bar.set_info(x=mouse_scene_pos.x(), y=mouse_scene_pos.y())
+        self.info_bar.set_xy(mouse_scene_pos.x(), mouse_scene_pos.y())
         if self.drag_position is not None:
             delta = self.drag_position - event.pos()
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + delta.x())
@@ -60,6 +60,11 @@ class QViewport(QGraphicsView):
         super().mouseMoveEvent(event)
 
     def wheelEvent(self, event):
+        # save mousse positions before zooming
+        mouse_view_pos = event.position().toPoint()
+        mouse_scene_pos = self.mapToScene(mouse_view_pos)
+
+        # apply the correct zoom
         delta = event.angleDelta().y()
         if delta > 0 and self.zoom < self.zoom_max:
             self.zoom *= self.zoom_factor
@@ -67,10 +72,9 @@ class QViewport(QGraphicsView):
             self.zoom /= self.zoom_factor
         else:
             pass  # do not change the zoom
-
         self.adjust_margins()
-        mouse_view_pos = event.position().toPoint()
-        mouse_scene_pos = self.mapToScene(mouse_view_pos)
+
+        # Refocus the view according to the mouse position
         h = self.horizontalScrollBar()
         v = self.verticalScrollBar()
         self.x = mouse_scene_pos.x() + (h.pageStep() / 2 - mouse_view_pos.x()) / (self.zoom_shift_factor * self.zoom)
@@ -80,15 +84,10 @@ class QViewport(QGraphicsView):
 
     @pyqtProperty(float)
     def zoom(self):
-        # Todo Use self.sceneRect()
-        if True:#self.level_map.height >= self.level_map.width:
-            v = self.verticalScrollBar()
-            vertical_zoom = (v.maximum() - v.minimum() + v.pageStep()) / self.sceneRect().height()
-            return vertical_zoom
-        else:
-            h = self.horizontalScrollBar()
-            horizontal_zoom = (h.maximum() - h.minimum() + h.pageStep()) / self.sceneRect().width()
-            return horizontal_zoom
+        transform = self.transform()
+        scale_x = transform.m11()  # get horizontal zoom
+        scale_y = transform.m22()  # get vertical zoom
+        return (scale_x+scale_y)/2
 
     @zoom.setter
     def zoom(self, new_zoom):
@@ -98,7 +97,7 @@ class QViewport(QGraphicsView):
             new_zoom = self.zoom_max
         current_zoom = self.zoom
         self.scale(new_zoom / current_zoom, new_zoom / current_zoom)
-        self.info_bar.set_info(zoom=self.zoom)
+        self.info_bar.set_zoom(self.zoom)
 
     @pyqtProperty(float)
     def x(self):
@@ -119,9 +118,6 @@ class QViewport(QGraphicsView):
     def y(self, value):
         v = self.verticalScrollBar()
         v.setValue(int(self.zoom * value - v.pageStep() / 2))
-
-    def move_to_item(self, item: QGraphicsItem):
-        self.move_to_rect(item.boundingRect())
 
     def move_to_rect(self, r: QRectF, max_zoom:float = 6):
         c = r.center()
@@ -170,5 +166,3 @@ class QViewport(QGraphicsView):
 
     def current_visible_scene_rect(self):
         return self.mapToScene(self.viewport().rect()).boundingRect()
-
-

@@ -2,14 +2,11 @@ import hashlib
 import os
 import re
 
-
 from .data_section import *
 from settings import *
 from config import CONFIG
 
-
-
-from common import copy, InvalidHashError, ReadStream
+from common import copy, InvalidHashError, ReadStream, WriteStream, Bytes
 
 
 def original_name(index, root=None):
@@ -69,8 +66,9 @@ class Level(object):
         self.data["BGND"].load(abs_filename=self.abs_filename)
         self.data["MOVE"] = stream.read(Move)
         self.data["MOVE"].load()
-        self.data["SGHT"] = stream.read(Sght)
-        self.data["SGHT"].load(move=self.data["MOVE"])
+        # self.data["SGHT"] = stream.read(Sght)
+        # self.data["SGHT"].load(move=self.data["MOVE"])
+        self.tail = stream.read_raw()
 
 
 
@@ -147,29 +145,39 @@ class Level(object):
         source = self.abs_filename
         destination = original_name(self.index, root=CONFIG.installation_path)
 
-        if self._dvd is None:
-            copy(f"{source}.dvd", f"{destination}.dvd")
-            print(f"DVD: copy to {destination}.dvd")
-        else:
-            self.dvd.save_to_file(f"{destination}.dvd")
+        stream = WriteStream()
+        stream.write(self.data["MISC"])
+        stream.write(self.data["BGND"])
+        stream.write(Bytes(self.tail))
+
+        with open(f"{destination}.dvd", 'wb') as file:
+            file.write(stream.get_value())
             print(f"DVD: save to {destination}.dvd")
 
-        if self._dvm is None:
-            try:
-                copy(f"{source}.dvm", f"{destination}.dvm")
-                print(f"DVM: copy to {destination}.dvm")
-            except FileNotFoundError as e:
-                pass
-        else:
-            self.dvm.save_to_file(f"{destination}.dvm")
-            print(f"DVM: save to {destination}.dvm")
 
-        if self._scb is None:
-            copy(f"{source}.scb", f"{destination}.scb")
-            print(f"SCB: copy to {destination}.scb")
-        else:
-            self.scb.save_to_file(f"{destination}.scb")
-            print(f"SCB: save to {destination}.scb")
+        # if self._dvd is None:
+        #     copy(f"{source}.dvd", f"{destination}.dvd")
+        #     print(f"DVD: copy to {destination}.dvd")
+        # else:
+        #     self.dvd.save_to_file(f"{destination}.dvd")
+        #     print(f"DVD: save to {destination}.dvd")
+        #
+        # if self._dvm is None:
+        #     try:
+        #         copy(f"{source}.dvm", f"{destination}.dvm")
+        #         print(f"DVM: copy to {destination}.dvm")
+        #     except FileNotFoundError as e:
+        #         pass
+        # else:
+        #     self.dvm.save_to_file(f"{destination}.dvm")
+        #     print(f"DVM: save to {destination}.dvm")
+        #
+        # if self._scb is None:
+        #     copy(f"{source}.scb", f"{destination}.scb")
+        #     print(f"SCB: copy to {destination}.scb")
+        # else:
+        #     self.scb.save_to_file(f"{destination}.scb")
+        #     print(f"SCB: save to {destination}.scb")
 
 
 class BackupedLevel(Level):

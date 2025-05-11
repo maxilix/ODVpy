@@ -2,6 +2,9 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPen, QBrush
 from PyQt6.QtWidgets import QGraphicsLineItem
 
+THIN_PEN_WIDTH = 0.3
+LIGHT_BRUSH_ALPHA = 32
+HIGH_BRUSH_ALPHA = 96
 
 class OdvPen(QPen):
     def __init__(self, color, width):
@@ -13,7 +16,7 @@ class OdvPen(QPen):
 
 class OdvThinPen(OdvPen):
     def __init__(self, color):
-        super().__init__(color, 0.3)
+        super().__init__(color, THIN_PEN_WIDTH)
 
 
 class OdvBrush(QBrush):
@@ -24,12 +27,12 @@ class OdvBrush(QBrush):
 
 class OdvLightBrush(OdvBrush):
     def __init__(self, color):
-        super().__init__(color, 32)
+        super().__init__(color, LIGHT_BRUSH_ALPHA)
 
 
 class OdvHighBrush(OdvBrush):
     def __init__(self, color):
-        super().__init__(color, 96)
+        super().__init__(color, HIGH_BRUSH_ALPHA)
 
 
 class QGraphicsLargeLineItem(QGraphicsLineItem):
