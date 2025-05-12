@@ -2,12 +2,13 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QDropEvent
 from PyQt6.QtWidgets import QTreeWidgetItem, QAbstractItemView, QTreeWidget
 
-from qt.common.utils import bounding_rect_of
+from qt.common.utils import bounding_rect_of, same_type
 from qt.control.generic_inspector import Inspector
 
 
 class QGenericTreeItem(QTreeWidgetItem):
     inspector_type = Inspector
+    draggable = False
 
     def __init__(self, section_control, odv_object):
         super().__init__()
@@ -123,11 +124,11 @@ class QGenericTree(QTreeWidget):
         self.itemClicked.connect(self.item_clicked)
         self.itemDoubleClicked.connect(self.item_double_clicked)
 
-        self.setDragEnabled(True)
-        self.setAcceptDrops(True)
-        self.setDropIndicatorShown(True)
-        self.setDragDropMode(QTreeWidget.DragDropMode.InternalMove)
-        # self.dragging_item = None
+        # self.setDragEnabled(True)
+        # self.setAcceptDrops(True)
+        # self.setDropIndicatorShown(True)
+        # self.setDragDropMode(QTreeWidget.DragDropMode.InternalMove)
+        self.dragging_items = []
 
     # def update_height(self):
     #
@@ -144,12 +145,13 @@ class QGenericTree(QTreeWidget):
     #     return count
 
     def mousePressEvent(self, event):
-        item = self.itemAt(event.pos())
-        # self.dragging_item = item
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.dragging_items = self.selectedItems()
+
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-        self.dragging_item = None
+        self.dragging_items = []
         super().mouseReleaseEvent(event)
 
     @staticmethod
@@ -168,12 +170,39 @@ class QGenericTree(QTreeWidget):
     #         item.contextMenuEvent(event)
 
     def dropEvent(self, event: QDropEvent):
+        assert len(self.dragging_items) > 0 and same_type(self.dragging_items)
+        dragging_type = type(self.dragging_items[0])
+        dragging_parent_type = type(self.dragging_items[0].parent())
+        target_item = self.itemAt(event.position().toPoint())
+        indicator = self.dropIndicatorPosition()
+
+        # print(self.dragging_item.parent().text(0))
+        #
+        # if ((indicator == QAbstractItemView.DropIndicatorPosition.OnItem
+        #     and type(target_item) == type(self.dragging_item.parent()))
+        #     or ((indicator == QAbstractItemView.DropIndicatorPosition.AboveItem or indicator == QAbstractItemView.DropIndicatorPosition.BelowItem)
+        #     and type(target_item) == type(self.dragging_item))):
+        #     super().dropEvent(event)
+        # else:
+        #     event.ignore()
+        #
+        # print(self.dragging_item.parent().text(0))
+        # print(self.dragging_item.setSelected(True))
+
+
+        # print(self.dragging_item.parent())
+        # print(target_item, indicator)
+
+        # event.accept()
+
         # TODO implement move mechanic here
-        super().dropEvent(event)
+        # print(event.dropAction())
+        # event.ignore()
         # item_to_drop_in = self.itemAt(event.position().toPoint())
         # if self.dropIndicatorPosition() == QAbstractItemView.DropIndicatorPosition.OnItem:
 
     def startDrag(self, supportedActions: Qt.DropAction):
-        # if self.dragging_item.draggable is True:
-        super().startDrag(supportedActions)
+
+        if len(self.dragging_items) > 0 and same_type(self.dragging_items) and self.dragging_items[0].draggable:
+            super().startDrag(supportedActions)
         # self.dragging_item = None

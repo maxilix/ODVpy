@@ -191,6 +191,7 @@ class GraphicObstacle(GraphicPolygon):
 
 class ObstacleItem(QGenericTreeItem):
     inspector_type = ObstacleInspector
+    draggable = True
 
     def __init__(self, section_control, obstacle: Obstacle):
         super().__init__(section_control, obstacle)
@@ -213,6 +214,7 @@ class SectorInspector(Inspector):
 
 class SectorItem(QGenericTreeItem):
     inspector_type = SectorInspector
+    draggable = True
 
     def __init__(self, section_control, sector: Sector):
         super().__init__(section_control, sector)
@@ -232,6 +234,7 @@ class LayerInspector(Inspector):
 
 class LayerItem(QGenericTreeItem):
     inspector_type = LayerInspector
+    draggable = True
 
     def __init__(self, section_control, layer: Layer):
         super().__init__(section_control, layer)
@@ -251,6 +254,7 @@ class MoveInspector(Inspector):
 
 class MoveItem(QGenericTreeItem):
     inspector_type = MoveInspector
+    draggable = False
 
     def __init__(self, section_control, move:Move):
         super().__init__(section_control, move)

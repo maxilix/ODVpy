@@ -3,6 +3,9 @@ from PyQt6.QtGui import QImage, QColor
 
 from common import *
 
+def same_type(l):
+    return l==[] or all([type(l[0] == type(e) for e in l)])
+
 def checkstate_from_list(l):
     if all(l):
         return Qt.CheckState.Checked
