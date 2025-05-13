@@ -13,6 +13,7 @@ class GraphicPolygon(OdvGraphic):
     def __init__(self, item, polygon:QPolygonF):
         super().__init__(item)
         self.polygon = polygon
+        self.setZValue(2)
 
         self._edit = False
         self.polygon_fix = OdvFixPolygonElement(self, self.polygon)
@@ -24,6 +25,9 @@ class GraphicPolygon(OdvGraphic):
     @property
     def edit(self):
         return self._edit
+
+    def update_shadow(self):
+        self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
 
     def enter_edit_mode(self):
         if self.edit is False:
@@ -42,7 +46,8 @@ class GraphicPolygon(OdvGraphic):
             self._edit = False
             if save is True:
                 self.polygon = QPolygonF(p.pos() for p in self.point_edit).truncated()
-                # self.polygon_changed.emit(self.polygon)
+            else:
+                self.update_shadow()
 
             self.remove(self.polygon_edit)
             self.remove(self.line_edit)
@@ -58,8 +63,7 @@ class GraphicPolygon(OdvGraphic):
         self.line_edit[i].update()
         self.polygon_edit.update()
 
-        # update shadow
-        self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
+        self.update_shadow()
 
     def add_point(self, position: QPointF, cut_line: OdvEditLineElement):
         i = self.line_edit.index(cut_line)
@@ -79,8 +83,7 @@ class GraphicPolygon(OdvGraphic):
         # update polygon shape
         self.polygon_edit.p_list = self.point_edit
 
-        # update shadow
-        self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
+        self.update_shadow()
 
         for p in self.point_edit:
             p.deletable = True
@@ -103,8 +106,7 @@ class GraphicPolygon(OdvGraphic):
         # update polygon shape
         self.polygon_edit.p_list = self.point_edit
 
-        # update shadow
-        self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
+        self.update_shadow()
 
         if n == 4:  # then there are 3 points left
             for p in self.point_edit:

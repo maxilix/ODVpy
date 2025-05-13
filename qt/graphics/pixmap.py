@@ -33,8 +33,8 @@ class GraphicMap(OdvGraphic):
 
     def __init__(self, item, image: QImage):
         super().__init__(item)
+        self.setZValue(1)
         self.map_item = OdvFixPixmapElement(self, QPixmap(image))
-        self.map_item.setZValue(0.1)
         self.shadow = OdvShadow(item, QPolygonF(image.rect().toRectF()))
         self.shadow.setPen(OdvPen(color=QColor("black"), width=1))
         self.shadow.setBrush(OdvLightBrush(color=QColor("black")))
