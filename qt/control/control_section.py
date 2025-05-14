@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QLabel, QStackedLayout
+from PyQt6.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QLabel, QStackedLayout, QSizePolicy
 
 from odv.odv_object import OdvObjectIterable
 from qt.control.generic_tree import QGenericTree, QGenericTreeItem
@@ -18,14 +18,15 @@ class QSectionControl(QWidget):
         main_layout = QVBoxLayout(self)
 
         top_widget = QWidget()
-        top_widget.setMinimumHeight(300)
-        top_widget.setMaximumHeight(500)
+        top_widget.setFixedHeight(250)
+        # top_widget.setMinimumHeight(300)
+        # top_widget.setMaximumHeight(500)
 
         top_layout = QHBoxLayout(top_widget)
         top_layout.setContentsMargins(0, 0, 0, 0)
 
         self.section_widget = QWidget()
-        self.section_widget.setFixedWidth(300)
+        self.section_widget.setFixedWidth(250)
         section_layout = QVBoxLayout(self.section_widget)
         section_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -41,8 +42,11 @@ class QSectionControl(QWidget):
 
         self.tree = QGenericTree()
         self.tree.itemSelectionChanged.connect(self.item_selection_changed)
-        self.tree.setMinimumWidth(200)
-        # self.tree.resize(300,400)
+        self.tree.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Minimum)
+        # self.tree.setMaximumHeight(400)
+        self.tree.setFixedHeight(250)
+        # self.tree.setBaseSize(250, 400)
+        # self.tree.resize(800,400)
         top_layout.addWidget(self.tree)
 
         main_layout.addWidget(top_widget)

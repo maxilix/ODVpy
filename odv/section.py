@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from common import *
 
 # 20 dvd sections in order
-section_fullname = {"MISC": "General Parameters",
+section_fullname = {"MISC": "Parameters",
                     "BGND": "Maps",
                     "MOVE": "Movement Areas",
                     "SGHT": "3D Elements",
