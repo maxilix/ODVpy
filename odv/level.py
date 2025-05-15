@@ -66,8 +66,10 @@ class Level(object):
         self.data["BGND"].load(abs_filename=self.abs_filename)
         self.data["MOVE"] = stream.read(Move)
         self.data["MOVE"].load()
-        # self.data["SGHT"] = stream.read(Sght)
+        self.data["SGHT"] = stream.read(Sght)
         # self.data["SGHT"].load(move=self.data["MOVE"])
+        self.data["MASK"] = stream.read(Mask)
+        self.data["MASK"].load()
         self.tail = stream.read_raw()
 
 
@@ -148,6 +150,9 @@ class Level(object):
         stream = WriteStream()
         stream.write(self.data["MISC"])
         stream.write(self.data["BGND"])
+        stream.write(self.data["MOVE"])
+        stream.write(self.data["SGHT"])
+        stream.write(self.data["MASK"])
         stream.write(Bytes(self.tail))
 
         with open(f"{destination}.dvd", 'wb') as file:

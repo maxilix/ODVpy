@@ -3,6 +3,7 @@ from PyQt6.QtGui import QMouseEvent, QCursor, QAction
 from PyQt6.QtWidgets import QTabWidget, QMenu
 
 from qt.control.tab_bgnd import QBgndControl
+from qt.control.tab_mask import QMaskControl
 from qt.control.tab_misc import QMiscControl
 from qt.control.tab_move import QMoveControl
 
@@ -52,7 +53,7 @@ class QControl(QTabWidget):
         self.tab["BGND"] = QBgndControl(self, level.data["BGND"])
         self.tab["MOVE"] = QMoveControl(self, level.data["MOVE"])
         # self.tab["SGHT"] = QSectionControl(self, level.dvd.sght)
-        # self.tab["MASK"] = QMaskTabControl(self, level.dvd.mask)
+        self.tab["MASK"] = QMaskControl(self, level.data["MASK"])
         # self.tab["WAYS"] = None
         # self.tab["ELEM"] = None
         # self.tab["FXBK"] = None

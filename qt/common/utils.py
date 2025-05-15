@@ -15,9 +15,9 @@ def checkstate_from_list(l):
         return Qt.CheckState.Unchecked
 
 def bounding_rect_of(graphic_list):
-    rect = graphic_list[0].boundingRect()
+    rect = graphic_list[0].sceneBoundingRect()
     for g in graphic_list[1:]:
-        rect = rect.united(g.boundingRect())
+        rect = rect.united(g.sceneBoundingRect())
     return rect
 
 def image_to_qimage(image: Image):
@@ -25,11 +25,11 @@ def image_to_qimage(image: Image):
     w = image.width
     return QImage(image.rgba().data, w, h, 4*w, QImage.Format.Format_RGBA8888)
 
-def maskimage_to_qimage(maskimage: MaskImage, true_color=(0,0,0)):
+def mask_image_to_qimage(mask_image: MaskImage, true_color=(0, 0, 0)):
     if isinstance(true_color, QColor):
         true_color = true_color.rgb()
-    h = maskimage.height
-    w = maskimage.width
-    return QImage(maskimage.rgba(true_color).data, w, h, 4*w, QImage.Format.Format_RGBA8888)
+    h = mask_image.height
+    w = mask_image.width
+    return QImage(mask_image.rgba(true_color).data, w, h, 4 * w, QImage.Format.Format_RGBA8888)
 
 

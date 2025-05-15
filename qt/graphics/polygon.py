@@ -13,7 +13,7 @@ class GraphicPolygon(OdvGraphic):
     def __init__(self, item, polygon:QPolygonF):
         super().__init__(item)
         self.polygon = polygon
-        self.setZValue(2)
+        self.setZValue(10)
 
         self._edit = False
         self.polygon_fix = OdvFixPolygonElement(self, self.polygon)

@@ -20,7 +20,7 @@ class QScene(QGraphicsScene):
         return self.views()[0]
 
     def move_to_item(self, item: QGraphicsItem):
-        self.viewport().move_to_rect(item.boundingRect())
+        self.viewport().move_to_rect(item.sceneBoundingRect())
 
     def move_to_rect(self, rect: QRectF):
         self.viewport().move_to_rect(rect)

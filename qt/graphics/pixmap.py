@@ -1,3 +1,4 @@
+from PyQt6.QtCore import QPointF
 from PyQt6.QtGui import QImage, QPixmap, QPolygonF, QColor
 
 from qt.graphics import OdvPen, OdvLightBrush
@@ -6,26 +7,14 @@ from qt.graphics.pixmap_elem import OdvFixPixmapElement
 
 
 class GraphicMask(OdvGraphic):
-    def __init__(self, sub_inspector):
-        super().__init__(sub_inspector)
+    def __init__(self, item, mask_image: QImage, position: QPointF):
+        super().__init__(item)
+        self.setZValue(2)
+        self.setPos(position)
+        self.mask_item = OdvFixPixmapElement(self, QPixmap(mask_image))
+        self.shadow = OdvShadow(item, QPolygonF(mask_image.rect().toRectF().translated(position)))
 
-        self.mask_item = None
-        self.reset_mask()
 
-    @property
-    def mask(self) -> QImage :
-        return self.sub_inspector.current
-
-    def reset_mask(self):
-        self.remove(self.mask_item)
-
-        self.mask_item = OdvFixPixmapElement(self, QPixmap(self.mask))
-
-        self.update()
-
-    def setOpacity(self, opacity):
-        # opacity only affect mask_item
-        self.mask_item.setOpacity(opacity)
 
 
 class GraphicMap(OdvGraphic):
