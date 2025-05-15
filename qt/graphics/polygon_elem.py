@@ -9,16 +9,16 @@ from qt.graphics.point_elem import OdvEditPointElement
 class OdvFixPolygonElement(QGraphicsPolygonItem):
     def __init__(self, parent_item: OdvGraphic, polygon: QPolygonF):
         super().__init__(parent_item)
-        self.setPolygon(polygon.translated(parent_item.grid_alignment))
-        self.setPen(parent_item.thin_pen)
-        self.setBrush(parent_item.light_brush)
+        self.setPolygon(polygon.translated(self.parentItem().grid_alignment))
+        self.setPen(self.parentItem().thin_pen)
+        self.setBrush(self.parentItem().light_brush)
 
 
 class OdvEditPolygonShapeElement(QGraphicsPathItem):
     def __init__(self, parent_item, p_list: list[OdvEditPointElement], movable: bool = False):
         super().__init__(parent_item)
         self.setPen(QPen(Qt.GlobalColor.transparent))
-        self.setBrush(parent_item.light_brush)
+        self.setBrush(self.parentItem().light_brush)
         self.movable = movable
         self._drag_position = None
         self.p_list = p_list  # performs an update
@@ -47,14 +47,14 @@ class OdvEditPolygonShapeElement(QGraphicsPathItem):
                 print(f"WARN : impossible to drag large polygons ({len(self.p_list)} points > 20)")
             else:
                 self._drag_position = self.mapToScene(event.pos()).truncated()
-                # self.setBrush(self.sub_inspector.high_brush)
+                self.setBrush(self.parentItem().high_brush)
         else:
             super().mouseDoubleClickEvent(event)
 
     def mouseReleaseEvent(self, event):
         if self.movable:
             self._drag_position = None
-            # self.setBrush(self.sub_inspector.light_brush)
+            self.setBrush(self.parentItem().light_brush)
         else:
             super().mouseReleaseEvent(event)
 

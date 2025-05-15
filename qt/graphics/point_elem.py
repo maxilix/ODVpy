@@ -41,8 +41,8 @@ class OdvEditPointElement(QGraphicsEllipseItem):
     def __init__(self, parent_item, position: QPointF, deletable: bool = False):
         super().__init__(parent_item)
         self.setRect(-self.size / 2, -self.size / 2, self.size, self.size)
-        self.setPen(parent_item.thin_pen)
-        self.setBrush(parent_item.light_brush)
+        self.setPen(self.parentItem().thin_pen)
+        self.setBrush(self.parentItem().light_brush)
 
         self.setPos(position, notify=False)
         self._is_moving = False
@@ -62,7 +62,7 @@ class OdvEditPointElement(QGraphicsEllipseItem):
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
             self._is_moving = True
-            # self.setBrush(self.sub_inspector.high_brush)
+            self.setBrush(self.parentItem().high_brush)
         elif event.button() == Qt.MouseButton.RightButton:
             # scene_position = self.mapToScene(event.pos())
             menu = QMenu()
@@ -77,7 +77,7 @@ class OdvEditPointElement(QGraphicsEllipseItem):
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         self._is_moving = False
-        # self.setBrush(self.sub_inspector.light_brush)
+        self.setBrush(self.parentItem().light_brush)
         super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):

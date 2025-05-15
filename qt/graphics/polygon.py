@@ -47,7 +47,8 @@ class GraphicPolygon(OdvGraphic):
             if save is True:
                 self.polygon = QPolygonF(p.pos() for p in self.point_edit).truncated()
             else:
-                self.update_shadow()
+                # update shadow
+                self.shadow.setPolygon(self.polygon.translated(self.grid_alignment))
 
             self.remove(self.polygon_edit)
             self.remove(self.line_edit)
@@ -63,7 +64,8 @@ class GraphicPolygon(OdvGraphic):
         self.line_edit[i].update()
         self.polygon_edit.update()
 
-        self.update_shadow()
+        # update shadow
+        self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
 
     def add_point(self, position: QPointF, cut_line: OdvEditLineElement):
         i = self.line_edit.index(cut_line)
@@ -83,7 +85,8 @@ class GraphicPolygon(OdvGraphic):
         # update polygon shape
         self.polygon_edit.p_list = self.point_edit
 
-        self.update_shadow()
+        # update shadow
+        self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
 
         for p in self.point_edit:
             p.deletable = True
@@ -106,7 +109,8 @@ class GraphicPolygon(OdvGraphic):
         # update polygon shape
         self.polygon_edit.p_list = self.point_edit
 
-        self.update_shadow()
+        # update shadow
+        self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
 
         if n == 4:  # then there are 3 points left
             for p in self.point_edit:

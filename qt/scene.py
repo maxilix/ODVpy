@@ -45,9 +45,16 @@ class QScene(QGraphicsScene):
             actions = []
             for tree_item in [g.tree_item for g in self.items(event.scenePos()) if isinstance(g, OdvShadow)]:
                 actions.append(QAction(tree_item.name))
-                actions[-1].triggered.connect(lambda state, inner_item=tree_item: inner_item.focus())
+                # actions[-1].triggered.connect(lambda state, inner_item=tree_item: inner_item.focus())
+                actions[-1].triggered.connect(lambda state, inner_item=tree_item: self.focus_on(inner_item))
             menu.addActions(actions)
             menu.exec(QCursor.pos())
+
+    @staticmethod
+    def focus_on(tree_item):
+        tree_item.focus()
+        tree_item.show_graphics()
+        tree_item.localise_graphics()
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         shadow_list = [g.tree_item for g in self.items(event.scenePos()) if isinstance(g, OdvShadow)]

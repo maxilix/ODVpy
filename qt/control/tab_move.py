@@ -68,7 +68,7 @@ class ObstacleInspector(Inspector):
         geometry_visibility_layout = QHBoxLayout()
         geometry_visibility_layout.setContentsMargins(0, 0, 0, 0)
 
-        geometry_visibility_layout.addWidget(QLabel("Obstacle visibility"))
+        geometry_visibility_layout.addWidget(QLabel("Visibility"))
 
         self.visibility_checkbox = QCheckBox()
         self.visibility_checkbox.setTristate(False)
@@ -88,7 +88,7 @@ class ObstacleInspector(Inspector):
         geometry_edit_layout = QHBoxLayout()
         geometry_edit_layout.setContentsMargins(0, 0, 0, 0)
 
-        geometry_edit_layout.addWidget(QLabel("Polygon edition"))
+        geometry_edit_layout.addWidget(QLabel("Polygon"))
 
         self.edit_button = QPushButton("Edit")
         self.edit_button.clicked.connect(self.edit_button_clicked)

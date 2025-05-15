@@ -32,9 +32,9 @@ class QViewport(QGraphicsView):
         r = QRectF(-cr.width() / 2, -cr.height() / 2, cr.width() + tr.width(), cr.height() + tr.height())
         self.setSceneRect(r)
 
-    def resizeEvent(self, event):
-        # self.adjust_margins()
-        super().resizeEvent(event)
+    # def resizeEvent(self, event):
+    #     self.adjust_margins()
+    #     super().resizeEvent(event)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
@@ -49,7 +49,9 @@ class QViewport(QGraphicsView):
         super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
+        # Not necessary for every mouse movement, but useful when an item is drawn outside the DVM.
         self.adjust_margins()
+
         mouse_scene_pos = self.mapToScene(event.pos())
         self.info_bar.set_xy(mouse_scene_pos.x(), mouse_scene_pos.y())
         if self.drag_position is not None:
@@ -72,7 +74,6 @@ class QViewport(QGraphicsView):
             self.zoom /= self.zoom_factor
         else:
             pass  # do not change the zoom
-        self.adjust_margins()
 
         # Refocus the view according to the mouse position
         h = self.horizontalScrollBar()
@@ -97,6 +98,7 @@ class QViewport(QGraphicsView):
             new_zoom = self.zoom_max
         current_zoom = self.zoom
         self.scale(new_zoom / current_zoom, new_zoom / current_zoom)
+        self.adjust_margins()
         self.info_bar.set_zoom(self.zoom)
 
     @pyqtProperty(float)
@@ -119,32 +121,30 @@ class QViewport(QGraphicsView):
         v = self.verticalScrollBar()
         v.setValue(int(self.zoom * value - v.pageStep() / 2))
 
-    def move_to_rect(self, r: QRectF, max_zoom:float = 6):
+    def move_to_rect(self, r: QRectF, max_zoom:float = 10):
         c = r.center()
         r_v = self.viewport().rect()
-        zoom_w = r_v.width() / r.width()
-        zoom_h = r_v.height() / r.height()
-        self.move_to(c.x(), c.y(), min(zoom_w, zoom_h, max_zoom))
+        zoom_x = r_v.width() / r.width()
+        zoom_y = r_v.height() / r.height()
+        self.move_to(c.x(), c.y(), min(zoom_x, zoom_y, max_zoom))
 
     def move_to(self, x, y, zoom=None):
-        duration = 600
-        anims = []
+        duration = 600  # millisecond
+        group = QParallelAnimationGroup(self)
 
         anim_x = QPropertyAnimation(self, b'x')
         anim_x.setDuration(duration)
         anim_x.setStartValue(self.x)
-        # anim_x.setKeyValueAt(0.8, x)
         anim_x.setEndValue(x)
         anim_x.setEasingCurve(QEasingCurve.Type.InOutCubic)
-        anims.append(anim_x)
+        group.addAnimation(anim_x)
 
         anim_y = QPropertyAnimation(self, b'y')
         anim_y.setDuration(duration)
         anim_y.setStartValue(self.y)
-        # anim_y.setKeyValueAt(0.8, y)
         anim_y.setEndValue(y)
         anim_y.setEasingCurve(QEasingCurve.Type.InOutCubic)
-        anims.append(anim_y)
+        group.addAnimation(anim_y)
 
         if zoom is not None:
             if zoom < self.zoom_min:
@@ -152,16 +152,12 @@ class QViewport(QGraphicsView):
             if zoom > self.zoom_max:
                 zoom = self.zoom_max
             anim_zoom = QPropertyAnimation(self, b'zoom')
-            anim_zoom.setDuration(int(1.5 * duration))
+            anim_zoom.setDuration(int(1.2 * duration))
             anim_zoom.setStartValue(self.zoom)
-            # anim_zoom.setKeyValueAt(0.25, self.zoom)
             anim_zoom.setEndValue(zoom)
             anim_zoom.setEasingCurve(QEasingCurve.Type.InOutCubic)
-            anims.append(anim_zoom)
+            group.addAnimation(anim_zoom)
 
-        group = QParallelAnimationGroup(self)  # Todo remove "self"
-        for anim in anims:
-            group.addAnimation(anim)
         group.start()
 
     def current_visible_scene_rect(self):
