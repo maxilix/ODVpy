@@ -5,7 +5,7 @@ from odv.data_section.lift import LiftArea, Lift
 from qt.control.generic_inspector import Inspector
 from qt.control._sub_inspector import OdvObjectListSubInspector, IntegerBoxInspector, \
     ConstantEnumListInspector
-from qt.control.inspector_graphic import GeometrySubInspector
+from qt.control._inspector_graphic import GeometrySubInspector
 from qt.control.control_section import QTabControlGenericTree
 
 LIFT_TYPE = {0: "???",

@@ -3,7 +3,7 @@ from PyQt6.QtGui import QColor
 from odv.data_section.bond import BondLine, Bond
 from qt.control.generic_inspector import Inspector
 from qt.control._sub_inspector import OdvObjectListSubInspector
-from qt.control.inspector_graphic import GeometrySubInspector
+from qt.control._inspector_graphic import GeometrySubInspector
 from qt.control.control_section import QTabControlGenericTree
 
 

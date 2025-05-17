@@ -1,6 +1,5 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPen, QBrush
-from PyQt6.QtWidgets import QGraphicsLineItem
 
 THIN_PEN_WIDTH = 0.3
 LIGHT_BRUSH_ALPHA = 32
@@ -34,18 +33,6 @@ class OdvHighBrush(OdvBrush):
     def __init__(self, color):
         super().__init__(color, HIGH_BRUSH_ALPHA)
 
-
-class QGraphicsLargeLineItem(QGraphicsLineItem):
-    _width_scale = 6.0
-
-    def shape(self):
-        # virtually extends the line width for click detection
-        temp_line = QGraphicsLineItem(self.line())
-        pen = self.pen()
-        pen.setWidthF(pen.widthF() * self._width_scale)
-        pen.setCapStyle(Qt.PenCapStyle.FlatCap)
-        temp_line.setPen(pen)
-        return temp_line.shape()
 
 
 from .point import GraphicPoint

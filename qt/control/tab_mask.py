@@ -38,27 +38,27 @@ class MaskEntryInspector(Inspector):
         self.main_layout.addLayout(visibility_layout)
         #########################################################################
 
-        # ### Geometry Edition Widget #############################################
-        # geometry_edit_layout = QHBoxLayout()
-        # geometry_edit_layout.setContentsMargins(0, 0, 0, 0)
-        #
-        # geometry_edit_layout.addWidget(QLabel("Polygon"))
-        #
-        # self.edit_button = QPushButton("Edit")
-        # self.edit_button.clicked.connect(self.edit_button_clicked)
-        # geometry_edit_layout.addWidget(self.edit_button)
-        #
-        # geometry_edit_layout.addStretch()
-        #
-        # self.save_button = QPushButton("Save")
-        # self.save_button.clicked.connect(lambda : self.save_cancel_button_clicked(save=True))
-        # geometry_edit_layout.addWidget(self.save_button)
-        # self.cancel_button = QPushButton("Cancel")
-        # self.cancel_button.clicked.connect(lambda : self.save_cancel_button_clicked(save=False))
-        # geometry_edit_layout.addWidget(self.cancel_button)
-        #
-        # self.main_layout.addLayout(geometry_edit_layout)
-        # #########################################################################
+        ### Geometry Edition Widget #############################################
+        mask_edit_layout = QHBoxLayout()
+        mask_edit_layout.setContentsMargins(0, 0, 0, 0)
+
+        mask_edit_layout.addWidget(QLabel("Binary mask"))
+
+        self.edit_button = QPushButton("Edit")
+        self.edit_button.clicked.connect(self.edit_button_clicked)
+        mask_edit_layout.addWidget(self.edit_button)
+
+        mask_edit_layout.addStretch()
+
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(lambda : self.save_cancel_button_clicked(save=True))
+        mask_edit_layout.addWidget(self.save_button)
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.clicked.connect(lambda : self.save_cancel_button_clicked(save=False))
+        mask_edit_layout.addWidget(self.cancel_button)
+
+        self.main_layout.addLayout(mask_edit_layout)
+        #########################################################################
         #
         # ### Infos Widget ########################################################
         # self.geometry_info_label = QLabel()
@@ -80,27 +80,22 @@ class MaskEntryInspector(Inspector):
             item.graphic_mask.setOpacity(self.opacity_slider.value() / 100)
 
 
-    # def edit_button_clicked(self):
-    #     if self.visibility_checkbox.checkState() != Qt.CheckState.Checked:
-    #         self.visibility_checkbox.click()
-    #     [item.graphic_obstacle.enter_edit_mode() for item in self.items]
-    #     self.edit_button.setDisabled(True)
-    #     self.save_button.setEnabled(True)
-    #     self.cancel_button.setEnabled(True)
-    #
-    # def save_cancel_button_clicked(self, save):
-    #     [item.graphic_obstacle.exit_edit_mode(save=save) for item in self.items]
-    #     self.edit_button.setEnabled(True)
-    #     self.save_button.setDisabled(True)
-    #     self.cancel_button.setDisabled(True)
-    #     if save is True:
-    #         for item in self.items:
-    #             item.obstacle.poly = item.graphic_obstacle.polygon
-    #     if len(self.items) == 1:
-    #         n = len(self.items[0].obstacle.poly)
-    #         self.geometry_info_label.setText(f"The polygon has {n} points.\n{"WARNING, polygons larger than 20 points cannot be dragged" if n > 20 else ""}")
-    #     else:
-    #         self.geometry_info_label.setText(f"")
+    def edit_button_clicked(self):
+        if self.visibility_checkbox.checkState() != Qt.CheckState.Checked:
+            self.visibility_checkbox.click()
+        [item.graphic_mask.enter_edit_mode() for item in self.items]
+        self.edit_button.setDisabled(True)
+        self.save_button.setEnabled(True)
+        self.cancel_button.setEnabled(True)
+
+    def save_cancel_button_clicked(self, save):
+        [item.graphic_mask.exit_edit_mode(save=save) for item in self.items]
+        self.edit_button.setEnabled(True)
+        self.save_button.setDisabled(True)
+        self.cancel_button.setDisabled(True)
+        # if save is True:
+        #     for item in self.items:
+        #         item.obstacle.poly = item.graphic_mask.polygon
 
 
     def connect_to(self, new_items):
@@ -115,26 +110,20 @@ class MaskEntryInspector(Inspector):
         min_opacity = min([int(100 * item.graphic_mask.opacity()) for item in self.items])
         self.opacity_slider.setValue(min_opacity)
 
-
-        # if len(self.items) == 1:
-        #     self.edit_button.setText("Edit")
-        #     self.edit_button.setDisabled(self.items[0].graphic_mask.edit)
-        #     self.save_button.setText("Save")
-        #     self.save_button.setEnabled(self.items[0].graphic_mask.edit)
-        #     self.cancel_button.setText("Cancel")
-        #     self.cancel_button.setEnabled(self.items[0].graphic_mask.edit)
-        #
-        #     n = len(self.items[0].obstacle.poly)
-        #     self.geometry_info_label.setText(f"The polygon has {n} points.\n{"WARNING, polygons larger than 20 points cannot be dragged" if n > 20 else ""}")
-        # else:
-        #     self.edit_button.setText("Edit All")
-        #     self.edit_button.setDisabled(all([item.graphic_mask.edit for item in self.items]))
-        #     self.save_button.setText("Save All")
-        #     self.save_button.setEnabled(any([item.graphic_mask.edit for item in self.items]))
-        #     self.cancel_button.setText("Cancel All")
-        #     self.cancel_button.setEnabled(any([item.graphic_mask.edit for item in self.items]))
-        #
-        #     self.geometry_info_label.setText(f"")
+        if len(self.items) == 1:
+            self.edit_button.setText("Edit")
+            self.edit_button.setDisabled(self.items[0].graphic_mask.edit)
+            self.save_button.setText("Save")
+            self.save_button.setEnabled(self.items[0].graphic_mask.edit)
+            self.cancel_button.setText("Cancel")
+            self.cancel_button.setEnabled(self.items[0].graphic_mask.edit)
+        else:
+            self.edit_button.setText("Edit All")
+            self.edit_button.setDisabled(all([item.graphic_mask.edit for item in self.items]))
+            self.save_button.setText("Save All")
+            self.save_button.setEnabled(any([item.graphic_mask.edit for item in self.items]))
+            self.cancel_button.setText("Cancel All")
+            self.cancel_button.setEnabled(any([item.graphic_mask.edit for item in self.items]))
 
     def localise_button_clicked(self):
         if self.visibility_checkbox.checkState() != Qt.CheckState.Checked:
@@ -152,7 +141,8 @@ class MaskEntryItem(QGenericTreeItem):
         super().__init__(section_control, mask_entry)
         self.mask_entry = mask_entry
 
-        self.graphic_mask = GraphicMask(self, mask_image_to_qimage(self.mask_entry.mask_image, true_color=(0, 180, 255)), self.mask_entry.position)
+        # self.graphic_mask = GraphicMask(self, mask_image_to_qimage(self.mask_entry.mask_image, true_color=(0, 180, 255)), self.mask_entry.position)
+        self.graphic_mask = GraphicMask(self, self.mask_entry.mask_image, self.mask_entry.position)
         self.graphic_mask.setOpacity(0.4)
         self.add_graphic(self.graphic_mask)
 

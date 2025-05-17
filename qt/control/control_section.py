@@ -18,7 +18,7 @@ class QSectionControl(QWidget):
         main_layout = QVBoxLayout(self)
 
         top_widget = QWidget()
-        top_widget.setFixedHeight(250)
+        top_widget.setFixedHeight(400)
         # top_widget.setMinimumHeight(300)
         # top_widget.setMaximumHeight(500)
 
@@ -43,8 +43,8 @@ class QSectionControl(QWidget):
         self.tree = QGenericTree()
         self.tree.itemSelectionChanged.connect(self.item_selection_changed)
         self.tree.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Minimum)
-        # self.tree.setMaximumHeight(400)
-        self.tree.setFixedHeight(250)
+        self.tree.setMinimumWidth(350)
+        self.tree.setFixedHeight(400)
         # self.tree.setBaseSize(250, 400)
         # self.tree.resize(800,400)
         top_layout.addWidget(self.tree)

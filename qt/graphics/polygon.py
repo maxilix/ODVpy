@@ -26,9 +26,6 @@ class GraphicPolygon(OdvGraphic):
     def edit(self):
         return self._edit
 
-    def update_shadow(self):
-        self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
-
     def enter_edit_mode(self):
         if self.edit is False:
             self._edit = True

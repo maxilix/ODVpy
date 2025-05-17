@@ -3,7 +3,7 @@ from PyQt6.QtGui import QColor
 from odv.data_section.jump import Jump, JumpArea
 from qt.control.generic_inspector import Inspector
 from qt.control._sub_inspector import OdvObjectListSubInspector, LongTextSubInspector
-from qt.control.inspector_graphic import GeometrySubInspector
+from qt.control._inspector_graphic import GeometrySubInspector
 from qt.control.control_section import QTabControlGenericTree
 from qt.graphics import GraphicMultiLine
 

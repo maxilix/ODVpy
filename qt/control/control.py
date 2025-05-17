@@ -74,8 +74,10 @@ class QControl(QTabWidget):
         self.add_tab("MISC")
         self.add_tab("BGND")
         self.add_tab("MOVE")
-        self.setCurrentWidget(self.tab["MOVE"])
-        self.scene.center_view(zoom=0.6)
+        self.add_tab("MASK")
+        self.setCurrentWidget(self.tab["MASK"])
+        # self.scene.center_view(zoom=0.6)
+
 
         # button = scene.addWidget(QPushButton("Button 1"))
         # button.setFlag(button.GraphicsItemFlag.ItemIgnoresTransformations)

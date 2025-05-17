@@ -5,7 +5,7 @@ from odv.data_section.buil import Door, Building, SpecialDoors, Buildings
 from qt.control.generic_inspector import Inspector
 from qt.control._sub_inspector import IntegerBoxInspector, InfoSubInspector, ConstantEnumListInspector, \
     MultiCheckBoxInspector, CheckBoxInspector, IntegerTwinBoxInspector, OdvObjectListSubInspector
-from qt.control.inspector_graphic import GeometrySubInspector
+from qt.control._inspector_graphic import GeometrySubInspector
 from qt.control.control_section import QTabControlGenericTree
 
 DOOR_TYPE = {0: "Invisible Door",

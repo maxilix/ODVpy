@@ -4,7 +4,7 @@ import bz2
 from typing import Self
 from math import ceil
 
-import cv2
+import cv2 as cv
 import numpy as np
 
 from .rw_stream import RWStreamable, RStreamable, ReadStream, WriteStream
@@ -65,13 +65,13 @@ class Image(RWStreamable):
 		return image_rgba
 
 	def debug_show(self):
-		cv2.imshow("", self._image)
-		cv2.waitKey(0)
-		cv2.destroyAllWindows()
+		cv.imshow("", self._image)
+		cv.waitKey(0)
+		cv.destroyAllWindows()
 
 	@classmethod
 	def from_file(cls, filename):
-		image = cv2.imread(filename, cv2.IMREAD_COLOR)
+		image = cv.imread(filename, cv.IMREAD_COLOR)
 		return cls(image)
 
 	@classmethod
@@ -113,7 +113,7 @@ class Image(RWStreamable):
 
 class MaskImage(RWStreamable):
 	def __init__(self, image):
-		self._image = image  # numpy array stored in Grayscale format
+		self._image = image  # numpy array of bool
 
 	@property
 	def height(self):
@@ -127,22 +127,23 @@ class MaskImage(RWStreamable):
 	def data(self):
 		return self._image.data
 
-	def rgba(self, true_color=(0,0,0)):
-		image_bw = self._image
-		image_rgba = np.zeros((self.height, self.width, 4), dtype=np.uint8)
-		# image_rgba[image_bw == 0] = (0, 0, 0, 0)  # useless
-		image_rgba[image_bw == 255] = (*true_color, 255)
+	def set_pixel(self, x:int, y:int, b:bool):
+		if 0 <= x < self.width and 0 <= y < self.height:
+			self._image[y, x] = b
 
+	def rgba(self, true_color=(0,0,0)):
+		image_rgba = np.zeros((self.height, self.width, 4), dtype=np.uint8)
+		image_rgba[self._image] = (*(true_color[:3]), 255)
 		return image_rgba
 
 	def debug_show(self):
-		cv2.imshow("", self._image)
-		cv2.waitKey(0)
-		cv2.destroyAllWindows()
+		cv.imshow("", self._image)
+		cv.waitKey(0)
+		cv.destroyAllWindows()
 
 	@classmethod
 	def from_file(cls, filename):
-		image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+		image = cv.imread(filename, cv.IMREAD_GRAYSCALE)
 		return cls(image)
 
 	@classmethod
@@ -169,8 +170,33 @@ class MaskImage(RWStreamable):
 					col_index += 1 + n
 
 		bit_array = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
-		image_array = bit_array.reshape((height, (ceil(width / 8) * 8)))[:, :width]
-		return cls(np.uint8(image_array * 255))
+		image_array = bit_array.reshape((height, (ceil(width / 8) * 8)))[:, :width].astype(np.bool)
+		# return cls(np.int8(image_array * 255))
+		return cls(image_array)
+
+	def hull(self):
+		#################### convex hull version
+		# # find all true points
+		# points = np.argwhere(self._image)
+		# # compute the convex hull
+		# hull = cv.convexHull(points).reshape(-1, 2)[:, ::-1]
+
+		#################### approximate hull version
+		# dilate the original mask
+		# dilated_mask = cv.dilate(self._image.astype(np.uint8)*255, np.ones((6, 6), np.uint8), iterations=2)
+		dilated_mask = self._image.astype(np.uint8)*255
+		# add blur effect (useful for tree masks)
+		blurred_mask = cv.GaussianBlur(dilated_mask.astype(np.uint8), (11, 11), 1)
+		# find the contours of the largest area
+		contours, _ = cv.findContours(blurred_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+		largest_contour = max(contours, key=cv.contourArea)
+		# approximate the form with a polygon
+		epsilon = 0.01 * cv.arcLength(largest_contour, True)
+		hull = cv.approxPolyDP(largest_contour, epsilon, True).reshape(-1, 2)
+
+		#return the hull
+		return hull
+
 
 	def to_stream(self, stream):
 		w = self.width
