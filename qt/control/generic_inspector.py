@@ -194,7 +194,10 @@ class Inspector(QWidget):
             self.title.setToolTip(None)
         else:
             assert all([type(new_items[0]) == type(e) for e in new_items])
-            self.title.setText(f"Linked to {n} {new_items[0]._odv_object.__class__.__name__}{"s" if n != 1 else ""}")
+            plural = f"{new_items[0]._odv_object.__class__.__name__}s"
+            if plural.endswith("ys"):
+                plural = plural.replace("ys", "ies")
+            self.title.setText(f"Linked to {n} {plural}")
             self.title.setToolTip("\n".join([e.name for e in new_items]))
 
     def update(self):
