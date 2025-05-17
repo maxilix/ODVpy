@@ -2,23 +2,23 @@ from PyQt6.QtCore import QLineF, QRectF, Qt
 from PyQt6.QtGui import QAction, QTransform, QPainter, QCursor
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QMenu
 
-from qt.graphics.base_elem import OdvGraphicElement
 from qt.graphics.point_elem import OdvEditPointElement
 
 class QGraphicsLargeLineItem(QGraphicsLineItem):
-    _width_scale = 6.0
+    _scale = 6.0
 
     def shape(self):
         # virtually extends the line width for click detection
         temp_line = QGraphicsLineItem(self.line())
         pen = self.pen()
-        pen.setWidthF(pen.widthF() * self._width_scale)
+        pen.setWidthF(pen.widthF() * self._scale)
         pen.setCapStyle(Qt.PenCapStyle.FlatCap)
         temp_line.setPen(pen)
         return temp_line.shape()
 
 
-class OdvArrowElement(OdvGraphicElement, QGraphicsItem):
+
+class OdvArrowElement(QGraphicsItem):
     def __init__(self, parent_item):
         super().__init__(parent_item)
         self.r_branch = QLineF()

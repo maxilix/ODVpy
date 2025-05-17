@@ -12,6 +12,8 @@ class OdvFixPixmapElement(QGraphicsPixmapItem):
         super().__init__(parent_item)
         self.setPixmap(pixmap)
 
+
+
 class OdvFixMaskElement(QGraphicsPixmapItem):
     def __init__(self, parent_item, mask_image):
         super().__init__(parent_item)
@@ -22,6 +24,7 @@ class OdvFixMaskElement(QGraphicsPixmapItem):
         self.setPixmap(QPixmap(i))
 
 
+
 class OdvEditMaskElement(QGraphicsPixmapItem):
     def __init__(self, parent_item, mask_image):
         super().__init__(parent_item)
@@ -30,13 +33,6 @@ class OdvEditMaskElement(QGraphicsPixmapItem):
         self.color = QColor(0, 180, 255)
         self.hull = None
         self.update()
-
-
-    # def paint(self, painter: QPainter, option, widget=None):
-    #     h = self.mask_image.height
-    #     w = self.mask_image.width
-    #     i = QImage(self.mask_image.rgba(self.color.getRgb()).data, w, h, 4 * w, QImage.Format.Format_RGBA8888)
-    #     painter.drawImage(QPointF(0,0), i)
 
     def update(self, rect: QRectF = QRectF()):
         h = self.mask_image.height
@@ -49,9 +45,7 @@ class OdvEditMaskElement(QGraphicsPixmapItem):
         self.hull = QGraphicsPolygonItem(hull, self)
         self.hull.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIgnoresParentOpacity)
         self.hull.setPen(OdvThinPen(QColor("black")))
-
         super().update(rect)
-
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -78,6 +72,3 @@ class OdvEditMaskElement(QGraphicsPixmapItem):
         path = QPainterPath()
         path.addRect(QRectF(0,0, self.mask_image.width, self.mask_image.height))
         return path
-
-    # def boundingRect(self):
-    #     return self.shape().boundingRect()

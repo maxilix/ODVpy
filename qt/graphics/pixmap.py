@@ -25,7 +25,6 @@ class GraphicMask(OdvGraphic):
         # self.shadow = OdvShadow(item, QPolygonF(QRectF(position.x(), position.y(), self.mask_image.width, self.mask_image.height)))
         self.shadow = OdvShadow(item, QPolygonF([QPointF(x,y) for x,y in self.mask_image.hull()]).translated(position+QPointF(0.5,0.5)))
 
-
     @property
     def edit(self):
         return self._edit
@@ -61,7 +60,6 @@ class GraphicMask(OdvGraphic):
 
 
 class GraphicMap(OdvGraphic):
-    # thin_pen = OdvPen(color=QColor("black"), width=1)
 
     def __init__(self, item, image: QImage):
         super().__init__(item)

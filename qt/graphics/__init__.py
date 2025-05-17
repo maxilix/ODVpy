@@ -40,5 +40,3 @@ from .line import GraphicLine, GraphicMultiLine, GraphicGateway
 from .polygon import GraphicPolygon
 from .pixmap import GraphicMap, GraphicMask
 from .sight import GraphicSightObstacle
-
-# TODO graphic ZValue
