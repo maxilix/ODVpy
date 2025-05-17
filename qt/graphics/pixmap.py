@@ -5,29 +5,25 @@ from PyQt6.QtGui import QImage, QPixmap, QPolygonF, QColor
 from PyQt6.QtWidgets import QGraphicsRectItem, QGraphicsItem
 
 from common import MaskImage
-from qt.graphics import OdvPen, OdvLightBrush, OdvThinPen
-from qt.graphics.base import OdvGraphic, OdvShadow
+from qt.graphics import OdvPen, OdvLightBrush
+from qt.graphics.base import OdvGraphic, OdvShadow, OdvEditGraphic
 from qt.graphics.pixmap_elem import OdvFixPixmapElement, OdvFixMaskElement, OdvEditMaskElement
 
 
-class GraphicMask(OdvGraphic):
+class GraphicMask(OdvEditGraphic):
+    initial_opacity = 0.4
+
     def __init__(self, item, mask_image: MaskImage, position: QPointF):
         super().__init__(item)
         self.mask_image = mask_image
         self.setZValue(2)
         self.setPos(position)
 
-        self._edit = False
         self.mask_fix = OdvFixMaskElement(self, self.mask_image)
         self.mask_edit = None
         self.rect_edit = None
 
-        # self.shadow = OdvShadow(item, QPolygonF(QRectF(position.x(), position.y(), self.mask_image.width, self.mask_image.height)))
         self.shadow = OdvShadow(item, QPolygonF([QPointF(x,y) for x,y in self.mask_image.hull()]).translated(position+QPointF(0.5,0.5)))
-
-    @property
-    def edit(self):
-        return self._edit
 
     def enter_edit_mode(self):
         if self.edit is False:

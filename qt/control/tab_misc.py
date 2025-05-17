@@ -11,6 +11,9 @@ class MiscInspector(Inspector):
     def __init__(self):
         super().__init__()
 
+        # MiscInspector can only be connected to a single item
+        self.item = None
+
         ### View Widget #########################################################
         view_layout = QHBoxLayout()
         view_layout.setContentsMargins(0, 0, 0, 0)
@@ -99,7 +102,9 @@ class MiscInspector(Inspector):
 
     def connect_to(self, new_items):
         # MiscInspector can only be connected to a single item
+        assert len(new_items) == 1
         super().connect_to(new_items)
+        self.item = self.items[0]
 
         self.debug_label.setText(self.item.debug_label)
         self.wind_x.setValue(self.item.misc.wind_vector[0])
@@ -108,9 +113,6 @@ class MiscInspector(Inspector):
         self.night_button_clicked()  # simulates a click to refresh the button
         self.hearing_box.setValue(self.item.misc.hearing_factor)
         self.radius_box.setValue(self.item.misc.view_length)
-
-
-
 
 
 class MiscItem(QGenericTreeItem):

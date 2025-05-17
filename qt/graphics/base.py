@@ -9,6 +9,9 @@ from qt.graphics.point_elem import OdvEditPointElement
 
 class OdvGraphic(QGraphicsItem):
     grid_alignment = QPointF(0, 0)
+    initial_opacity = 1
+
+    shadow = None
 
     thin_pen = OdvThinPen(QColor("black"))
     light_brush = OdvLightBrush(QColor("black"))
@@ -17,8 +20,9 @@ class OdvGraphic(QGraphicsItem):
     def __init__(self, item, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.item = item
-        self.shadow = None
         self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
+        self.setOpacity(self.initial_opacity)
+        self.setVisible(False)
 
     def boundingRect(self):
         return self.childrenBoundingRect()
@@ -38,6 +42,21 @@ class OdvGraphic(QGraphicsItem):
     def localise(self):
         self.scene().move_to_item(self)
 
+
+
+class OdvEditGraphic(OdvGraphic):
+    _edit = False
+
+    @property
+    def edit(self):
+        return self._edit
+
+    def enter_edit_mode(self):
+        raise NotImplementedError
+
+    def exit_edit_mode(self, save):
+        raise NotImplementedError
+
     def point_moved(self, moved_point: OdvEditPointElement):
         raise NotImplementedError
 
@@ -46,7 +65,6 @@ class OdvGraphic(QGraphicsItem):
 
     def delete_point(self, old_point: OdvEditPointElement):
         raise NotImplementedError
-
 
 
 

@@ -2,7 +2,6 @@ from PyQt6.QtCore import QRectF, Qt
 from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem, QMenu
 
-from common import *
 from qt.graphics.base import OdvGraphic, OdvShadow
 
 
@@ -28,7 +27,6 @@ class QScene(QGraphicsScene):
     def addItem(self, item):
         assert isinstance(item, OdvGraphic)
         super().addItem(item)
-        item.setVisible(False)
         if item.shadow is not None:
             super().addItem(item.shadow)
 

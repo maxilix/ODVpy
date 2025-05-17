@@ -1,13 +1,13 @@
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui import QPolygonF
 
-from qt.graphics.base import OdvGraphic, OdvShadow
+from qt.graphics.base import OdvShadow, OdvEditGraphic
 from qt.graphics.line_elem import OdvEditLineElement
 from qt.graphics.point_elem import OdvEditPointElement
 from qt.graphics.polygon_elem import OdvEditPolygonShapeElement, OdvFixPolygonElement
 
 
-class GraphicPolygon(OdvGraphic):
+class GraphicPolygon(OdvEditGraphic):
     grid_alignment = QPointF(0.5, 0.5)
 
     def __init__(self, item, polygon:QPolygonF):
@@ -15,16 +15,11 @@ class GraphicPolygon(OdvGraphic):
         self.polygon = polygon
         self.setZValue(10)
 
-        self._edit = False
         self.polygon_fix = OdvFixPolygonElement(self, self.polygon)
         self.point_edit = []
         self.line_edit = []
         self.polygon_edit = None
         self.shadow = OdvShadow(item, self.polygon.translated(self.grid_alignment))
-
-    @property
-    def edit(self):
-        return self._edit
 
     def enter_edit_mode(self):
         if self.edit is False:

@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QTreeWidgetItem, QAbstractItemView, QTreeWidget
 
 from qt.common.utils import bounding_rect_of, same_type
 from qt.control.generic_inspector import Inspector
+from qt.graphics.base import OdvEditGraphic
 
 
 class QGenericTreeItem(QTreeWidgetItem):
@@ -28,9 +29,9 @@ class QGenericTreeItem(QTreeWidgetItem):
         self.setBold(False)
         self.setColor()
         title = self.name
-        # if any(self.inspector_edit_state_list()):
-        #     title += " -Edit-"
-        #     self.setBold(True)
+        if any([graphic.edit for graphic in self._graphics if isinstance(graphic, OdvEditGraphic)]):
+            title += " -Edit-"
+            self.setBold(True)
         # if self.inspector.valid_state is False:
         #     title += " -INVALID-"
         #     self.setBold(True)
@@ -43,6 +44,7 @@ class QGenericTreeItem(QTreeWidgetItem):
             self.setFlags(self.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
             title = "      " + title
         self.setText(0, title)
+        # print(f"item updated: {title}")
 
     def clicked(self):
         if Qt.ItemFlag.ItemIsUserCheckable in self.flags() and self.graphics_visibility_state() != self.checkState(0):

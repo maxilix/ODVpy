@@ -2,7 +2,7 @@ from PyQt6.QtCore import QRegularExpression
 from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtGui import QRegularExpressionValidator
-from PyQt6.QtWidgets import QHBoxLayout, QLabel, QCheckBox, QSlider, QPushButton, QLineEdit, QFileDialog, \
+from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QLineEdit, QFileDialog, \
     QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QGraphicsRectItem
 
 from common import ReadStream, Image
@@ -10,7 +10,7 @@ from odv.data_section import Bgnd
 from qt.common.simple_messagebox import QErrorBox
 from qt.common.utils import image_to_qimage
 from qt.control.control_section import QSectionControl
-from qt.control.generic_inspector import Inspector
+from qt.control.generic_inspector import Inspector, QVisibilitySIW
 from qt.control.generic_tree import QGenericTreeItem
 from qt.graphics import GraphicMap
 
@@ -20,29 +20,12 @@ class BgndInspector(Inspector):
     def __init__(self):
         super().__init__()
 
-        ### Visibility Widget ###################################################
-        map_visibility_layout = QHBoxLayout()
-        map_visibility_layout.setContentsMargins(0, 0, 0, 0)
+        # BgndInspector can only be connected to a single item
+        self.item = None
 
-        map_visibility_layout.addWidget(QLabel("Map visibility"))
-
-        self.visibility_checkbox = QCheckBox()
-        self.visibility_checkbox.clicked.connect(self.visibility_checkbox_clicked)
-        map_visibility_layout.addWidget(self.visibility_checkbox)
-
-        self.opacity_slider = QSlider(Qt.Orientation.Horizontal)
-        self.opacity_slider.setMinimum(0)
-        self.opacity_slider.setMaximum(100)
-        self.opacity_slider.setValue(100)
-        self.opacity_slider.valueChanged.connect(lambda: self.item.graphic_map.setOpacity(self.opacity_slider.value() / 100))
-        map_visibility_layout.addWidget(self.opacity_slider)
-
-        self.localise_button = QPushButton("Localise")
-        self.localise_button.clicked.connect(self.localise_button_clicked)
-        map_visibility_layout.addWidget(self.localise_button)
-
-        self.main_layout.addLayout(map_visibility_layout)
-        #########################################################################
+        self.visibility_siw = QVisibilitySIW(opacity_slider=True)
+        self.visibility_siw.update_required.connect(self.update)
+        self.main_layout.addWidget(self.visibility_siw)
 
         ### DVM filename Widget #################################################
         dvm_file_layout = QHBoxLayout()
@@ -104,15 +87,6 @@ class BgndInspector(Inspector):
         self.main_layout.addLayout(rebuild_minimap_layout)
         #########################################################################
 
-    def visibility_checkbox_clicked(self):
-        self.item.graphic_map.setVisible(self.visibility_checkbox.isChecked())
-        self.item.update()
-
-    def localise_button_clicked(self):
-        if not self.visibility_checkbox.isChecked():
-            self.visibility_checkbox.click()
-        self.item.graphic_map.localise()
-
     def change_image_button_clicked(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
@@ -131,9 +105,7 @@ class BgndInspector(Inspector):
                     new_image = Image.from_file(filenames[0])
                 self.item.bgnd.map_image = new_image
                 self.item.reset_graphic_map()
-                if not self.visibility_checkbox.isChecked():
-                    self.visibility_checkbox.click()
-                self.opacity_slider.setValue(100)
+                self.update()
 
     def rebuild_minimap_clicked(self):
         QErrorBox("This tool rebuilds a minimap from the map,\nbut is not yet available.").exec()
@@ -148,7 +120,9 @@ class BgndInspector(Inspector):
 
     def connect_to(self, new_items):
         # BgndInspector can only be connected to a single item
+        assert len(new_items) == 1
         super().connect_to(new_items)
+        self.item = self.items[0]
 
         minimap_w = self.item.bgnd.minimap_image.width
         minimap_h = self.item.bgnd.minimap_image.height
@@ -157,8 +131,8 @@ class BgndInspector(Inspector):
         self.factor_w = map_w / minimap_w
         self.factor_h = map_h / minimap_h
 
-        self.visibility_checkbox.setChecked(self.item.graphic_map.isVisible())
-        self.opacity_slider.setValue(int(100 * self.item.graphic_map.opacity()))
+        self.visibility_siw.connect_to(self.item.graphic_map)
+
         self.dvm_line_edit.setText(self.item.bgnd.dvm_filename)
         self.dvm_size_label.setText(f"DVM Image Size: {map_w} x {map_h}")
 
@@ -173,7 +147,6 @@ class BgndInspector(Inspector):
         self.minimap_rect_item = QGraphicsRectItem()
         self.minimap_scene.addItem(self.minimap_rect_item)
         self.item.section_control.scene.viewport().view_changed.connect(self.refresh_minimap)
-
 
 
 class BgndItem(QGenericTreeItem):
