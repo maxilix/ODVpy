@@ -114,26 +114,87 @@ class Image(RWStreamable):
 class MaskImage(RWStreamable):
 	def __init__(self, image):
 		self._image = image  # numpy array of bool
+		self._x_view = 0
+		self._y_view = 0
+		self._h_view = self._image.shape[0]
+		self._w_view = self._image.shape[1]
 
 	@property
 	def height(self):
-		return self._image.shape[0]
+		return self._h_view
 
 	@property
 	def width(self):
-		return self._image.shape[1]
+		return self._w_view
 
 	@property
-	def data(self):
-		return self._image.data
+	def image(self):
+		return self._image[self._y_view:self._y_view + self._h_view, self._x_view:self._x_view + self._w_view]
+
+	def resize_view_to(self, x: int, y: int, w: int, h: int):
+		new_y_view = self._y_view + y
+		new_x_view = self._x_view + x
+
+		new_y_end = new_y_view + h
+		new_x_end = new_x_view + w
+
+		old_h, old_w = self._image.shape
+
+		# if the support image needs to be enlarged
+		if new_y_view < 0 or new_x_view < 0 or new_y_end > old_h or new_x_end > old_w:
+			new_h = max(old_h, new_y_end) - min(0, new_y_view)
+			new_w = max(old_w, new_x_end) - min(0, new_x_view)
+			new_image = np.zeros((new_h, new_w), dtype=bool)
+			new_image[max(0,-new_y_view):max(0,-new_y_view)+old_h, max(0,-new_x_view):max(0,-new_x_view)+old_w] = self._image
+			self._image = new_image
+
+		self._x_view = max(new_x_view, 0)
+		self._y_view = max(new_y_view, 0)
+		self._w_view = w
+		self._h_view = h
+		# print(f"view:  {self._x_view}-{self._w_view} of {self._image.shape[1]}")
+
+	def crop_to_view(self):
+		self._image = self._image[self._y_view:self._y_view + self._h_view, self._x_view:self._x_view + self._w_view]
+		self._y_view = 0
+		self._x_view = 0
+
+	# def simplify(self):
+	# 	true_coords = np.argwhere(self._image)
+	# 	if true_coords.size == 0:
+	# 		self._image = np.zeros((0, 0), dtype=bool)
+	# 		self._x_view = 0
+	# 		self._y_view = 0
+	# 		self._h_view = 0
+	# 		self._w_view = 0
+	# 		return
+	#
+	# 	y_min, x_min = true_coords.min(axis=0)
+	# 	y_max, x_max = true_coords.max(axis=0)
+	#
+	# 	self._image = self._image[y_min:y_max + 1, x_min:x_max + 1]
+	#
+	# 	self._y_view -= y_min
+	# 	self._x_view -= x_min
+	# 	self._h_view = min(self._h_view, self._image.shape[0] - self._y_view)
+	# 	self._w_view = min(self._w_view, self._image.shape[1] - self._x_view)
+
+	def get_pixel(self, x, y):
+		if 0 <= x < self.width and 0 <= y < self.height:
+			return self._image[y + self._y_view, x + self._x_view]
+		else:
+			return None
 
 	def set_pixel(self, x:int, y:int, b:bool):
 		if 0 <= x < self.width and 0 <= y < self.height:
-			self._image[y, x] = b
+			self._image[y + self._y_view, x + self._x_view] = b
 
 	def rgba(self, true_color=(0,0,0)):
-		image_rgba = np.zeros((self.height, self.width, 4), dtype=np.uint8)
-		image_rgba[self._image] = (*(true_color[:3]), 255)
+		i = self.image
+		h = i.shape[0]
+		w = i.shape[1]
+		image_rgba = np.zeros((h, w, 4), dtype=np.uint8)
+		image_rgba[i] = (*(true_color[:3]), 255)
 		return image_rgba
 
 	def debug_show(self):
@@ -175,28 +236,31 @@ class MaskImage(RWStreamable):
 		return cls(image_array)
 
 	def hull(self):
+		image = self.image
+		points = np.argwhere(image)
+		if points.size == 0:  # empty mask => no hull
+			return []
+
 		#################### convex hull version
 		# # find all true points
-		# points = np.argwhere(self._image)
+		# points = np.argwhere(image)
 		# # compute the convex hull
 		# hull = cv.convexHull(points).reshape(-1, 2)[:, ::-1]
 
 		#################### approximate hull version
 		# dilate the original mask
 		# dilated_mask = cv.dilate(self._image.astype(np.uint8)*255, np.ones((6, 6), np.uint8), iterations=2)
-		dilated_mask = self._image.astype(np.uint8)*255
+		dilated_mask = image.astype(np.uint8)*255
 		# add blur effect (useful for tree masks)
-		blurred_mask = cv.GaussianBlur(dilated_mask.astype(np.uint8), (11, 11), 1)
+		blurred_mask = cv.GaussianBlur(dilated_mask.astype(np.uint8), (7, 7), 0.5)
 		# find the contours of the largest area
 		contours, _ = cv.findContours(blurred_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 		largest_contour = max(contours, key=cv.contourArea)
 		# approximate the form with a polygon
-		epsilon = 0.01 * cv.arcLength(largest_contour, True)
+		epsilon = 0.02 * cv.arcLength(largest_contour, True)
 		hull = cv.approxPolyDP(largest_contour, epsilon, True).reshape(-1, 2)
 
-		#return the hull
 		return hull
-
 
 	def to_stream(self, stream):
 		w = self.width

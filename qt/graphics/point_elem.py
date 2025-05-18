@@ -53,18 +53,17 @@ class OdvEditPointElement(QGraphicsEllipseItem):
             position =  position.truncated() + ga
         if position != self.pos():
             super().setPos(position)
-        if notify:
-            self.parentItem().point_moved(self)
+            if notify:
+                self.parentItem().point_moved(self)
 
-    def move(self, vector: QPointF):
-        self.setPos(self.pos() + vector)
+    def move(self, delta: QPointF):
+        self.setPos(self.pos() + delta)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
             self._is_moving = True
             self.setBrush(self.parentItem().high_brush)
-        elif event.button() == Qt.MouseButton.RightButton:
-            # scene_position = self.mapToScene(event.pos())
+        elif self.deletable and event.button() == Qt.MouseButton.RightButton:
             menu = QMenu()
             a_delete = QAction("Delete Point")
             a_delete.triggered.connect(lambda: self.parentItem().delete_point(self))
@@ -82,5 +81,5 @@ class OdvEditPointElement(QGraphicsEllipseItem):
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         if self._is_moving:
-            self.setPos(self.mapToScene(event.pos()))
+            self.setPos(self.mapToScene(event.pos()) - self.parentItem().pos())
         super().mouseMoveEvent(event)
