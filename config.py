@@ -9,6 +9,8 @@ class CONFIG(object):
     automatically_load_original_dvm: bool = True
     default_tabs: list = []
 
+    debug_set: set = set()
+
     @classmethod
     def load(cls):
         try:

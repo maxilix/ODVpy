@@ -6,40 +6,46 @@ CONFIG.load()
 
 
 
-level = Level("./dev/empty_level/empty_level_02")
+# level = Level("./dev/empty_level/empty_level_02")
 # level = Level("../Missions/03_Red_River/level_03")
 # level = Level("../Missions/00_All_Character/level_00")
 # level = InstalledLevel(2)
-# level = BackupedLevel(4)
+level = BackupedLevel(4)
 
-level.insert_in_game()
+for i in range(26):
+    print(f"\nLevel {i}")
+    level = BackupedLevel(i)
 
-# bgnd = level.bgnd
-exit()
+print(sorted(list(CONFIG.debug_set)))
 
 
-for level_index in range(26):
-    print(f"\nLevel {level_index}")
-    level = BackupedLevel(level_index)
 
-    # lift = level.dvd.lift
-    # for lift_area in lift:
-    #     if lift_area.lift_type == 0:
-    #         print(f"L{level_index} i={lift_area.i}")
 
-    # buildings = level.dvd.buil.buildings
-    # for building in buildings:
-    #     for door in building:
-    #         if door.sector_3.global_id != 0:
-    #             print(f"L{level_index}: building {building.i}, door {door.i}")
 
-    bond = level.dvd.bond
-    for bond_entry in bond:
-        if isinstance(bond_entry.sight_obstacle_1, GroundSight) or isinstance(bond_entry.sight_obstacle_2, GroundSight):
-            # print("Ground")
-            pass
-        else:
-            print(f"{bond_entry.sight_obstacle_1.sector.parent.i} {bond_entry.sight_obstacle_2.sector.parent.i} - {bond_entry.layer.i}")
+
+
+# for level_index in range(26):
+#     print(f"\nLevel {level_index}")
+#     level = BackupedLevel(level_index)
+#
+#     # lift = level.dvd.lift
+#     # for lift_area in lift:
+#     #     if lift_area.lift_type == 0:
+#     #         print(f"L{level_index} i={lift_area.i}")
+#
+#     # buildings = level.dvd.buil.buildings
+#     # for building in buildings:
+#     #     for door in building:
+#     #         if door.sector_3.global_id != 0:
+#     #             print(f"L{level_index}: building {building.i}, door {door.i}")
+#
+#     bond = level.dvd.bond
+#     for bond_entry in bond:
+#         if isinstance(bond_entry.sight_obstacle_1, GroundSight) or isinstance(bond_entry.sight_obstacle_2, GroundSight):
+#             # print("Ground")
+#             pass
+#         else:
+#             print(f"{bond_entry.sight_obstacle_1.sector.parent.i} {bond_entry.sight_obstacle_2.sector.parent.i} - {bond_entry.layer.i}")
 
 # level = Level("./dev/empty_level/empty_level_02")
 # mask = level.dvd.mask

@@ -22,26 +22,26 @@ def original_name(index, root=None):
 
     return str(os.path.join(*name))
 
-data_section_type = [Misc,
-                     Bgnd,
-                     Move,
-                     Sght,
-                     Mask,
-                     Ways,
-                     Elem,
-                     Fxbk,
-                     Msic,
-                     Snd,
-                     Pat,
-                     Bond,
-                     Mat,
-                     Lift,
-                     Ai,
-                     Buil,
-                     Scrp,
-                     Jump,
-                     Cart,
-                     Dlgs]
+# data_section_type = [Misc,
+#                      Bgnd,
+#                      Move,
+#                      Sght,
+#                      Mask,
+#                      Ways,
+#                      Elem,
+#                      Fxbk,
+#                      Msic,
+#                      Snd,
+#                      Pat,
+#                      Bond,
+#                      Mat,
+#                      Lift,
+#                      Ai,
+#                      Buil,
+#                      Scrp,
+#                      Jump,
+#                      Cart,
+#                      Dlgs]
 
 class Level(object):
     def __init__(self, abs_filename, index=None):
@@ -57,7 +57,6 @@ class Level(object):
 
         self._dvd_filename = self.abs_filename + ".dvd"
         stream = ReadStream.from_file(self._dvd_filename)
-        # for i in range(20):
 
         self.data = dict()
         self.data["MISC"] = stream.read(Misc)
@@ -69,8 +68,46 @@ class Level(object):
         self.data["SGHT"] = stream.read(Sght)
         # self.data["SGHT"].load(move=self.data["MOVE"])
         self.data["MASK"] = stream.read(Mask)
-        self.data["MASK"].load()
+        # self.data["MASK"].load()
+        self.data["WAYS"] = stream.read(Ways)
+        self.data["WAYS"].load(move=self.data["MOVE"])
+        self.data["ELEM"] = stream.read(Elem)
+        self.data["FXBK"] = stream.read(Fxbk)
+        self.data["MSIC"] = stream.read(Msic)
+        self.data["SND "] = stream.read(Snd)
+        self.data["PAT"]  = stream.read(Pat)
+        # self.data["BOND"] = stream.read(Bond)
+        # self.data["MAT"]  = stream.read(Mat)
+        # self.data["LIFT"] = stream.read(Lift)
+        # self.data["AI"]   = stream.read(Ai)
+        # self.data["BUIL"] = stream.read(Buil)
+        # self.data["SCRP"] = stream.read(Scrp)
+        # self.data["JUMP"] = stream.read(Jump)
+        # self.data["CART"] = stream.read(Cart)
+        # self.data["DLGS"] = stream.read(Dlgs)
+
         self.tail = stream.read_raw()
+
+        # self.misc = stream.read(Misc)
+        # self.bgnd = stream.read(Bgnd)
+        # self.move = stream.read(Move)
+        # self.sght = stream.read(Sght)
+        # self.mask = stream.read(Mask)
+        # self.ways = stream.read(Ways)
+        # self.elem = stream.read(Elem)
+        # self.fxbk = stream.read(Fxbk)
+        # self.msic = stream.read(Msic)
+        # self.snd  = stream.read(Snd )
+        # self.pat  = stream.read(Pat )
+        # self.bond = stream.read(Bond)
+        # self.mat  = stream.read(Mat )
+        # self.lift = stream.read(Lift)
+        # self.ai   = stream.read(Ai  )
+        # self.buil = stream.read(Buil)
+        # self.scrp = stream.read(Scrp)
+        # self.jump = stream.read(Jump)
+        # self.cart = stream.read(Cart)
+        # self.dlgs = stream.read(Dlgs)
 
 
 

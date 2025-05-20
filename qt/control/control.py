@@ -53,9 +53,9 @@ class QControl(QTabWidget):
         self.tab["BGND"] = QBgndControl(self, level.data["BGND"])
         self.tab["MOVE"] = QMoveControl(self, level.data["MOVE"])
         # self.tab["SGHT"] = QSectionControl(self, level.dvd.sght)
-        self.tab["MASK"] = QMaskControl(self, level.data["MASK"])
-        # self.tab["WAYS"] = None
-        # self.tab["ELEM"] = None
+        # self.tab["MASK"] = QMaskControl(self, level.data["MASK"])
+        self.tab["WAYS"] = None
+        self.tab["ELEM"] = None
         # self.tab["FXBK"] = None
         # self.tab["MSIC"] = None
         # self.tab["SND"] = None
@@ -74,8 +74,8 @@ class QControl(QTabWidget):
         self.add_tab("MISC")
         self.add_tab("BGND")
         self.add_tab("MOVE")
-        self.add_tab("MASK")
-        self.setCurrentWidget(self.tab["MASK"])
+        # self.add_tab("MASK")
+        self.setCurrentWidget(self.tab["MOVE"])
         # self.scene.center_view(zoom=0.6)
 
 

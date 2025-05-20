@@ -69,8 +69,8 @@ class OdvObjectIterable(OdvObject, ABC):
 
     def __len__(self) -> int:
         i=0
-        for i,e in enumerate(self):
-            pass
+        for _ in iter(self):
+            i+=1
         return i
 
     # def index(self, odv_child) -> int:
