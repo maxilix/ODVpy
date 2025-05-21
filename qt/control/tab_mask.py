@@ -2,22 +2,32 @@ from odv.data_section.mask import Mask, MaskLayer, MaskEntry
 from qt.control.control_section import QSectionControl
 from qt.control.generic_inspector import Inspector, QVisibilitySIW
 from qt.control.generic_tree import QGenericTreeItem
-from qt.graphics import GraphicMask
+from qt.graphics import GraphicMask, GraphicMultiLine
 
 
 class MaskEntryInspector(Inspector):
     def __init__(self):
         super().__init__()
 
-        self.visibility_siw = QVisibilitySIW(title="Binary mask", opacity_slider=True, edit_buttons=True)
-        self.visibility_siw.update_required.connect(self.update)
-        self.main_layout.addWidget(self.visibility_siw)
+        self.mask_vsiw = QVisibilitySIW(title="Binary mask", opacity_slider=True, edit_buttons=True)
+        self.mask_vsiw.update_required.connect(self.update)
+        self.main_layout.addWidget(self.mask_vsiw)
+
+        self.l1_vsiw = QVisibilitySIW(title="L1", edit_buttons=True)
+        self.l1_vsiw.update_required.connect(self.update)
+        self.main_layout.addWidget(self.l1_vsiw)
+
+        # self.l2_vsiw = QVisibilitySIW(title="L2", edit_buttons=True)
+        # self.l2_vsiw.update_required.connect(self.update)
+        # self.main_layout.addWidget(self.l2_vsiw)
 
         self.main_layout.addStretch()
 
     def connect_to(self, new_items):
         super().connect_to(new_items)
-        self.visibility_siw.connect_to([item.graphic_mask for item in self.items])
+        self.mask_vsiw.connect_to([item.graphic_mask for item in self.items])
+        self.l1_vsiw.connect_to([item.graphic_l1 for item in self.items])
+        # self.l2_vsiw.connect_to([item.graphic_l2 for item in self.items])
 
 
 class MaskEntryItem(QGenericTreeItem):
@@ -30,6 +40,12 @@ class MaskEntryItem(QGenericTreeItem):
 
         self.graphic_mask = GraphicMask(self, self.mask_entry.mask_image, self.mask_entry.position)
         self.add_graphic(self.graphic_mask)
+
+        self.graphic_l1 = None
+        if self.mask_entry.point_list_1:
+            self.graphic_l1 = GraphicMultiLine(self, self.mask_entry.point_list_1)
+            self.add_graphic(self.graphic_l1)
+
 
 #########################################################################
 

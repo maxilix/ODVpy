@@ -68,7 +68,7 @@ class Level(object):
         self.data["SGHT"] = stream.read(Sght)
         # self.data["SGHT"].load(move=self.data["MOVE"])
         self.data["MASK"] = stream.read(Mask)
-        # self.data["MASK"].load()
+        self.data["MASK"].load()
         self.data["WAYS"] = stream.read(Ways)
         self.data["WAYS"].load(move=self.data["MOVE"])
         self.data["ELEM"] = stream.read(Elem)

@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QLineF, QPointF
 
 from common import Gateway
-from qt.graphics.base import OdvGraphic
+from qt.graphics.base import OdvGraphic, OdvEditGraphic
 from qt.graphics.line_elem import OdvEditLineElement, OdvFixLineElement, OdvArrowElement
 from qt.graphics.point_elem import OdvEditPointElement
 
@@ -52,52 +52,46 @@ class GraphicLine(OdvGraphic):
         self.line_edit.update()
 
 
-class GraphicMultiLine(OdvGraphic):
+class GraphicMultiLine(OdvEditGraphic):
     grid_alignment = QPointF(0.5, 0.5)
 
-    def __init__(self, sub_inspector):
-        super().__init__(sub_inspector)
+    def __init__(self, item, point_list:list[QPointF]):
+        super().__init__(item)
+        self.point_list = point_list
+        self.setZValue(10)
 
-        self.line_fix = []
+        self.line_fix = [OdvFixLineElement(self, QLineF(p1, p2)) for p1, p2 in zip(self.point_list[:-1], self.point_list[1:])]
         self.point_edit = []
         self.line_edit = []
 
-        self.exit_edit_mode(save=False)
-
-    @property
-    def point_list(self):
-        return self.sub_inspector.current
-
-    @point_list.setter
-    def point_list(self, point_list):
-        self.sub_inspector.current = [p.truncated() for p in point_list]
+        self.shadow = None  # TODO
 
     def enter_edit_mode(self):
-        self.remove(self.line_fix)
+        if self.edit is False:
+            self._edit = True
+            self.remove(self.line_fix)
 
-        point_list = self.point_list
-        self.point_edit = \
-            [OdvEditPointElement(self, point_list[0], deletable=False)] + \
-            [OdvEditPointElement(self, p, deletable=True) for p in self.point_list[1:-1]] + \
-            [OdvEditPointElement(self, point_list[-1], deletable=False)]
+            self.point_edit = [OdvEditPointElement(self, self.point_list[0], deletable=False)] + \
+                              [OdvEditPointElement(self, p, deletable=True) for p in self.point_list[1:-1]] + \
+                              [OdvEditPointElement(self, self.point_list[-1], deletable=False)]
 
-        self.line_edit = [OdvEditLineElement(self, p1, p2, secable=True) for p1, p2 in
-                          zip(self.point_edit[:-1], self.point_edit[1:])]
-
-        self.update()
+            self.line_edit = [OdvEditLineElement(self, p1, p2, secable=True) for p1, p2 in
+                              zip(self.point_edit[:-1], self.point_edit[1:])]
 
     def exit_edit_mode(self, save):
-        if save is True:
-            self.point_list = [p.pos() for p in self.point_edit]
+        if self.edit is True:
+            self._edit = False
+            if save is True:
+                self.point_list = [p.pos() for p in self.point_edit]
+            else:
+                # update shadow
+                # self.shadow.setPolygon()
+                pass  # TODO
 
-        self.remove(self.point_edit)
-        self.remove(self.line_edit)
+            self.remove(self.point_edit)
+            self.remove(self.line_edit)
 
-        point_list = self.point_list
-        self.line_fix = [OdvFixLineElement(self, QLineF(p1,p2)) for p1, p2 in
-                          zip(point_list[:-1], point_list[1:])]
-
-        self.update()
+            self.line_fix = [OdvFixLineElement(self, QLineF(p1,p2)) for p1, p2 in zip(self.point_list[:-1], self.point_list[1:])]
 
     def point_moved(self, moved_point: OdvEditPointElement):
         n = len(self.point_edit)

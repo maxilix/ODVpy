@@ -6,7 +6,7 @@ from qt.control.tab_bgnd import QBgndControl
 from qt.control.tab_mask import QMaskControl
 from qt.control.tab_misc import QMiscControl
 from qt.control.tab_move import QMoveControl
-
+from qt.control.tab_ways import QWaysControl
 
 
 class QControl(QTabWidget):
@@ -53,8 +53,8 @@ class QControl(QTabWidget):
         self.tab["BGND"] = QBgndControl(self, level.data["BGND"])
         self.tab["MOVE"] = QMoveControl(self, level.data["MOVE"])
         # self.tab["SGHT"] = QSectionControl(self, level.dvd.sght)
-        # self.tab["MASK"] = QMaskControl(self, level.data["MASK"])
-        self.tab["WAYS"] = None
+        self.tab["MASK"] = QMaskControl(self, level.data["MASK"])
+        self.tab["WAYS"] = QWaysControl(self, level.data["WAYS"])
         self.tab["ELEM"] = None
         # self.tab["FXBK"] = None
         # self.tab["MSIC"] = None
@@ -74,8 +74,9 @@ class QControl(QTabWidget):
         self.add_tab("MISC")
         self.add_tab("BGND")
         self.add_tab("MOVE")
-        # self.add_tab("MASK")
-        self.setCurrentWidget(self.tab["MOVE"])
+        self.add_tab("MASK")
+        self.add_tab("WAYS")
+        self.setCurrentWidget(self.tab["WAYS"])
         # self.scene.center_view(zoom=0.6)
 
 
