@@ -62,7 +62,7 @@ class ObstacleInspector(Inspector):
     def __init__(self):
         super().__init__()
 
-        self.visibility_siw = QVisibilitySIW(title="Polygon", edit_buttons=True)
+        self.visibility_siw = QVisibilitySIW(title="Polygon", edit_buttons=True, position=True, opacity_slider=True)
         self.visibility_siw.update_required.connect(self.update)
         self.main_layout.addWidget(self.visibility_siw)
 

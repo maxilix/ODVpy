@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QToolButton, QCheckBox, QSlider, QStyle, \
-    QPushButton
+    QPushButton, QSpinBox, QGridLayout, QMessageBox
 
 from qt.common.utils import bounding_rect_of
 
@@ -10,11 +10,9 @@ class QSubInspectorWidget(QWidget):
     update_required = pyqtSignal()
     value_changed = pyqtSignal()
 
-
-
-class QVisibilitySIW(QSubInspectorWidget):
-
-    def __init__(self, *, title:str="Visilibity", opacity_slider:bool=False, edit_buttons:bool=False):
+class VISILAYOUT1(QSubInspectorWidget):
+    def __init__(self, *, title: str = "Visilibity", opacity_slider: bool = False, position: bool = False,
+                 edit_buttons: bool = False):
         super().__init__(None)
         self.graphics = []
         main_layout = QVBoxLayout(self)
@@ -32,7 +30,7 @@ class QVisibilitySIW(QSubInspectorWidget):
 
         visibility_layout = QHBoxLayout()
         visibility_layout.setContentsMargins(0, 0, 0, 0)
-        
+
         visibility_layout.addWidget(QLabel(title))
 
         self.visibility_checkbox = QCheckBox()
@@ -90,6 +88,250 @@ class QVisibilitySIW(QSubInspectorWidget):
             self.save_button = None
             self.cancel_button = None
 
+class VISILAYOUT2(QSubInspectorWidget):
+    def __init__(self, *, title:str="Visilibity", opacity_slider:bool=False, position:bool=False, edit_buttons:bool=False):
+        super().__init__(None)
+        self.graphics = []
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        c1_layout = QVBoxLayout()
+        c1_layout.setContentsMargins(0, 0, 0, 0)
+
+        visibility_layout = QHBoxLayout()
+        visibility_layout.setContentsMargins(0, 0, 0, 0)
+        self.visibility_checkbox = QCheckBox()
+        self.visibility_checkbox.setTristate(False)
+        self.visibility_checkbox.clicked.connect(self.visibility_checkbox_clicked)
+        visibility_layout.addWidget(self.visibility_checkbox)
+        visibility_layout.addWidget(QLabel(title))
+        visibility_layout.addStretch()
+        c1_layout.addLayout(visibility_layout)
+
+        opacity_layout = QHBoxLayout()
+        opacity_layout.setContentsMargins(0, 0, 0, 0)
+        if opacity_slider is True:
+            self.opacity_slider = QSlider(Qt.Orientation.Horizontal)
+            self.opacity_slider.setMinimum(0)
+            self.opacity_slider.setMaximum(100)
+            self.opacity_slider.valueChanged.connect(self.opacity_slider_changed)
+            opacity_layout.addWidget(self.opacity_slider)
+
+            self.opacity_reset_button = QToolButton()
+            icon = self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload)  # SP_DialogResetButton
+            self.opacity_reset_button.setIcon(icon)
+            self.opacity_reset_button.clicked.connect(self.opacity_reset_button_clicked)
+            opacity_layout.addWidget(self.opacity_reset_button)
+        else:
+            self.opacity_slider = None
+            self.opacity_reset_button = None
+            opacity_layout.addStretch()
+        c1_layout.addLayout(opacity_layout)
+
+        position_layout = QHBoxLayout()
+        position_layout.setContentsMargins(0, 0, 0, 0)
+        if position is True:
+            position_layout.addStretch()
+
+            self.position_x = QSpinBox()
+            self.position_x.setPrefix("x ")
+            self.position_x.setValue(1234)
+            # self.position_x.valueChanged.connect()
+            position_layout.addWidget(self.position_x)
+
+            self.position_y = QSpinBox()
+            self.position_y.setPrefix("y ")
+            self.position_y.setValue(5678)
+            # self.position_y.valueChanged.connect()
+            position_layout.addWidget(self.position_y)
+        else:
+            self.position_x = None
+            self.position_y = None
+            position_layout.addStretch()
+        c1_layout.addLayout(position_layout)
+
+        main_layout.addLayout(c1_layout)
+        main_layout.addSpacing(15)
+
+        c2_layout = QGridLayout()
+        c2_layout.setContentsMargins(0, 0, 0, 0)
+        if position is True:
+            position_N_button = QToolButton()
+            position_N_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowUp))
+            # position_N_button.clicked.connect()
+            c2_layout.addWidget(position_N_button, 0, 1)
+            position_E_button = QToolButton()
+            position_E_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowRight))
+            # position_E_button.clicked.connect()
+            c2_layout.addWidget(position_E_button, 1, 2)
+            position_W_button = QToolButton()
+            position_W_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowLeft))
+            # position_W_button.clicked.connect()
+            c2_layout.addWidget(position_W_button, 1, 0)
+            position_S_button = QToolButton()
+            position_S_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowDown))
+            # position_S_button.clicked.connect()
+            c2_layout.addWidget(position_S_button, 2, 1)
+
+        main_layout.addLayout(c2_layout)
+        main_layout.addSpacing(15)
+
+        c3_layout = QVBoxLayout()
+        c3_layout.setContentsMargins(0, 0, 0, 0)
+
+        localise_layout = QHBoxLayout()
+
+        self.localise_button = QPushButton("Localise")
+        self.localise_button.clicked.connect(self.localise_button_clicked)
+        localise_layout.addWidget(self.localise_button)
+        localise_layout.addStretch()
+        delete_button = QToolButton()
+        delete_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TabCloseButton))
+        # delete_button.clicked.connect()
+        localise_layout.addWidget(delete_button)
+
+        c3_layout.addLayout(localise_layout)
+
+        if edit_buttons is True:
+            self.edit_button = QPushButton("Edit")
+            self.edit_button.clicked.connect(self.edit_button_clicked)
+            c3_layout.addWidget(self.edit_button)
+
+            edit_layout = QHBoxLayout()
+            edit_layout.setContentsMargins(0, 0, 0, 0)
+            self.save_button = QPushButton("Save")
+            self.save_button.clicked.connect(lambda: self.save_cancel_button_clicked(save=True))
+            edit_layout.addWidget(self.save_button)
+            edit_layout.addStretch()
+            self.cancel_button = QPushButton("Cancel")
+            self.cancel_button.clicked.connect(lambda: self.save_cancel_button_clicked(save=False))
+            edit_layout.addWidget(self.cancel_button)
+
+            c3_layout.addLayout(edit_layout)
+        else:
+            self.edit_button = None
+            self.save_button = None
+            self.cancel_button = None
+            c3_layout.addStretch()
+        main_layout.addLayout(c3_layout)
+
+class VISILAYOUT3(QSubInspectorWidget):
+    def __init__(self, *, title: str = "Visilibity", opacity_slider: bool = False, position: bool = False,
+                 edit_buttons: bool = False):
+        super().__init__(None)
+        self.graphics = []
+        main_layout = QGridLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.visibility_checkbox = QCheckBox()
+        self.visibility_checkbox.setTristate(False)
+        self.visibility_checkbox.clicked.connect(self.visibility_checkbox_clicked)
+        main_layout.addWidget(self.visibility_checkbox, 0, 0)
+
+        name_layout = QHBoxLayout()
+        name_layout.setContentsMargins(0, 0, 0, 0)
+        name_layout.addWidget(QLabel(title))
+        name_layout.addStretch()
+        name_layout.addWidget(QToolButton())
+        name_layout.addWidget(QToolButton())
+        main_layout.addLayout(name_layout, 0, 1)
+
+        main_layout.setColumnMinimumWidth(3, 20)
+
+        position_N_button = QToolButton()
+        position_N_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowUp))
+        # position_N_button.clicked.connect()
+        main_layout.addWidget(position_N_button, 0, 5)
+
+        pos_layout = QHBoxLayout()
+        pos_layout.setContentsMargins(0, 0, 0, 0)
+        pos_layout.addSpacing(10)
+        self.position_x = QSpinBox()
+        # self.position_x.setPrefix("x")
+        self.position_x.setMaximum(9999)
+        self.position_x.setValue(1234)
+        # self.position_x.valueChanged.connect()
+        pos_layout.addWidget(self.position_x)
+        self.position_y = QSpinBox()
+        # self.position_y.setPrefix("y")
+        self.position_y.setMaximum(9999)
+        self.position_y.setValue(2345)
+        # self.position_y.valueChanged.connect()
+        pos_layout.addWidget(self.position_y)
+
+        main_layout.addLayout(pos_layout, 0, 6)
+
+        main_layout.setColumnMinimumWidth(7, 20)
+
+
+        edit_layout = QHBoxLayout()
+        edit_layout.setContentsMargins(0, 0, 0, 0)
+        if edit_buttons is True:
+            self.edit_button = QPushButton("Edit")
+            self.edit_button.clicked.connect(self.edit_button_clicked)
+            edit_layout.addWidget(self.edit_button)
+            edit_layout.addSpacing(20)
+        else:
+            self.edit_button = None
+            edit_layout.addStretch()
+        self.delete_button = QToolButton()
+        self.delete_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TabCloseButton))
+        self.delete_button.clicked.connect(self.delete_button_clicked)
+        edit_layout.addWidget(self.delete_button)
+        main_layout.addLayout(edit_layout, 0, 8)
+
+        self.opacity_reset_button = QToolButton()
+        self.opacity_reset_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload))
+        self.opacity_reset_button.clicked.connect(self.opacity_reset_button_clicked)
+        main_layout.addWidget(self.opacity_reset_button, 1, 0)
+
+        self.opacity_slider = QSlider(Qt.Orientation.Horizontal)
+        self.opacity_slider.setMinimum(0)
+        self.opacity_slider.setMaximum(100)
+        self.opacity_slider.valueChanged.connect(self.opacity_slider_changed)
+        main_layout.addWidget(self.opacity_slider, 1, 1)
+
+        position_W_button = QToolButton()
+        position_W_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowLeft))
+        # position_W_button.clicked.connect()
+        main_layout.addWidget(position_W_button, 1, 4)
+
+        position_S_button = QToolButton()
+        position_S_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowDown))
+        # position_S_button.clicked.connect()
+        main_layout.addWidget(position_S_button, 1, 5)
+
+        localise_layout = QHBoxLayout()
+        localise_layout.setContentsMargins(0, 0, 0, 0)
+        position_E_button = QToolButton()
+        position_E_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowRight))
+        # position_E_button.clicked.connect()
+        localise_layout.addWidget(position_E_button)
+        localise_layout.addStretch(0)
+        self.localise_button = QPushButton("Localise")
+        self.localise_button.clicked.connect(self.localise_button_clicked)
+        localise_layout.addWidget(self.localise_button)
+        main_layout.addLayout(localise_layout, 1, 6)
+
+        if edit_buttons is True:
+            save_cancel_layout = QHBoxLayout()
+            save_cancel_layout.setContentsMargins(0, 0, 0, 0)
+            self.save_button = QPushButton("Save")
+            self.save_button.setMinimumWidth(100)
+            self.save_button.clicked.connect(lambda: self.save_cancel_button_clicked(save=True))
+            save_cancel_layout.addWidget(self.save_button)
+            self.cancel_button = QPushButton("Cancel")
+            self.cancel_button.setMinimumWidth(100)
+            self.cancel_button.clicked.connect(lambda: self.save_cancel_button_clicked(save=False))
+            save_cancel_layout.addWidget(self.cancel_button)
+            main_layout.addLayout(save_cancel_layout, 1, 8)
+        else:
+            self.save_button = None
+            self.cancel_button = None
+
+
+class QVisibilitySIW(VISILAYOUT3):
+
     def visibility_checkbox_clicked(self):
         self.visibility_checkbox.setTristate(False)
         self.visibility_checkbox.update()
@@ -129,6 +371,19 @@ class QVisibilitySIW(QSubInspectorWidget):
         self.cancel_button.setDisabled(True)
         if save is True:
             self.value_changed.emit()
+
+    def delete_button_clicked(self):
+        reply = QMessageBox.question(
+            self,
+            "Confirm Deletion",
+            "Do you really want to delete the graphic ?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            self.update_required.emit()
+            print("Delete")
 
     def connect_to(self, new_graphics):
         if not isinstance(new_graphics, list):
