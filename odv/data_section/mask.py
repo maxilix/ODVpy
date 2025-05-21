@@ -1,7 +1,6 @@
 from typing import Self
 
 from common import *
-from config import CONFIG
 from odv.odv_object import OdvObject, OdvObjectIterable
 
 from odv.section import Section
@@ -47,7 +46,7 @@ class MaskEntry(OdvObject):
             pass
         if rop.flag & 16:
             rop.u4 = stream.read(UShort)
-            # observed values :
+            # observed values:
             #  0, 3, 4, 6, 7, 8, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 23, 24, 25, 27, 28, 32, 33, 35, 36, 37, 38, 39, 41,
             #  42, 43, 44, 45, 46, 49, 50, 51, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 73, 75,
             #  76, 78, 79, 80, 81, 82, 85, 86, 89, 90, 91, 92, 93, 94, 96, 97, 98, 99, 100, 101, 102, 103, 105, 107, 109, 110,
@@ -64,7 +63,6 @@ class MaskEntry(OdvObject):
 
         rop.position = stream.read(QPointF)
         rop.mask_image = stream.read(MaskImage)
-
         return rop
 
     def to_stream(self, stream: WriteStream) -> None:

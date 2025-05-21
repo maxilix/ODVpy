@@ -9,10 +9,28 @@ from gc import get_referents
 X_MAX = 2944
 Y_MAX = 2368
 
+class ProRata():
+    def __init__(self):
+        self._d = dict()
+
+    def add(self, elem):
+        self._d[elem] = 1 + self._d.get(elem, 0)
+
+    def print(self):
+        m = max(self._d.values())
+        max_k_len = max(len(str(k))for k in self._d.keys())
+        max_v_len = max(len(str(v))for v in self._d.values())
+
+        print("# observed values:")
+        for k, v in sorted(self._d.items(), key=lambda x:x[0]):
+            print(f"# {str(k):>{max_k_len}}:{str(v):>{max_v_len}}   {"#"*int(v/m*200)}")
+
+PRO_RATA = ProRata()
+
+
 # Custom objects know their class.
 # Function objects seem to know way too much, including modules.
 # Exclude modules as well.
-
 BLACKLIST = type, ModuleType, FunctionType
 
 T = dict()

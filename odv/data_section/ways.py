@@ -1,7 +1,6 @@
 from typing import Self
 
 from common import *
-from config import CONFIG
 from odv.data_section import Move
 from odv.odv_object import OdvObjectIterable, OdvObject
 from odv.section import Section
@@ -161,7 +160,6 @@ class Patrol(OdvObjectIterable):
         rop = cls(parent)
         rop.move = move
         nb_waypoint = stream.read(UShort)
-        print(f"   {nb_waypoint=}")
         rop.waypoint_list = [stream.read(Waypoint, parent=rop, move=move) for _ in range(nb_waypoint)]
         return rop
 

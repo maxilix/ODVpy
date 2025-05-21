@@ -1,4 +1,5 @@
 from config import CONFIG
+from debug import PRO_RATA
 from odv.level import BackupedLevel, Level
 
 CONFIG.load()
@@ -16,8 +17,8 @@ for i in range(26):
     print(f"\nLevel {i}")
     level = BackupedLevel(i)
 
-print(sorted(list(CONFIG.debug_set)))
-
+# print(sorted(list(CONFIG.debug_set)))
+PRO_RATA.print()
 
 
 
