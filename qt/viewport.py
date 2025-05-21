@@ -28,9 +28,9 @@ class QViewport(QGraphicsView):
 
     def adjust_margins(self):
         cr = self.current_visible_scene_rect()
-        tr = self.scene().itemsBoundingRect()
-        r = QRectF(-cr.width() / 2, -cr.height() / 2, cr.width() + tr.width(), cr.height() + tr.height())
-        self.setSceneRect(r)
+        margin_x = cr.width() / 2
+        margin_y = cr.height() / 2
+        self.setSceneRect(self.scene().itemsBoundingRect().adjusted(-margin_x, -margin_y, margin_x, margin_y))
 
     # def resizeEvent(self, event):
     #     self.adjust_margins()
