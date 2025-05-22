@@ -1,10 +1,12 @@
-from PyQt6.QtCore import QRectF, QPointF, QObject, Qt
-from PyQt6.QtGui import QColor, QBrush, QPen, QPolygonF
+from enum import Enum
+
+from PyQt6.QtCore import QRectF, QPointF, Qt
+from PyQt6.QtGui import QColor, QBrush, QPolygonF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPolygonItem
 
-from qt.graphics import OdvThinPen, OdvLightBrush, OdvHighBrush, OdvBrush
+from qt.graphics import OdvThinPen, OdvLightBrush, OdvHighBrush
 from qt.graphics.line_elem import OdvEditLineElement
-from qt.graphics.point_elem import OdvEditPointElement
+from qt.graphics.point_elem import OdvEditPointElement, OdvPointerElement
 
 
 class OdvGraphic(QGraphicsItem):
@@ -44,12 +46,23 @@ class OdvGraphic(QGraphicsItem):
 
 
 
+class GraphicState(Enum):
+    NoGraph = 0
+    Fix = 1
+    Edit = 2
+    Create = 3
+
+
+
 class OdvEditGraphic(OdvGraphic):
-    _edit = False
+    _state = GraphicState.NoGraph
 
     @property
-    def edit(self):
-        return self._edit
+    def state(self):
+        return self._state
+
+    def enter_creation_mode(self):
+        raise NotImplementedError
 
     def enter_edit_mode(self):
         raise NotImplementedError
@@ -57,13 +70,22 @@ class OdvEditGraphic(OdvGraphic):
     def exit_edit_mode(self, save):
         raise NotImplementedError
 
-    def point_moved(self, moved_point: OdvEditPointElement):
+    def delete(self):
         raise NotImplementedError
 
-    def add_point(self, position: QPointF, cut_line: OdvEditLineElement):
+    def point_moved(self, moved_point: OdvEditPointElement|OdvPointerElement):
+        raise NotImplementedError
+
+    def add_point(self, position: QPointF, cut_line: OdvEditLineElement=None):
         raise NotImplementedError
 
     def delete_point(self, old_point: OdvEditPointElement):
+        raise NotImplementedError
+
+    def finalize_creation(self):
+        raise NotImplementedError
+
+    def cancel_creation(self):
         raise NotImplementedError
 
 

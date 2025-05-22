@@ -3,9 +3,11 @@ from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem, QMenu
 
 from qt.graphics.base import OdvGraphic, OdvShadow
+from qt.graphics.point_elem import OdvPointerElement
 
 
 class QScene(QGraphicsScene):
+    pointer = None
 
     def center_view(self, zoom=1.5):
         r = self.sceneRect().center()
@@ -48,6 +50,12 @@ class QScene(QGraphicsScene):
             menu.addActions(actions)
             menu.exec(QCursor.pos())
 
+    def add_pointer(self, parent_graphic):
+        if self.pointer is None:
+            self.pointer = OdvPointerElement(parent_graphic)
+        else:
+            print(f"WARNING: pointer already exists for {self.pointer.parentItem()}")
+
     @staticmethod
     def focus_on(tree_item):
         tree_item.focus()
@@ -57,6 +65,8 @@ class QScene(QGraphicsScene):
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         shadow_list = [g.tree_item for g in self.items(event.scenePos()) if isinstance(g, OdvShadow)]
         self.viewport().info_bar.set_tree_items(shadow_list)
+        if self.pointer is not None:
+            self.pointer.setPos(event.scenePos())
         super().mouseMoveEvent(event)
 
     # def new_centered_line(self, scale:float):

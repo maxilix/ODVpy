@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QTreeWidgetItem, QAbstractItemView, QTreeWidget
 
 from qt.common.utils import bounding_rect_of, same_type
 from qt.control.generic_inspector import Inspector
-from qt.graphics.base import OdvEditGraphic
+from qt.graphics.base import OdvEditGraphic, GraphicState
 
 
 class QGenericTreeItem(QTreeWidgetItem):
@@ -29,7 +29,7 @@ class QGenericTreeItem(QTreeWidgetItem):
         self.setBold(False)
         self.setColor()
         title = self.name
-        if any([graphic.edit for graphic in self._graphics if isinstance(graphic, OdvEditGraphic)]):
+        if any([graphic.state == GraphicState.Edit for graphic in self._graphics if isinstance(graphic, OdvEditGraphic)]):
             title += " -Edit-"
             self.setBold(True)
         # if self.inspector.valid_state is False:

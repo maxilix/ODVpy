@@ -35,6 +35,7 @@ class OdvFixPointElement(QGraphicsItem):
         return self.shape().boundingRect()
 
 
+
 class OdvEditPointElement(QGraphicsEllipseItem):
     size: float = POINT_SIZE
 
@@ -73,7 +74,6 @@ class OdvEditPointElement(QGraphicsEllipseItem):
         else:
             super().mousePressEvent(event)
 
-
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         self._is_moving = False
         self.setBrush(self.parentItem().light_brush)
@@ -83,3 +83,42 @@ class OdvEditPointElement(QGraphicsEllipseItem):
         if self._is_moving:
             self.setPos(self.mapToScene(event.pos()) - self.parentItem().pos())
         super().mouseMoveEvent(event)
+
+
+
+class OdvPointerElement(QGraphicsEllipseItem):
+    size: float = POINT_SIZE
+
+    def __init__(self, parent_item):
+        super().__init__(parent_item)
+        self.setRect(-self.size / 2, -self.size / 2, self.size, self.size)
+        self.setPen(self.parentItem().thin_pen)
+        self.setBrush(self.parentItem().high_brush)
+        print(self.brush())
+
+    def setPos(self, position: QPointF, notify=True):
+        if (ga:=self.parentItem().grid_alignment) is not None:
+            position =  position.truncated() + ga
+        if position != self.pos():
+            super().setPos(position)
+            if notify:
+                self.parentItem().point_moved(self)
+
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
+        if event.button() == Qt.MouseButton.RightButton:
+            menu = QMenu()
+            a_finalize = QAction("Finalize")
+            a_finalize.triggered.connect(lambda: self.parentItem().finalize_creation())
+            a_cancel = QAction("Cancel")
+            a_cancel.triggered.connect(lambda: self.parentItem().cancel_creation())
+            menu.addAction(a_finalize)
+            menu.addAction(a_cancel)
+            menu.exec(QCursor.pos())
+            event.accept()
+
+    def mouseDoubleClickEvent(self, event):
+        self.parentItem().finalize_creation()
+
+    def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.parentItem().add_point(self.pos())

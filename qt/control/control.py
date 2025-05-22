@@ -74,9 +74,9 @@ class QControl(QTabWidget):
         self.add_tab("MISC")
         self.add_tab("BGND")
         self.add_tab("MOVE")
-        self.add_tab("MASK")
-        self.add_tab("WAYS")
-        self.setCurrentWidget(self.tab["WAYS"])
+        # self.add_tab("MASK")
+        # self.add_tab("WAYS")
+        self.setCurrentWidget(self.tab["MOVE"])
         # self.scene.center_view(zoom=0.6)
 
 
