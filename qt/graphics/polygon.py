@@ -27,6 +27,27 @@ class GraphicPolygon(OdvEditGraphic):
         if self.state == GraphicState.NoGraph:
             self._state = GraphicState.Create
             self.scene().add_pointer(self)
+            self.point_edit = []
+            self.line_edit = []
+            self.polygon_edit = None
+
+    def exit_creation_mode(self, save):
+        if self.state == GraphicState.Create:
+            if save is True and len(self.point_edit) >= 3:
+                self.line_edit[-1].p2 = self.point_edit[0]
+                self.polygon_edit.p_list = self.point_edit
+                deletable = len(self.point_edit) > 3
+                for p in self.point_edit:
+                    p.deletable = deletable
+                self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
+
+                self._state = GraphicState.Edit
+                self.scene().release_pointer(self)
+            else:
+                # update shadow
+                # self.shadow.setPolygon(self.polygon.translated(self.grid_alignment))
+                pass
+
 
     def enter_edit_mode(self):
         if self.state == GraphicState.Fix:
@@ -84,12 +105,31 @@ class GraphicPolygon(OdvEditGraphic):
             # update shadow
             self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
         elif self.state == GraphicState.Create:
-            print("moved")
+            if len(self.point_edit) > 0:
+                self.line_edit[-1].update()
+            if len(self.point_edit) > 1:
+                self.polygon_edit.update()
+
 
 
     def add_point(self, position: QPointF, cut_line: OdvEditLineElement=None):
+        # TODO compare state instead of cut_line==None
         if cut_line is None:
-            print(f"clicked ad {position}")
+            if self.point_edit==[] or position.truncated() != self.point_edit[-1].pos().truncated():
+                # print(f"clicked ad {position}")
+                new_point = OdvEditPointElement(self, position.truncated(), deletable=False)
+                self.point_edit.append(new_point)
+                new_line = OdvEditLineElement(self, self.point_edit[-1], self.scene().pointer, secable=True)
+                self.line_edit.append(new_line)
+                if len(self.point_edit) > 1:
+                    self.line_edit[-2].p2 = new_point
+                if len(self.point_edit) == 2:
+                    self.polygon_edit = OdvEditPolygonShapeElement(self, self.point_edit + [self.scene().pointer], movable=False)
+                elif len(self.point_edit) > 2:
+                    self.polygon_edit.p_list = self.point_edit + [self.scene().pointer]
+            else:
+                print("WARNING, the last point is already at this position.")
+
         else:
             i = self.line_edit.index(cut_line)
 
@@ -138,11 +178,3 @@ class GraphicPolygon(OdvEditGraphic):
         if n == 4:  # then there are 3 points left
             for p in self.point_edit:
                 p.deletable = False
-
-    def finalize_creation(self):
-        if self.state == GraphicState.Create:
-            print("created")
-
-    def cancel_creation(self):
-        if self.state == GraphicState.Create:
-            print("cancelled")

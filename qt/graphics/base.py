@@ -64,6 +64,9 @@ class OdvEditGraphic(OdvGraphic):
     def enter_creation_mode(self):
         raise NotImplementedError
 
+    def exit_creation_mode(self, save):
+        raise NotImplementedError
+
     def enter_edit_mode(self):
         raise NotImplementedError
 
@@ -80,12 +83,6 @@ class OdvEditGraphic(OdvGraphic):
         raise NotImplementedError
 
     def delete_point(self, old_point: OdvEditPointElement):
-        raise NotImplementedError
-
-    def finalize_creation(self):
-        raise NotImplementedError
-
-    def cancel_creation(self):
         raise NotImplementedError
 
 

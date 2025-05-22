@@ -81,7 +81,8 @@ class QViewport(QGraphicsView):
         self.x = mouse_scene_pos.x() + (h.pageStep() / 2 - mouse_view_pos.x()) / (self.zoom_shift_factor * self.zoom)
         self.y = mouse_scene_pos.y() + (v.pageStep() / 2 - mouse_view_pos.y()) / (self.zoom_shift_factor * self.zoom)
 
-        event.ignore()
+        # Todo is it useful ?
+        # event.ignore()
 
     @pyqtProperty(float)
     def zoom(self):

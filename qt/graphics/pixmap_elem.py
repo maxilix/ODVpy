@@ -13,6 +13,7 @@ class OdvFixPixmapElement(QGraphicsPixmapItem):
         self.setPixmap(pixmap)
 
 
+
 class OdvEditCardinalElement(QGraphicsItem):
     width = 1.2
 
@@ -94,12 +95,13 @@ class OdvEditCardinalElement(QGraphicsItem):
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
             self._drag_position = self.mapToScene(event.pos()).truncated()
+            event.accept()
         else:
-            super().mousePressEvent(event)
+            event.ignore()
 
-    def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
+    def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         self._drag_position = None
-        super().mouseReleaseEvent(event)
+        event.accept()
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         if self._drag_position is not None:
@@ -107,7 +109,9 @@ class OdvEditCardinalElement(QGraphicsItem):
             delta = scene_position - self._drag_position
             self.setPos(self.pos() + delta)
             self._drag_position = scene_position
-        super().mouseMoveEvent(event)
+            event.accept()
+        else:
+            event.ignore()
 
 
 
@@ -146,6 +150,19 @@ class OdvEditMaskElement(QGraphicsPixmapItem):
         self.hull.setPen(OdvThinPen(QColor("black")))
         super().update(rect)
 
+    # TODO refactor mousse events
+    # use event.accept() and event.ignore()
+    # change strategy to handle double click
+
+    def set_pixel_from_mousse_event(self, event: QGraphicsSceneMouseEvent):
+        if self._pixel_setter is not None:
+            scene_position = self.mapToScene(event.pos())
+            mousse_relative_position = scene_position - self.parentItem().pos()
+            x = floor(mousse_relative_position.x())
+            y = floor(mousse_relative_position.y())
+            self.mask_image.set_pixel(x, y, self._pixel_setter)
+            self.update()
+
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         mousse_relative_position = self.mapToScene(event.pos()) - self.parentItem().pos()
         x = floor(mousse_relative_position.x())
@@ -154,12 +171,12 @@ class OdvEditMaskElement(QGraphicsPixmapItem):
 
         if event.button() == Qt.MouseButton.LeftButton:
             self._pixel_setter = True
-            self.mouseMoveEvent(event)
+            # self.mouseMoveEvent(event)
         elif event.button() == Qt.MouseButton.RightButton:
             self._pixel_setter = False
-            self.mouseMoveEvent(event)
-        else:
-            super().mousePressEvent(event)
+            # self.mouseMoveEvent(event)
+        # else:
+        # super().mousePressEvent(event)
 
     def mouseDoubleClickEvent(self, event):
         mousse_relative_position = self.mapToScene(event.pos()) - self.parentItem().pos()
@@ -171,12 +188,13 @@ class OdvEditMaskElement(QGraphicsPixmapItem):
         if event.button() == Qt.MouseButton.LeftButton:
             self._pixel_setter = None
             self._drag_position = self.mapToScene(event.pos()).truncated()
-        else:
-            super().mouseDoubleClickEvent(event)
+        # else:
+        # super().mouseDoubleClickEvent(event)
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         self._drag_position = None
         self._pixel_setter = None
+        # super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         scene_position = self.mapToScene(event.pos())
@@ -190,6 +208,7 @@ class OdvEditMaskElement(QGraphicsPixmapItem):
             new_pos = self.parentItem().pos() + scene_position.truncated() - self._drag_position
             self.parentItem().setPos(new_pos)
             self._drag_position = scene_position.truncated()
+        # super().mouseMoveEvent(event)
 
     def shape(self):
         path = QPainterPath()

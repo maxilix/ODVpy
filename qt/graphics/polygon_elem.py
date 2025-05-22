@@ -45,18 +45,21 @@ class OdvEditPolygonShapeElement(QGraphicsPathItem):
         if self.movable and event.button() == Qt.MouseButton.LeftButton:
             if len(self.p_list) > 20:
                 print(f"WARN : impossible to drag large polygons ({len(self.p_list)} points > 20)")
+                event.ignore()
             else:
                 self._drag_position = self.mapToScene(event.pos()).truncated()
                 self.setBrush(self.parentItem().high_brush)
+                event.accept()
         else:
-            super().mouseDoubleClickEvent(event)
+            event.ignore()
 
     def mouseReleaseEvent(self, event):
         if self.movable:
             self._drag_position = None
             self.setBrush(self.parentItem().light_brush)
+            event.accept()
         else:
-            super().mouseReleaseEvent(event)
+            event.ignore()
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         if self.movable and self._drag_position is not None:
@@ -64,8 +67,9 @@ class OdvEditPolygonShapeElement(QGraphicsPathItem):
             for p in self.p_list:
                 p.move(delta)
             self._drag_position = self.mapToScene(event.pos()).truncated()
+            event.accept()
         else:
-            super().mouseMoveEvent(event)
+            event.ignore()
 
 
 # class QCGHighlightablePolygon(QCGPolygon):

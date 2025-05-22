@@ -64,6 +64,7 @@ class OdvEditPointElement(QGraphicsEllipseItem):
         if event.button() == Qt.MouseButton.LeftButton:
             self._is_moving = True
             self.setBrush(self.parentItem().high_brush)
+            event.accept()
         elif self.deletable and event.button() == Qt.MouseButton.RightButton:
             menu = QMenu()
             a_delete = QAction("Delete Point")
@@ -72,17 +73,17 @@ class OdvEditPointElement(QGraphicsEllipseItem):
             menu.exec(QCursor.pos())
             event.accept()
         else:
-            super().mousePressEvent(event)
+            event.ignore()
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         self._is_moving = False
         self.setBrush(self.parentItem().light_brush)
-        super().mouseReleaseEvent(event)
+        event.accept()
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         if self._is_moving:
             self.setPos(self.mapToScene(event.pos()) - self.parentItem().pos())
-        super().mouseMoveEvent(event)
+        event.accept()
 
 
 
@@ -94,7 +95,7 @@ class OdvPointerElement(QGraphicsEllipseItem):
         self.setRect(-self.size / 2, -self.size / 2, self.size, self.size)
         self.setPen(self.parentItem().thin_pen)
         self.setBrush(self.parentItem().high_brush)
-        print(self.brush())
+        self.setZValue(100)
 
     def setPos(self, position: QPointF, notify=True):
         if (ga:=self.parentItem().grid_alignment) is not None:
@@ -108,17 +109,22 @@ class OdvPointerElement(QGraphicsEllipseItem):
         if event.button() == Qt.MouseButton.RightButton:
             menu = QMenu()
             a_finalize = QAction("Finalize")
-            a_finalize.triggered.connect(lambda: self.parentItem().finalize_creation())
+            a_finalize.triggered.connect(lambda: self.parentItem().exit_creation_mode(save=True))
             a_cancel = QAction("Cancel")
-            a_cancel.triggered.connect(lambda: self.parentItem().cancel_creation())
+            a_cancel.triggered.connect(lambda: self.parentItem().exit_creation_mode(save=False))
             menu.addAction(a_finalize)
             menu.addAction(a_cancel)
             menu.exec(QCursor.pos())
-            event.accept()
+        # accepts all events, no matter how it reacts to them.
+        # ZValue=max (100) allows the pointer to be the first to react to mouse events.
+        # Accepting them blocks them for all other items.
+        event.accept()
 
     def mouseDoubleClickEvent(self, event):
-        self.parentItem().finalize_creation()
+        self.parentItem().exit_creation_mode(save=True)
+        event.accept()
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
             self.parentItem().add_point(self.pos())
+        event.accept()

@@ -129,4 +129,4 @@ class OdvEditLineElement(QGraphicsLargeLineItem):
             menu.exec(QCursor.pos())
             event.accept()
         else:
-            super().mousePressEvent(event)
+            event.ignore()
