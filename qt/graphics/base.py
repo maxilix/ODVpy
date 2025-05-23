@@ -13,8 +13,6 @@ class OdvGraphic(QGraphicsItem):
     grid_alignment = QPointF(0, 0)
     initial_opacity = 1
 
-    shadow = None
-
     thin_pen = OdvThinPen(QColor("black"))
     light_brush = OdvLightBrush(QColor("black"))
     high_brush = OdvHighBrush(QColor("black"))
@@ -22,6 +20,7 @@ class OdvGraphic(QGraphicsItem):
     def __init__(self, item, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.item = item
+        self.shadow = OdvShadow(item, QPolygonF())
         self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
         self.setOpacity(self.initial_opacity)
         self.setVisible(False)
@@ -41,8 +40,19 @@ class OdvGraphic(QGraphicsItem):
             child.update(rect)
         super().update(rect)
 
+    # Todo remove localise, cause item is always localised by group (eventually group of 1)
     def localise(self):
         self.scene().move_to_item(self)
+
+    def setVisible(self, visible: bool):
+        if visible != self.isVisible():
+            super().setVisible(visible)
+            self.item.update_both()
+
+    def setOpacity(self, opacity: float):
+        if opacity != self.opacity():
+            super().setOpacity(opacity)
+            self.item.update_both()
 
 
 
@@ -96,3 +106,7 @@ class OdvShadow(QGraphicsPolygonItem):
         # self.setPen(OdvThinPen(Qt.GlobalColor.black))
         self.setBrush(QBrush(Qt.GlobalColor.transparent))
         self.setZValue(0)
+
+    def __bool__(self):
+        return self.polygon() != QPolygonF()
+

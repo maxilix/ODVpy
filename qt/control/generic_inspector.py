@@ -230,8 +230,8 @@ class VISILAYOUT3(QSubInspectorWidget):
 
         name_layout = QHBoxLayout()
         name_layout.setContentsMargins(0, 0, 0, 0)
-        self.title = QLabel(title)
-        name_layout.addWidget(self.title)
+        self.title_label = QLabel(title)
+        name_layout.addWidget(self.title_label)
         name_layout.addStretch()
         name_layout.addWidget(QToolButton())
         name_layout.addWidget(QToolButton())
@@ -378,10 +378,15 @@ class QVisibilitySIW(VISILAYOUT3):
             self.value_changed.emit()
 
     def delete_button_clicked(self):
+        if (n:=len(self.graphics)) == 1:
+            msg = f"Do you really want to delete the \"{self.title_label.text()}\" graphic ?"
+        else:
+            msg = f"Do you really want to delete all {n} \"{self.title_label.text()}\" graphics ?"
+
         reply = QMessageBox.question(
             self,
             "Confirm Deletion",
-            "Do you really want to delete the graphic ?",
+            msg,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No
         )
@@ -393,10 +398,10 @@ class QVisibilitySIW(VISILAYOUT3):
             [graphic.setVisible(False) for graphic in self.graphics]
             [graphic.delete() for graphic in self.graphics]
             self.update_required.emit()
-            if self.opacity_slider is not None:
-                self.opacity_reset_button_clicked()
-                self.opacity_slider.setDisabled(True)
-                self.opacity_reset_button.setDisabled(True)
+            # if self.opacity_slider is not None:
+            #     self.opacity_reset_button_clicked()
+            #     self.opacity_slider.setDisabled(True)
+            #     self.opacity_reset_button.setDisabled(True)
 
 
     def connect_to(self, new_graphics):
@@ -497,6 +502,12 @@ class Inspector(QWidget):
 
     def update(self):
         self.connect_to(self.items)
+        super().update()
+
+    def update_item(self):
         for item in self.items:
             item.update()
-        super().update()
+
+    def update_both(self):
+        self.update_item()
+        self.update()

@@ -46,6 +46,13 @@ class QGenericTreeItem(QTreeWidgetItem):
         self.setText(0, title)
         # print(f"item updated: {title}")
 
+    def update_inspector(self):
+        self.section_control.update_current_inspector()
+
+    def update_both(self):
+        self.update()
+        self.update_inspector()
+
     def clicked(self):
         if Qt.ItemFlag.ItemIsUserCheckable in self.flags() and self.graphics_visibility_state() != self.checkState(0):
             # current state is obsolete, checkbox has changed
@@ -53,7 +60,7 @@ class QGenericTreeItem(QTreeWidgetItem):
                 self.show_graphics()
             else:
                 self.hide_graphics()
-            self.section_control.update_current_inspector()
+            self.update_inspector()
 
     def double_clicked(self):
         self.localise_graphics()

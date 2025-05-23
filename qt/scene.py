@@ -29,7 +29,7 @@ class QScene(QGraphicsScene):
     def addItem(self, item):
         assert isinstance(item, OdvGraphic)
         super().addItem(item)
-        if item.shadow is not None:
+        if item.shadow:
             super().addItem(item.shadow)
 
     def removeItem(self, item):

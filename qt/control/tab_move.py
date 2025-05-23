@@ -63,7 +63,7 @@ class ObstacleInspector(Inspector):
         super().__init__()
 
         self.visibility_siw = QVisibilitySIW(title="Polygon", edit_buttons=True, position=True, opacity_slider=True)
-        self.visibility_siw.update_required.connect(self.update)
+        # self.visibility_siw.update_required.connect(self.update_both)
         self.main_layout.addWidget(self.visibility_siw)
 
         self.geometry_info_label = QLabel()
@@ -77,6 +77,11 @@ class ObstacleInspector(Inspector):
 
         if len(self.items) == 1:
             n = len(self.items[0].obstacle.poly)
+            print(f"inspector update {self.items[0].obstacle}")
+            for p in self.items[0].obstacle.poly:
+                print(f"   {p}")
+            print()
+
             self.geometry_info_label.setText(f"The current saved polygon has {n} points.\n{"WARNING, polygons larger than 20 points cannot be dragged" if n > 20 else ""}")
         else:
             self.geometry_info_label.setText(f"")
