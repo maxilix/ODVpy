@@ -1,12 +1,12 @@
 from enum import Enum
 
 from PyQt6.QtCore import QRectF, QPointF, Qt
-from PyQt6.QtGui import QColor, QBrush, QPolygonF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPolygonItem
+from PyQt6.QtGui import QColor, QBrush, QPolygonF, QAction, QCursor
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPolygonItem, QGraphicsEllipseItem, QMenu
 
 from qt.graphics import OdvThinPen, OdvLightBrush, OdvHighBrush
 from qt.graphics.line_elem import OdvEditLineElement
-from qt.graphics.point_elem import OdvEditPointElement, OdvPointerElement
+from qt.graphics.point_elem import OdvEditPointElement
 
 
 class OdvGraphic(QGraphicsItem):
@@ -55,6 +55,63 @@ class OdvGraphic(QGraphicsItem):
             self.item.update_both()
 
 
+class Pointer(QGraphicsEllipseItem):
+    size: float = 2.2
+    attached_item = None
+
+    def __init__(self):
+        super().__init__()
+        self.setRect(-self.size / 2, -self.size / 2, self.size, self.size)
+        self.setZValue(100)
+
+    def is_attached(self):
+        return self.attached_item is not None
+
+    def attache_to(self, item):
+        self.attached_item = item
+        self.attached_item.setVisible(True)
+        self.setVisible(True)
+        self.setPen(self.attached_item.thin_pen)
+        self.setBrush(self.attached_item.high_brush)
+
+    def release(self):
+        self.attached_item = None
+        self.setVisible(False)
+
+    def setPos(self, position: QPointF, notify=True):
+        if (ga:=self.attached_item.grid_alignment) is not None:
+            position =  position.truncated() + ga
+        if position != self.pos():
+            super().setPos(position)
+            if notify:
+                self.attached_item.point_moved(self)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.RightButton:
+            menu = QMenu()
+            a_finalize = QAction("Finalize")
+            a_finalize.triggered.connect(lambda: self.attached_item.exit_creation_mode(save=True))
+            a_cancel = QAction("Cancel")
+            a_cancel.triggered.connect(lambda: self.attached_item.exit_creation_mode(save=False))
+            menu.addAction(a_finalize)
+            menu.addAction(a_cancel)
+            menu.exec(QCursor.pos())
+        # accepts all events, no matter how it reacts to them.
+        # ZValue=max (100) allows the pointer to be the first to react to mouse events.scene TODO not working
+        # Accepting them blocks them for all other items.
+        event.accept()
+
+    def mouseDoubleClickEvent(self, event):
+        self.attached_item.exit_creation_mode(save=True)
+        event.accept()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.attached_item.add_point(self.pos())
+        event.accept()
+
+
+
 
 class GraphicState(Enum):
     NoGraph = 0
@@ -71,6 +128,18 @@ class OdvEditGraphic(OdvGraphic):
     def state(self):
         return self._state
 
+    @property
+    def pointer(self):
+        pointer = self.scene().pointer
+        assert self == pointer.attached_item
+        return pointer
+
+    def claim_pointer(self):
+        self.scene().claim_pointer(self)
+
+    def release_pointer(self):
+        self.scene().release_pointer(self)
+
     def enter_creation_mode(self):
         raise NotImplementedError
 
@@ -86,7 +155,7 @@ class OdvEditGraphic(OdvGraphic):
     def delete(self):
         raise NotImplementedError
 
-    def point_moved(self, moved_point: OdvEditPointElement|OdvPointerElement):
+    def point_moved(self, moved_point: OdvEditPointElement | Pointer):
         raise NotImplementedError
 
     def add_point(self, position: QPointF, cut_line: OdvEditLineElement=None):

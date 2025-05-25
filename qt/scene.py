@@ -2,12 +2,15 @@ from PyQt6.QtCore import QRectF, Qt
 from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem, QMenu
 
-from qt.graphics.base import OdvGraphic, OdvShadow
-from qt.graphics.point_elem import OdvPointerElement
+from qt.graphics.base import OdvGraphic, OdvShadow, Pointer
 
 
 class QScene(QGraphicsScene):
-    pointer = None
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.pointer = Pointer()
+        super().addItem(self.pointer)
 
     def center_view(self, zoom=1.5):
         r = self.sceneRect().center()
@@ -38,6 +41,9 @@ class QScene(QGraphicsScene):
         super().removeItem(item)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
+        # for e in self.items(event.scenePos()):
+        #     print(e.zValue(), e)
+        # print()
         super().mousePressEvent(event)
         if event.button() == Qt.MouseButton.RightButton and not event.isAccepted():
             menu = QMenu()
@@ -48,21 +54,21 @@ class QScene(QGraphicsScene):
             menu.addActions(actions)
             menu.exec(QCursor.pos())
 
-    def add_pointer(self, parent_graphic):
-        if self.pointer is None:
-            self.pointer = OdvPointerElement(parent_graphic)
+    def claim_pointer(self, item):
+        if self.pointer.is_attached() is False:
+            self.pointer.attache_to(item)
+            # self.pointer.stackBefore([i for i in self.items() if i.parentItem() is None][0])
         else:
-            print(f"WARNING: pointer already exists for {self.pointer.parentItem()}")
+            print(f"WARNING: pointer already exists for {self.pointer.attached_item}")
 
-    def release_pointer(self, parent_graphic):
-        if self.pointer is None:
+    def release_pointer(self, item):
+        if self.pointer.is_attached() is False:
             print(f"WARNING: ne pointer to release")
         else:
-            if self.pointer.parentItem() == parent_graphic:
-                self.removeItem(self.pointer)
-                self.pointer = None
+            if self.pointer.attached_item == item:
+                self.pointer.release()
             else:
-                print(f"WARNING: pointer parent is {self.pointer.parentItem()}, not {parent_graphic}")
+                print(f"WARNING: pointer is attached to {self.pointer.attached_item}, not {item}")
 
     @staticmethod
     def focus_on(tree_item):
@@ -73,7 +79,7 @@ class QScene(QGraphicsScene):
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         shadow_list = [g.tree_item for g in self.items(event.scenePos()) if isinstance(g, OdvShadow)]
         self.viewport().info_bar.set_tree_items(shadow_list)
-        if self.pointer is not None:
+        if self.pointer.is_attached():
             self.pointer.setPos(event.scenePos())
         super().mouseMoveEvent(event)
 

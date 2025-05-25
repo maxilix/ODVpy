@@ -77,10 +77,10 @@ class ObstacleInspector(Inspector):
 
         if len(self.items) == 1:
             n = len(self.items[0].obstacle.poly)
-            print(f"inspector update {self.items[0].obstacle}")
-            for p in self.items[0].obstacle.poly:
-                print(f"   {p}")
-            print()
+            # print(f"inspector update {self.items[0].obstacle}")
+            # for p in self.items[0].obstacle.poly:
+            #     print(f"   {p}")
+            # print()
 
             self.geometry_info_label.setText(f"The current saved polygon has {n} points.\n{"WARNING, polygons larger than 20 points cannot be dragged" if n > 20 else ""}")
         else:

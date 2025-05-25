@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui import QPolygonF
 
-from qt.graphics.base import OdvShadow, OdvEditGraphic, GraphicState
+from qt.graphics.base import OdvEditGraphic, GraphicState
 from qt.graphics.line_elem import OdvEditLineElement
 from qt.graphics.point_elem import OdvEditPointElement
 from qt.graphics.polygon_elem import OdvEditPolygonShapeElement, OdvFixPolygonElement
@@ -32,7 +32,7 @@ class GraphicPolygon(OdvEditGraphic):
     def enter_creation_mode(self):
         if self.state == GraphicState.NoGraph:
             self._state = GraphicState.Create
-            self.scene().add_pointer(self)
+            self.claim_pointer()
             self.point_edit = []
             self.line_edit = []
             self.polygon_edit = None
@@ -49,7 +49,7 @@ class GraphicPolygon(OdvEditGraphic):
                 self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
 
                 self._state = GraphicState.Edit
-                self.scene().release_pointer(self)
+                self.release_pointer()
             else:
                 # update shadow
                 # self.shadow.setPolygon(self.polygon.translated(self.grid_alignment))
@@ -127,14 +127,14 @@ class GraphicPolygon(OdvEditGraphic):
                 if self.point_edit==[] or position.truncated() != self.point_edit[-1].pos().truncated():
                     new_point = OdvEditPointElement(self, position.truncated(), deletable=False)
                     self.point_edit.append(new_point)
-                    new_line = OdvEditLineElement(self, self.point_edit[-1], self.scene().pointer, secable=True)
+                    new_line = OdvEditLineElement(self, self.point_edit[-1], self.pointer, secable=True)
                     self.line_edit.append(new_line)
                     if len(self.point_edit) > 1:
                         self.line_edit[-2].p2 = new_point
                     if len(self.point_edit) == 2:
-                        self.polygon_edit = OdvEditPolygonShapeElement(self, self.point_edit + [self.scene().pointer], movable=False)
+                        self.polygon_edit = OdvEditPolygonShapeElement(self, self.point_edit + [self.pointer], movable=False)
                     elif len(self.point_edit) > 2:
-                        self.polygon_edit.p_list = self.point_edit + [self.scene().pointer]
+                        self.polygon_edit.p_list = self.point_edit + [self.pointer]
                 else:
                     print("WARNING, the last point is already at this position.")
 
