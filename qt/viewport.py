@@ -26,6 +26,9 @@ class QViewport(QGraphicsView):
         self.zoom_max = 50
         self.zoom_min = 0.5
 
+        self.info_bar.set_xy(None)
+        self.info_bar.set_zoom(self.zoom)
+
     def adjust_margins(self):
         cr = self.current_visible_scene_rect()
         margin_x = cr.width() / 2
@@ -35,6 +38,10 @@ class QViewport(QGraphicsView):
     # def resizeEvent(self, event):
     #     self.adjust_margins()
     #     super().resizeEvent(event)
+
+    def leaveEvent(self, a0):
+        self.info_bar.set_xy(None)
+        super().leaveEvent(a0)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:

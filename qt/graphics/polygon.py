@@ -10,7 +10,7 @@ from qt.graphics.polygon_elem import OdvEditPolygonShapeElement, OdvFixPolygonEl
 class GraphicPolygon(OdvEditGraphic):
     grid_alignment = QPointF(0.5, 0.5)
 
-    def __init__(self, item, polygon:QPolygonF):
+    def __init__(self, item, polygon:QPolygonF | None = None):
         super().__init__(item)
         self.polygon = polygon
         self.setZValue(10)
@@ -19,10 +19,8 @@ class GraphicPolygon(OdvEditGraphic):
         self.point_edit = []
         self.line_edit = []
         self.polygon_edit = None
-        # self.active_point = None
-        # self.shadow = OdvShadow(item, self.polygon.translated(self.grid_alignment))
 
-        if self.polygon == QPolygonF():
+        if self.polygon is None:
             self._state = GraphicState.NoGraph
         else:
             self.polygon_fix = OdvFixPolygonElement(self, self.polygon)
@@ -132,7 +130,7 @@ class GraphicPolygon(OdvEditGraphic):
                     if len(self.point_edit) > 1:
                         self.line_edit[-2].p2 = new_point
                     if len(self.point_edit) == 2:
-                        self.polygon_edit = OdvEditPolygonShapeElement(self, self.point_edit + [self.pointer], movable=False)
+                        self.polygon_edit = OdvEditPolygonShapeElement(self, self.point_edit + [self.pointer], movable=True)
                     elif len(self.point_edit) > 2:
                         self.polygon_edit.p_list = self.point_edit + [self.pointer]
                 else:
