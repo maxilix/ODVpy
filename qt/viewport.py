@@ -40,7 +40,8 @@ class QViewport(QGraphicsView):
     #     super().resizeEvent(event)
 
     def leaveEvent(self, a0):
-        self.info_bar.set_xy(None)
+        # unpleasant behavior with context menus
+        # self.info_bar.set_xy(None)
         super().leaveEvent(a0)
 
     def mousePressEvent(self, event):

@@ -8,9 +8,10 @@ from config import CONFIG
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
 from qt.control.control import QControl
-from qt.info_bar import QInfoBar
+from qt.scene_info_bar import QInfoBar
 from qt.preferences import QPreferencesDialog
 from qt.scene import QScene
+from qt.scene_tool_bar import QSceneToolBar
 from qt.viewport import QViewport
 from settings import *
 
@@ -178,6 +179,8 @@ class QWindow(QMainWindow):
             viewport = QViewport(scene, info_bar)
             control = QControl(main_widget, scene, self.current_level)
             control.sendStatus.connect(self.status_bar.showMessage)
+            tool_bar = QSceneToolBar(scene)
+            scene.tool_bar = tool_bar
 
             # print(viewport.zoom)
             # viewport.zoom = 0.5  # set zoom first, as it defines the margins around the dvm
@@ -189,6 +192,7 @@ class QWindow(QMainWindow):
 
 
             layout = QVBoxLayout(visualizer)
+            layout.addWidget(tool_bar)
             layout.addWidget(viewport)
             layout.addWidget(info_bar)
 

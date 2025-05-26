@@ -1,11 +1,15 @@
+from math import floor
+
 from PyQt6.QtCore import QRectF, Qt
 from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem, QMenu, QGraphicsEllipseItem
 
 from qt.graphics.base import OdvGraphic, OdvShadow
+from qt.scene_tool_bar import QSceneToolBar
 
 
 class QScene(QGraphicsScene):
+    tool_bar: QSceneToolBar
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -33,6 +37,21 @@ class QScene(QGraphicsScene):
 
     def move_to_rect(self, rect: QRectF):
         self.viewport().move_to_rect(rect)
+
+    def move_to(self, x, y, zoom=20, blink_pixel=False):
+        self.viewport().move_to(x, y, zoom)
+        # if blink_pixel is True:  # Todo
+        #     self.pointer.setPos(x + 0.5, y + 0.5)
+        #     self.pointer.setVisible(True)
+        #     anim = QVariantAnimation(self)
+        #     anim.setDuration(2200)
+        #     anim.setStartValue(1.0)
+        #     anim.setEndValue(0.0)
+        #     anim.valueChanged.connect(lambda o: self.pointer.setOpacity(o))
+        #     anim.setEasingCurve(QEasingCurve.Type.InCubic)
+        #     anim.start()
+        #     anim.finished.connect(lambda: self.pointer.setVisible(False))
+        #     anim.finished.connect(lambda: self.pointer.setOpacity(1))
 
     def addItem(self, item):
         assert isinstance(item, OdvGraphic)
@@ -78,10 +97,13 @@ class QScene(QGraphicsScene):
                     actions.append(QAction(tree_item.name))
                     actions[-1].triggered.connect(lambda state, inner_item=tree_item: self.focus_on(inner_item))
 
-                cc = QAction("Center View")
-                cc.triggered.connect(lambda state: self.center_view(zoom=10))
-                menu.addAction(cc)
-                menu.addActions(actions)
+                x = floor(event.scenePos().x())
+                y = floor(event.scenePos().y())
+                save_pos = QAction(f"({x}, {y})")
+                save_pos.triggered.connect(lambda state: self.tool_bar.set_xy_localise(x, y))
+                menu.addAction(save_pos)
+                focus_on_menu = menu.addMenu("Focus on")
+                focus_on_menu.addActions(actions)
                 menu.exec(QCursor.pos())
 
     def mouseReleaseEvent(self, event):
@@ -115,9 +137,8 @@ class QScene(QGraphicsScene):
             if self.pointer_item == item:
                 self.pointer_item = None
                 self.pointer.setVisible(False)
-                # self.pointer.release()
             else:
-                print(f"WARNING: pointer is attached to {self.pointer.attached_item}, not {item}")
+                print(f"WARNING: pointer is owned by {self.pointer_item}, not {item}")
 
     @staticmethod
     def focus_on(tree_item):
