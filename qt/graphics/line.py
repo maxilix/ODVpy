@@ -1,7 +1,8 @@
 from PyQt6.QtCore import QLineF, QPointF
+from PyQt6.QtGui import QPolygonF
 
 from common import Gateway
-from qt.graphics.base import OdvGraphic, OdvEditGraphic
+from qt.graphics.base import OdvGraphic, OdvEditGraphic, GraphicState
 from qt.graphics.line_elem import OdvEditLineElement, OdvFixLineElement, OdvArrowElement
 from qt.graphics.point_elem import OdvEditPointElement
 
@@ -55,20 +56,49 @@ class GraphicLine(OdvGraphic):
 class GraphicMultiLine(OdvEditGraphic):
     grid_alignment = QPointF(0.5, 0.5)
 
-    def __init__(self, item, point_list:list[QPointF]):
+    def __init__(self, item, point_list:list[QPointF] | None = None):
         super().__init__(item)
         self.point_list = point_list
         self.setZValue(10)
 
-        self.line_fix = [OdvFixLineElement(self, QLineF(p1, p2)) for p1, p2 in zip(self.point_list[:-1], self.point_list[1:])]
+        self.line_fix = None
         self.point_edit = []
         self.line_edit = []
 
-        self.shadow = None  # TODO
+        if self.point_list is None:
+            self._state = GraphicState.NoGraph
+        else:
+            self.line_fix = [OdvFixLineElement(self, QLineF(p1, p2)) for p1, p2 in zip(self.point_list[:-1], self.point_list[1:])]
+            self.shadow.setPolygon(QPolygonF())  # TODO
+            self._state = GraphicState.Fix
+
+    def enter_creation_mode(self):
+        if self.state == GraphicState.NoGraph:
+            self._state = GraphicState.Create
+            self.claim_pointer()
+            self.point_edit = []
+            self.line_edit = []
+            self.item.update_both()
+
+    def exit_creation_mode(self, save):
+        if self.state == GraphicState.Create:
+            if save is True and len(self.point_edit) >= 2:
+                # deletable = len(self.point_edit) > 2
+                for p in self.point_edit:
+                    p.deletable = True
+                self.point_edit[0].deletable = False
+                self.point_edit[-1].deletable = False
+                self.shadow.setPolygon(QPolygonF())  # TODO
+                self._state = GraphicState.Edit
+                self.release_pointer()
+            else:
+                self.shadow.setPolygon(QPolygonF())  # TODO
+                pass
+            self.item.update_both()
 
     def enter_edit_mode(self):
-        if self.edit is False:
-            self._edit = True
+        if self.state == GraphicState.Fix:
+            self._state = GraphicState.Edit
             self.remove(self.line_fix)
 
             self.point_edit = [OdvEditPointElement(self, self.point_list[0], deletable=False)] + \
@@ -77,59 +107,94 @@ class GraphicMultiLine(OdvEditGraphic):
 
             self.line_edit = [OdvEditLineElement(self, p1, p2, secable=True) for p1, p2 in
                               zip(self.point_edit[:-1], self.point_edit[1:])]
+            self.item.update_both()
 
     def exit_edit_mode(self, save):
-        if self.edit is True:
-            self._edit = False
+        if self.state == GraphicState.Edit:
+            self._state = GraphicState.Fix
             if save is True:
                 self.point_list = [p.pos() for p in self.point_edit]
             else:
                 # update shadow
-                # self.shadow.setPolygon()
-                pass  # TODO
+                self.shadow.setPolygon(QPolygonF())  # TODO
 
             self.remove(self.point_edit)
             self.remove(self.line_edit)
 
             self.line_fix = [OdvFixLineElement(self, QLineF(p1,p2)) for p1, p2 in zip(self.point_list[:-1], self.point_list[1:])]
+            self.item.update_both()
+
+    def delete(self):
+        match self.state:
+            case GraphicState.NoGraph:
+                pass
+            case GraphicState.Fix:
+                self.remove(self.line_fix)
+            case GraphicState.Edit:
+                self.remove(self.line_edit)
+                self.remove(self.point_edit)
+            case GraphicState.Create:
+                pass
+
+        self.shadow.setPolygon(QPolygonF())
+        self.point_list = None
+        self._state = GraphicState.NoGraph
+        self.item.update_both()
 
     def point_moved(self, moved_point: OdvEditPointElement):
-        n = len(self.point_edit)
-        i = self.point_edit.index(moved_point)
-        if i>0:
-            self.line_edit[i-1].update()
-        if i<n-1:
-            self.line_edit[i].update()
+        if self.state == GraphicState.Edit:
+            n = len(self.point_edit)
+            i = self.point_edit.index(moved_point)
+            if i>0:
+                self.line_edit[i-1].update()
+            if i<n-1:
+                self.line_edit[i].update()
 
-    def add_point(self, position: QPointF, cut_line: OdvEditLineElement):
-        i = self.line_edit.index(cut_line)
+            self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
+        elif self.state == GraphicState.Create:
+            if len(self.point_edit) > 0:
+                self.line_edit[-1].update()
 
-        # create new point
-        new_point = OdvEditPointElement(self, position, deletable=True)
-        self.point_edit.insert(i+1, new_point)
 
-        # update previous line
-        cut_line.p2 = new_point
+    def add_point(self, position: QPointF, cut_line: OdvEditLineElement = None):
+        match self.state:
+            case GraphicState.Create:
+                assert cut_line is None
+                if self.point_edit==[] or position.truncated() != self.point_edit[-1].pos().truncated():
+                    new_point = OdvEditPointElement(self, position.truncated(), deletable=False)
+                    self.point_edit.append(new_point)
+                    new_line = OdvEditLineElement(self, self.point_edit[-1], self.pointer, secable=True)
+                    self.line_edit.append(new_line)
+                    if len(self.point_edit) > 1:
+                        self.line_edit[-2].p2 = new_point
+                else:
+                    print("WARNING, the last point is already at this position.")
 
-        # create next line
-        n = len(self.point_edit)
-        new_line = OdvEditLineElement(self, self.point_edit[i+1], self.point_edit[(i+2)%n], secable=True)
-        self.line_edit.insert(i+1, new_line)
+            case GraphicState.Edit:
+                i = self.line_edit.index(cut_line)
+                # create new point
+                new_point = OdvEditPointElement(self, position, deletable=True)
+                self.point_edit.insert(i+1, new_point)
+                # update previous line
+                cut_line.p2 = new_point
+                # create next line
+                n = len(self.point_edit)
+                new_line = OdvEditLineElement(self, self.point_edit[i+1], self.point_edit[(i+2)%n], secable=True)
+                self.line_edit.insert(i+1, new_line)
 
     def delete_point(self, old_point: OdvEditPointElement):
+        assert self.state == GraphicState.Edit
         n = len(self.point_edit)
         i = self.point_edit.index(old_point)
-
         # remove next line
         old_line = self.line_edit.pop(i)
         self.remove(old_line)
-
         # update previous line
         self.line_edit[i-1].p2 = self.point_edit[(i+1) % n]
-
         # remove old point
         old_point = self.point_edit.pop(i)
         self.remove(old_point)
+
 
 
 class GraphicGateway(OdvGraphic):

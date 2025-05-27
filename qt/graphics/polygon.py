@@ -97,7 +97,7 @@ class GraphicPolygon(OdvEditGraphic):
                 pass
 
         self.shadow.setPolygon(QPolygonF())
-        self.polygon = QPolygonF()
+        self.polygon = None
         self._state = GraphicState.NoGraph
         self.item.update_both()
 
@@ -118,7 +118,7 @@ class GraphicPolygon(OdvEditGraphic):
             if len(self.point_edit) > 1:
                 self.polygon_edit.update()
 
-    def add_point(self, position: QPointF, cut_line: OdvEditLineElement=None):
+    def add_point(self, position: QPointF, cut_line: OdvEditLineElement = None):
         match self.state:
             case GraphicState.Create:
                 assert cut_line is None
