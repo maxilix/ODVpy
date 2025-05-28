@@ -1,5 +1,6 @@
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui import QPolygonF
+from PyQt6.QtWidgets import QGraphicsItem
 
 from qt.graphics.base import OdvEditGraphic, GraphicState
 from qt.graphics.line_elem import OdvEditLineElement
@@ -71,7 +72,7 @@ class GraphicPolygon(OdvEditGraphic):
         if self.state == GraphicState.Edit:
             self._state = GraphicState.Fix
             if save is True:
-                self.polygon = QPolygonF(p.pos() for p in self.point_edit).truncated()
+                self.polygon.swap(QPolygonF(p.pos() for p in self.point_edit).truncated())
             else:
                 # update shadow
                 self.shadow.setPolygon(self.polygon.translated(self.grid_alignment))

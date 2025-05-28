@@ -113,7 +113,8 @@ class GraphicMultiLine(OdvEditGraphic):
         if self.state == GraphicState.Edit:
             self._state = GraphicState.Fix
             if save is True:
-                self.point_list = [p.pos() for p in self.point_edit]
+                self.point_list.clear()
+                self.point_list.extend([p.pos() for p in self.point_edit])
             else:
                 # update shadow
                 self.shadow.setPolygon(QPolygonF())  # TODO

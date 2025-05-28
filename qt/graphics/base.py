@@ -20,7 +20,7 @@ class OdvGraphic(QGraphicsItem):
     def __init__(self, item, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.item = item
-        self.shadow = OdvShadow(item, QPolygonF())
+        self.shadow = OdvShadow(item)
         self.setFlag(self.flags() | QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
         self.setOpacity(self.initial_opacity)
         self.setVisible(False)
@@ -65,7 +65,10 @@ class GraphicState(Enum):
 
 
 class OdvEditGraphic(OdvGraphic):
-    _state = GraphicState.NoGraph
+
+    def __init__(self, item):
+        super().__init__(item)
+        self._state = GraphicState.NoGraph
 
     @property
     def state(self):
@@ -109,7 +112,7 @@ class OdvEditGraphic(OdvGraphic):
 
 
 class OdvShadow(QGraphicsPolygonItem):
-    def __init__(self, tree_item, polygon: QPolygonF):
+    def __init__(self, tree_item, polygon: QPolygonF = QPolygonF()):
         super().__init__()
         self.tree_item = tree_item
         self.setPolygon(polygon)

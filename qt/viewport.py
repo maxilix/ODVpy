@@ -48,13 +48,16 @@ class QViewport(QGraphicsView):
         if event.button() == Qt.MouseButton.MiddleButton:
             self.setCursor(Qt.CursorShape.DragMoveCursor)
             self.drag_position = event.pos()
-        super().mousePressEvent(event)
+        else:
+            super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-        if event.button() == Qt.MouseButton.MiddleButton and self.drag_position is not None:
-            self.setCursor(Qt.CursorShape.ArrowCursor)
-            self.drag_position = None
-        super().mouseReleaseEvent(event)
+        if event.button() == Qt.MouseButton.MiddleButton:
+            if self.drag_position is not None:
+                self.setCursor(Qt.CursorShape.ArrowCursor)
+                self.drag_position = None
+        else:
+            super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
         # Not necessary for every mouse movement, but useful when an item is drawn outside the DVM.
