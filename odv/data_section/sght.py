@@ -90,10 +90,11 @@ class SightObstacle(OdvObject):
         else:
             rop.sector = None
 
-        rop.unk_char_1 = stream.read(UChar)
-        rop.unk_char_2 = stream.read(UChar)
+        rop.unk_char_1 = stream.read(UChar)  # [not tested] obstruction to view (0 or 1 ... some other values appear)
+        rop.unk_char_2 = stream.read(UChar)  # [not tested] obstruction for object (like dynamite)
         rop.unk_char_3 = stream.read(UChar)
         rop.unk_char_4 = stream.read(UChar)
+        # unk_char_i are generally 0 or 1
         # unk_char_i == 1, 0, 1, 0   =>   the obstacle is roughly defined and contains sub-obstacles
 
 
