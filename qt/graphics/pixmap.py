@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QGraphicsRectItem, QGraphicsItem
 
 from common import MaskImage
 from qt.graphics import OdvPen, OdvLightBrush
-from qt.graphics.base import OdvGraphic, OdvShadow, OdvEditGraphic
+from qt.graphics.base import OdvGraphic, OdvShadow, OdvEditGraphic, GraphicState
 from qt.graphics.pixmap_elem import OdvFixPixmapElement, OdvFixMaskElement, OdvEditMaskElement, OdvEditCardinalElement
 
 
@@ -34,9 +34,11 @@ class GraphicMask(OdvEditGraphic):
         self.shadow = OdvShadow(item, QPolygonF([QPointF(x,y) for x,y in self.mask_image.hull()])
                                 .translated(self.pos() + QPointF(0.5,0.5)))
 
+        self._state = GraphicState.Fix
+
     def enter_edit_mode(self):
-        if self.edit is False:
-            self._edit = True
+        if self.state == GraphicState.Fix:
+            self._state = GraphicState.Edit
 
             self.remove(self.mask_fix)
 
@@ -56,8 +58,8 @@ class GraphicMask(OdvEditGraphic):
             self.rect_edit.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIgnoresParentOpacity)
 
     def exit_edit_mode(self, save):
-        if self.edit is True:
-            self._edit = False
+        if self.state == GraphicState.Edit:
+            self._state = GraphicState.Fix
             if save is True:
                 self.copy_mask_image.crop_to_view()
                 # save mask_image in model

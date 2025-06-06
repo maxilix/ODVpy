@@ -335,7 +335,7 @@ class QVisibilitySIW(VISILAYOUT3):
 
     def visibility_checkbox_clicked(self):
         self.visibility_checkbox.setTristate(False)
-        self.visibility_checkbox.update()
+        # self.visibility_checkbox.update()
         for graphic in self.graphics:
             graphic.setVisible(self.visibility_checkbox.isChecked())
         self.update_required.emit()

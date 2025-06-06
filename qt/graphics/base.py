@@ -47,12 +47,12 @@ class OdvGraphic(QGraphicsItem):
     def setVisible(self, visible: bool):
         if visible != self.isVisible():
             super().setVisible(visible)
-            self.item.update_both()
+            self.item.update()
 
     def setOpacity(self, opacity: float):
         if opacity != self.opacity():
             super().setOpacity(opacity)
-            self.item.update_both()
+            self.item.update()
 
 
 
