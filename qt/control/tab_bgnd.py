@@ -23,7 +23,7 @@ class BgndInspector(Inspector):
         # BgndInspector can only be connected to a single item
         self.item = None
 
-        self.visibility_siw = QVisibilitySIW(opacity_slider=True)
+        self.visibility_siw = QVisibilitySIW()
         self.visibility_siw.update_required.connect(self.update)
         self.main_layout.addWidget(self.visibility_siw)
 
@@ -80,7 +80,7 @@ class BgndInspector(Inspector):
 
         rebuild_minimap_layout.addStretch()
 
-        self.change_image_button = QPushButton("Rebuild Minimap from the Map")
+        self.change_image_button = QPushButton("Rebuild Minimap from the DVM")
         self.change_image_button.clicked.connect(self.rebuild_minimap_clicked)
         rebuild_minimap_layout.addWidget(self.change_image_button)
 
@@ -108,7 +108,7 @@ class BgndInspector(Inspector):
                 self.update()
 
     def rebuild_minimap_clicked(self):
-        QErrorBox("This tool rebuilds a minimap from the map,\nbut is not yet available.").exec()
+        QErrorBox("This tool will allow to rebuild the minimap from the map,\nbut is not yet available.").exec()
 
     def dvm_line_edit_changed(self):
         self.item.bgnd.dvm_filename = self.dvm_line_edit.text()

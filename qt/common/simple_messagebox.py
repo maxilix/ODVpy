@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QMessageBox
 class QInfoBox(QMessageBox):
     def __init__(self, info):
         super().__init__()
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.SubWindow)
+        # self.setWindowFlags(self.windowFlags() | Qt.WindowType.SubWindow)  # Deprecated Warning
         self.setStyleSheet("""
             QMessageBox {
                 border: 2px solid black;
@@ -20,7 +20,7 @@ class QInfoBox(QMessageBox):
 class QErrorBox(QMessageBox):
     def __init__(self, error):
         super().__init__()
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.SubWindow)
+        # self.setWindowFlags(self.windowFlags() | Qt.WindowType.SubWindow)  # Deprecated Warning
         self.setStyleSheet("""
             QMessageBox {
                 border: 2px solid black;

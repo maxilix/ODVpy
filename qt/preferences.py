@@ -15,7 +15,7 @@ class QPreferencesDialog(QDialog):
         self.setMinimumSize(1000, 400)
         # self.setGeometry(50, 30, 1000, 400)
 
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint)
+        # self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint)
         self.setStyleSheet("QDialog {border: 1px solid gray;}")
 
         main_layout = QVBoxLayout(self)

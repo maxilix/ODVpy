@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QAction, QCursor
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QToolButton, QCheckBox, QSlider, QStyle, \
-    QPushButton, QSpinBox, QGridLayout, QMessageBox
+    QPushButton, QSpinBox, QGridLayout, QMessageBox, QMenu
 
 from qt.common.utils import bounding_rect_of
 from qt.graphics.base import GraphicState
@@ -330,8 +331,74 @@ class VISILAYOUT3(QSubInspectorWidget):
             self.save_button = None
             self.cancel_button = None
 
+class VISILAYOUT4(QSubInspectorWidget):
+    def __init__(self, *, title: str = "Visilibity"):
+        super().__init__(None)
+        self.graphics = []
 
-class QVisibilitySIW(VISILAYOUT3):
+        l1_layout = QHBoxLayout()
+        l1_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.visibility_checkbox = QCheckBox()
+        self.visibility_checkbox.setTristate(False)
+        self.visibility_checkbox.clicked.connect(self.visibility_checkbox_clicked)
+        l1_layout.addWidget(self.visibility_checkbox)
+
+        self.title_label = QLabel(title)
+        l1_layout.addWidget(self.title_label)
+
+        l1_layout.addStretch()
+
+        self.localise_button = QPushButton("Localise")
+        self.localise_button.clicked.connect(self.localise_button_clicked)
+        l1_layout.addWidget(self.localise_button)
+
+        self.settings_button = QToolButton(self)
+        self.settings_button.setArrowType(Qt.ArrowType.DownArrow)
+        self.settings_button.clicked.connect(self.open_option_menu)
+        l1_layout.addWidget(self.settings_button)
+
+
+        l2_layout = QHBoxLayout()
+        l2_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.opacity_slider = QSlider(Qt.Orientation.Horizontal)
+        self.opacity_slider.setMinimum(0)
+        self.opacity_slider.setMaximum(100)
+        self.opacity_slider.valueChanged.connect(self.opacity_slider_changed)
+        l2_layout.addWidget(self.opacity_slider)
+
+        self.opacity_reset_button = QToolButton()
+        self.opacity_reset_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload))
+        self.opacity_reset_button.clicked.connect(self.opacity_reset_button_clicked)
+        l2_layout.addWidget(self.opacity_reset_button)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.addLayout(l1_layout)
+        main_layout.addLayout(l2_layout)
+
+
+    def open_option_menu(self):
+        option_menu = QMenu()
+        a_create = QAction("Create")
+        a_edit = QAction("Edit")
+        a_save = QAction("Save")
+        a_cancel = QAction("Cancel")
+        a_delete = QAction("Delete")
+        # a_finalize.triggered.connect(lambda: self.pointer_item.exit_creation_mode(save=True))
+        option_menu.addAction(a_create)
+        option_menu.addAction(a_edit)
+        option_menu.addAction(a_save)
+        option_menu.addAction(a_cancel)
+        option_menu.addAction(a_delete)
+        option_menu.exec(QCursor.pos())
+
+
+
+
+
+class QVisibilitySIW(VISILAYOUT4):
 
     def visibility_checkbox_clicked(self):
         self.visibility_checkbox.setTristate(False)
@@ -416,51 +483,51 @@ class QVisibilitySIW(VISILAYOUT3):
         else:
             self.visibility_checkbox.setCheckState(Qt.CheckState.Unchecked)
 
-        if self.opacity_slider is not None:
-            min_opacity = min([int(100 * graphic.opacity()) for graphic in self.graphics])
-            self.opacity_slider.setValue(min_opacity)
+        # if self.opacity_slider is not None:
+        min_opacity = min([int(100 * graphic.opacity()) for graphic in self.graphics])
+        self.opacity_slider.setValue(min_opacity)
 
-        if self.edit_button is not None:
-            if len(self.graphics) == 1:
-                match self.graphics[0].state:
-                    case GraphicState.Fix:
-                        self.edit_button.setText("Edit")
-                        self.edit_button.setEnabled(True)
-                        self.save_button.setText("Save")
-                        self.save_button.setDisabled(True)
-                        self.cancel_button.setText("Cancel")
-                        self.cancel_button.setDisabled(True)
-                    case GraphicState.Edit:
-                        self.edit_button.setText("Edit")
-                        self.edit_button.setDisabled(True)
-                        self.save_button.setText("Save")
-                        self.save_button.setEnabled(True)
-                        self.cancel_button.setText("Cancel")
-                        self.cancel_button.setEnabled(True)
-                    case GraphicState.NoGraph:
-                        self.edit_button.setText("Create")
-                        self.edit_button.setEnabled(True)
-                        self.save_button.setText("Save")
-                        self.save_button.setDisabled(True)
-                        self.cancel_button.setText("Cancel")
-                        self.cancel_button.setDisabled(True)
-                    case GraphicState.Create:
-                        self.edit_button.setText("Create")
-                        self.edit_button.setDisabled(True)
-                        self.save_button.setText("Save")
-                        self.save_button.setDisabled(True)
-                        self.cancel_button.setText("Cancel")
-                        self.cancel_button.setEnabled(True)
-
-
-            else:
-                pass
-                # self.edit_button.setText("Edit All")
-                # self.edit_button.setDisabled(all(graphic.edit for graphic in self.graphics))
-                # self.save_button.setText("Save All")
-                # self.save_button.setEnabled(any([graphic.edit for graphic in self.graphics]))
-                # self.cancel_button.setText("Cancel All")
-                # self.cancel_button.setEnabled(any([graphic.edit for graphic in self.graphics]))
+        # if self.edit_button is not None:
+        #     if len(self.graphics) == 1:
+        #         match self.graphics[0].state:
+        #             case GraphicState.Fix:
+        #                 self.edit_button.setText("Edit")
+        #                 self.edit_button.setEnabled(True)
+        #                 self.save_button.setText("Save")
+        #                 self.save_button.setDisabled(True)
+        #                 self.cancel_button.setText("Cancel")
+        #                 self.cancel_button.setDisabled(True)
+        #             case GraphicState.Edit:
+        #                 self.edit_button.setText("Edit")
+        #                 self.edit_button.setDisabled(True)
+        #                 self.save_button.setText("Save")
+        #                 self.save_button.setEnabled(True)
+        #                 self.cancel_button.setText("Cancel")
+        #                 self.cancel_button.setEnabled(True)
+        #             case GraphicState.NoGraph:
+        #                 self.edit_button.setText("Create")
+        #                 self.edit_button.setEnabled(True)
+        #                 self.save_button.setText("Save")
+        #                 self.save_button.setDisabled(True)
+        #                 self.cancel_button.setText("Cancel")
+        #                 self.cancel_button.setDisabled(True)
+        #             case GraphicState.Create:
+        #                 self.edit_button.setText("Create")
+        #                 self.edit_button.setDisabled(True)
+        #                 self.save_button.setText("Save")
+        #                 self.save_button.setDisabled(True)
+        #                 self.cancel_button.setText("Cancel")
+        #                 self.cancel_button.setEnabled(True)
+        #
+        #
+        #     else:
+        #         pass
+        #         # self.edit_button.setText("Edit All")
+        #         # self.edit_button.setDisabled(all(graphic.edit for graphic in self.graphics))
+        #         # self.save_button.setText("Save All")
+        #         # self.save_button.setEnabled(any([graphic.edit for graphic in self.graphics]))
+        #         # self.cancel_button.setText("Cancel All")
+        #         # self.cancel_button.setEnabled(any([graphic.edit for graphic in self.graphics]))
 
 
 
