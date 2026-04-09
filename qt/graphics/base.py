@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 from PyQt6.QtCore import QRectF, QPointF, Qt
 from PyQt6.QtGui import QColor, QBrush, QPolygonF
@@ -70,6 +71,7 @@ class OdvEditGraphic(OdvGraphic):
     def __init__(self, item):
         super().__init__(item)
         self._state = GraphicState.NoGraph
+        self._followers = []
 
     @property
     def state(self):
@@ -86,10 +88,13 @@ class OdvEditGraphic(OdvGraphic):
     def release_pointer(self):
         return self.scene().release_pointer(self)
 
-    def enter_creation_mode(self):
+    def enter_creation_mode(self, followers:List[OdvEditGraphic]):
         raise NotImplementedError
 
     def exit_creation_mode(self, save):
+        raise NotImplementedError
+
+    def copy_from(self, graphic_item):
         raise NotImplementedError
 
     def enter_edit_mode(self):

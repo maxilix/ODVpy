@@ -524,10 +524,8 @@ class QGeometrySIW(QSubInspectorWidget):
         self.update_required.emit()
 
     def create_triggered(self):
-        for graphic in self.graphics:
-            if graphic.state == GraphicState.NoGraph:
-                graphic.enter_creation_mode()
-                # graphic.setVisible(True)
+        g = [graphic for graphic in self.graphics if graphic.state == GraphicState.NoGraph]
+        g[0].enter_creation_mode(followers=g[1:])
         self.update_required.emit()
 
     def copy_from_triggered(self, graphic_item):

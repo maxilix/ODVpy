@@ -28,8 +28,9 @@ class GraphicPolygon(OdvEditGraphic):
             self.shadow.setPolygon(self.polygon.translated(self.grid_alignment))
             self._state = GraphicState.Fix
 
-    def enter_creation_mode(self):
+    def enter_creation_mode(self, followers):
         assert self.state == GraphicState.NoGraph
+        assert all(f.state == GraphicState.NoGraph for f in followers)
         if self.claim_pointer():
             self.setVisible(True)
             self._state = GraphicState.Create
@@ -37,12 +38,12 @@ class GraphicPolygon(OdvEditGraphic):
             self.line_edit = []
             self.polygon_edit = None
             self.item.update_both()
+            self._followers = followers
         else:
             print(f"WARNING: {self} cannot obtain pointer")
 
 
     def exit_creation_mode(self, save):
-        # print("exit creation mode")
         if self.state == GraphicState.Create:
             if save is True and len(self.point_edit) >= 3:
                 self.line_edit[-1].p2 = self.point_edit[0]
@@ -54,10 +55,21 @@ class GraphicPolygon(OdvEditGraphic):
                 # self.polygon = QPolygonF(p.pos() for p in self.point_edit).truncated()
                 self._state = GraphicState.Edit
                 self.release_pointer()
+                for follower in self._followers:
+                    follower.point_edit = [OdvEditPointElement(follower, p.pos(), deletable=deletable) for p in self.point_edit]
+                    follower.polygon_edit = OdvEditPolygonShapeElement(follower, follower.point_edit, movable=True)
+                    follower.line_edit = [OdvEditLineElement(follower, p1, p2, secable=True) for p1, p2 in
+                                          zip(follower.point_edit, follower.point_edit[1:] + [follower.point_edit[0]])]
+                    follower.shadow.setPolygon(QPolygonF(p.pos() for p in follower.point_edit))
+                    follower._state = GraphicState.Edit
+                    follower.item.update()
+
             else:
+                # TODO Cancel creation is not handle
                 # update shadow
                 # self.shadow.setPolygon(self.polygon.translated(self.grid_alignment))
                 pass
+            self._followers = []
             self.item.update_both()
 
     def enter_edit_mode(self):

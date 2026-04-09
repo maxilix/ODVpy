@@ -29,9 +29,18 @@ class QGenericTreeItem(QTreeWidgetItem):
         self.setBold(False)
         self.setColor()
         title = self.name
-        if any([graphic.state == GraphicState.Edit for graphic in self._graphics if isinstance(graphic, OdvEditGraphic)]):
-            title += " -edit-"
-            self.setBold(True)
+
+        # if any([graphic.state == GraphicState.Edit for graphic in self._graphics if isinstance(graphic, OdvEditGraphic)]):
+        #     title += " -edit-"
+        #     self.setBold(True)
+        if len(self._graphics) > 0:
+            if isinstance(self._graphics[0], OdvEditGraphic):
+                title += f" {self._graphics[0].state.name}"
+
+
+
+
+
         # if self.inspector.valid_state is False:
         #     title += " -INVALID-"
         #     self.setBold(True)

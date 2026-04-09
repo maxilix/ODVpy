@@ -88,7 +88,8 @@ class ObstacleInspector(Inspector):
             #     print(f"   {p}")
             # print()
 
-            self.geometry_info_label.setText(f"The current saved polygon has {n} points.\n{"WARNING, polygons larger than 20 points cannot be dragged" if n > 20 else ""}")
+            self.geometry_info_label.setText(f"The current saved polygon has {n} points.\n{"WARNING, polygons larger than 20 points cannot be dragged du to performance issues." if n > 20 else ""}")
+            # TODO enable drag of large polynom
         else:
             self.geometry_info_label.setText(f"")
 
@@ -97,7 +98,7 @@ class GraphicObstacle(GraphicPolygon):
     thin_pen = OdvThinPen(QColor(255, 90, 40))
     light_brush = OdvLightBrush(QColor(255, 90, 40))
     high_brush = OdvHighBrush(QColor(255, 90, 40))
-    initial_opacity = 0.8
+    initial_opacity = 1
 
 
 class ObstacleItem(QGenericTreeItem):

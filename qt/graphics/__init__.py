@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPen, QBrush
 
-THIN_PEN_WIDTH = 0.3
+THIN_PEN_WIDTH = 0.4
 LIGHT_BRUSH_ALPHA = 32
 HIGH_BRUSH_ALPHA = 96
 
