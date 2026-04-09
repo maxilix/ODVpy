@@ -67,9 +67,9 @@ class QSubInspectorWidget(QWidget):
 #
 #             visibility_layout.addStretch()
 #
-#         self.localise_button = QPushButton("Localise")
-#         self.localise_button.clicked.connect(self.localise_button_clicked)
-#         visibility_layout.addWidget(self.localise_button)
+#         self.localize_button = QPushButton("Localize")
+#         self.localize_button.clicked.connect(self.localize_button_clicked)
+#         visibility_layout.addWidget(self.localize_button)
 #
 #         main_layout.addLayout(visibility_layout)
 #
@@ -187,18 +187,18 @@ class QSubInspectorWidget(QWidget):
 #         c3_layout = QVBoxLayout()
 #         c3_layout.setContentsMargins(0, 0, 0, 0)
 #
-#         localise_layout = QHBoxLayout()
+#         localize_layout = QHBoxLayout()
 #
-#         self.localise_button = QPushButton("Localise")
-#         self.localise_button.clicked.connect(self.localise_button_clicked)
-#         localise_layout.addWidget(self.localise_button)
-#         localise_layout.addStretch()
+#         self.localize_button = QPushButton("Localize")
+#         self.localize_button.clicked.connect(self.localize_button_clicked)
+#         localize_layout.addWidget(self.localize_button)
+#         localize_layout.addStretch()
 #         delete_button = QToolButton()
 #         delete_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TabCloseButton))
 #         # delete_button.clicked.connect()
-#         localise_layout.addWidget(delete_button)
+#         localize_layout.addWidget(delete_button)
 #
-#         c3_layout.addLayout(localise_layout)
+#         c3_layout.addLayout(localize_layout)
 #
 #         if edit_buttons is True:
 #             self.edit_button = QPushButton("Edit")
@@ -310,17 +310,17 @@ class QSubInspectorWidget(QWidget):
 #         # position_S_button.clicked.connect()
 #         main_layout.addWidget(position_S_button, 1, 5)
 #
-#         localise_layout = QHBoxLayout()
-#         localise_layout.setContentsMargins(0, 0, 0, 0)
+#         localize_layout = QHBoxLayout()
+#         localize_layout.setContentsMargins(0, 0, 0, 0)
 #         position_E_button = QToolButton()
 #         position_E_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowRight))
 #         # position_E_button.clicked.connect()
-#         localise_layout.addWidget(position_E_button)
-#         localise_layout.addStretch(0)
-#         self.localise_button = QPushButton("Localise")
-#         self.localise_button.clicked.connect(self.localise_button_clicked)
-#         localise_layout.addWidget(self.localise_button)
-#         main_layout.addLayout(localise_layout, 1, 6)
+#         localize_layout.addWidget(position_E_button)
+#         localize_layout.addStretch(0)
+#         self.localize_button = QPushButton("Localize")
+#         self.localize_button.clicked.connect(self.localize_button_clicked)
+#         localize_layout.addWidget(self.localize_button)
+#         main_layout.addLayout(localize_layout, 1, 6)
 #
 #         if edit_buttons is True:
 #             save_cancel_layout = QHBoxLayout()
@@ -355,8 +355,8 @@ class QGeometrySIW(QSubInspectorWidget):
 
 
     def init_actions(self):
-        self.a_localise = QAction("Localise", self)
-        self.a_localise.triggered.connect(self.localise_triggered)
+        self.a_localize = QAction("Localize", self)
+        self.a_localize.triggered.connect(self.localize_triggered)
         self.a_create = QAction("Create", self)
         self.a_create.triggered.connect(self.create_triggered)
         self.m_copy_from = QMenu("Copy from")
@@ -374,7 +374,7 @@ class QGeometrySIW(QSubInspectorWidget):
 
         self.option_menu = QMenu(self)
         self.option_menu.setToolTipsVisible(True)
-        self.option_menu.addAction(self.a_localise)
+        self.option_menu.addAction(self.a_localize)
         self.option_menu.addSeparator()
         self.option_menu.addAction(self.a_create)
         self.option_menu.addMenu(self.m_copy_from)
@@ -399,7 +399,7 @@ class QGeometrySIW(QSubInspectorWidget):
         l1_layout.addWidget(self.visibility_checkbox)
 
         self.geometry_name_label = QClickableLabel(self.geometry_name)
-        self.geometry_name_label.double_clicked.connect(self.a_localise.trigger)
+        self.geometry_name_label.double_clicked.connect(self.a_localize.trigger)
         l1_layout.addWidget(self.geometry_name_label)
 
         self.opacity_slider = QSlider(Qt.Orientation.Horizontal)
@@ -516,7 +516,7 @@ class QGeometrySIW(QSubInspectorWidget):
         assert all([io[0] == e for e in io[1:]])
         self.opacity_slider.setValue(int(100 * io[0]))
 
-    def localise_triggered(self):
+    def localize_triggered(self):
         [graphic.setVisible(True) for graphic in self.graphics]
         rect = bounding_rect_of(self.graphics)
         # access the scene using the first graphic
@@ -598,19 +598,19 @@ class QGeometrySIW(QSubInspectorWidget):
 
         # Localize Action
         if (n:=[graphic.state != GraphicState.NoGraph for graphic in self.graphics].count(True)) > 0:
-            self.a_localise.setEnabled(True)
-            localise_tool_tip = f"Localise the {n} existing {self.geometry_name}{"s" if n > 1 else ""}:"
+            self.a_localize.setEnabled(True)
+            localize_tool_tip = f"Localize the {n} existing {self.geometry_name}{"s" if n > 1 else ""}"
             for graphic in self.graphics:
                 if graphic.state != GraphicState.NoGraph:
-                    localise_tool_tip += f"\n - {graphic.item.name}"
-            self.a_localise.setToolTip(localise_tool_tip)
+                    localize_tool_tip += f"\n - {graphic.item.name}"
+            self.a_localize.setToolTip(localize_tool_tip)
         else:
-            self.a_localise.setEnabled(False)
+            self.a_localize.setEnabled(False)
 
         # Create Action
         if (n:=[graphic.state == GraphicState.NoGraph for graphic in self.graphics].count(True)) > 0:
             self.a_create.setEnabled(True)
-            create_tool_tip = f"Create the {n} missing {self.geometry_name}{"s" if n > 1 else ""}:"
+            create_tool_tip = f"Create the {n} missing {self.geometry_name}{"s" if n > 1 else ""}"
             for graphic in self.graphics:
                 if graphic.state == GraphicState.NoGraph:
                     create_tool_tip += f"\n - {graphic.item.name}"
@@ -621,7 +621,7 @@ class QGeometrySIW(QSubInspectorWidget):
         # Edit Action
         if (n:=[graphic.state == GraphicState.Fix for graphic in self.graphics].count(True)) > 0:
             self.a_edit.setEnabled(True)
-            edit_tool_tip = f"Edit the {n} {self.geometry_name}{"s" if n > 1 else ""} currently in fix mode:"
+            edit_tool_tip = f"Edit the {n} {self.geometry_name}{"s" if n > 1 else ""} currently in fix mode"
             for graphic in self.graphics:
                 if graphic.state == GraphicState.Fix:
                     edit_tool_tip += f"\n - {graphic.item.name}"
@@ -632,7 +632,7 @@ class QGeometrySIW(QSubInspectorWidget):
         # Save Action
         if (n:=[graphic.state == GraphicState.Edit for graphic in self.graphics].count(True)) > 0:
             self.a_save.setEnabled(True)
-            save_tool_tip = f"Save the {n} {self.geometry_name}{"s" if n > 1 else ""} currently in edit mode:"
+            save_tool_tip = f"Save the {n} {self.geometry_name}{"s" if n > 1 else ""} currently in edit mode"
             for graphic in self.graphics:
                 if graphic.state == GraphicState.Edit:
                     save_tool_tip += f"\n - {graphic.item.name}"
@@ -643,7 +643,7 @@ class QGeometrySIW(QSubInspectorWidget):
         # Cancel Action
         if (n:=[graphic.state == GraphicState.Edit for graphic in self.graphics].count(True)) > 0:
             self.a_cancel.setEnabled(True)
-            cancel_tool_tip = f"Cancel the {n} {self.geometry_name}{"s" if n > 1 else ""} currently in edit mode:"
+            cancel_tool_tip = f"Cancel the {n} {self.geometry_name}{"s" if n > 1 else ""} currently in edit mode"
             for graphic in self.graphics:
                 if graphic.state == GraphicState.Edit:
                     cancel_tool_tip += f"\n - {graphic.item.name}"
@@ -654,7 +654,7 @@ class QGeometrySIW(QSubInspectorWidget):
         # Delete Action
         if (n:=[graphic.state != GraphicState.NoGraph for graphic in self.graphics].count(True)) > 0:
             self.a_delete.setEnabled(True)
-            delete_tool_tip = f"Delete the {n} exiting {self.geometry_name}{"s" if n > 1 else ""}:"
+            delete_tool_tip = f"Delete the {n} exiting {self.geometry_name}{"s" if n > 1 else ""}"
             for graphic in self.graphics:
                 if graphic.state != GraphicState.NoGraph:
                     delete_tool_tip += f"\n - {graphic.item.name}"

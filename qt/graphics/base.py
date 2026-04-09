@@ -40,8 +40,8 @@ class OdvGraphic(QGraphicsItem):
             child.update(rect)
         super().update(rect)
 
-    # Todo remove localise, cause item is always localised by group (eventually group of 1)
-    def localise(self):
+    # Todo remove localize, cause item is always localized by group (eventually group of 1)
+    def localize(self):
         raise DeprecationWarning
         self.scene().move_to_item(self)
 

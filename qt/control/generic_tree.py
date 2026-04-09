@@ -63,7 +63,7 @@ class QGenericTreeItem(QTreeWidgetItem):
             self.update_inspector()
 
     def double_clicked(self):
-        self.localise_graphics()
+        self.localize_graphics()
 
     @property
     def name(self):
@@ -100,7 +100,7 @@ class QGenericTreeItem(QTreeWidgetItem):
             g.setVisible(False)
         self.setCheckState(0, Qt.CheckState.Unchecked)
 
-    def localise_graphics(self):
+    def localize_graphics(self):
         if self._graphics:
             rect = bounding_rect_of(self._graphics)
             if not rect.isEmpty():

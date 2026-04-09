@@ -95,9 +95,9 @@ class QGraphicVisibilityWidget(QWidget):
         self.opacity_slider.valueChanged.connect(self.opacity_slider_changed)
         main_layout.addWidget(self.opacity_slider)
 
-        self.localise_button = QPushButton("Localise")
-        self.localise_button.clicked.connect(self.localise_button_clicked)
-        main_layout.addWidget(self.localise_button)
+        self.localize_button = QPushButton("Localize")
+        self.localize_button.clicked.connect(self.localize_button_clicked)
+        main_layout.addWidget(self.localize_button)
 
         # self.change_image_button = QPushButton("Change Image")
         # self.change_image_button.clicked.connect(self.change_image_button_clicked)
@@ -117,11 +117,11 @@ class QGraphicVisibilityWidget(QWidget):
     def opacity_slider_changed(self):
         self.map_graphic_item.setOpacity(self.opacity_slider.value() / 100)
 
-    def localise_button_clicked(self):
+    def localize_button_clicked(self):
         if not self.visibility_checkbox.isChecked():
             self.visibility_checkbox.click()
 
-        self.map_graphic_item.localise()
+        self.map_graphic_item.localize()
 
     # def change_image_button_clicked(self):
     #     dialog = QFileDialog(self)

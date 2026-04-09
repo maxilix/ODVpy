@@ -100,7 +100,7 @@ class QScene(QGraphicsScene):
                 x = floor(event.scenePos().x())
                 y = floor(event.scenePos().y())
                 save_pos = QAction(f"({x}, {y})")
-                save_pos.triggered.connect(lambda state: self.tool_bar.set_xy_localise(x, y))
+                save_pos.triggered.connect(lambda state: self.tool_bar.set_xy_localize(x, y))
                 menu.addAction(save_pos)
                 focus_on_menu = menu.addMenu("Focus on")
                 focus_on_menu.addActions(actions)
@@ -149,7 +149,7 @@ class QScene(QGraphicsScene):
     def focus_on(tree_item):
         tree_item.focus()
         tree_item.show_graphics()
-        tree_item.localise_graphics()
+        tree_item.localize_graphics()
 
     # def new_centered_line(self, scale:float):
     #     r: QRectF = self.viewport().current_visible_scene_rect()

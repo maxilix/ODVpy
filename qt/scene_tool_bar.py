@@ -13,33 +13,33 @@ class QSceneToolBar(QWidget):
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
-        localise_group = QGroupBox()
-        localise_layout = QVBoxLayout(localise_group)
-        # localise_layout.setContentsMargins(0, 0, 0, 0)
+        localize_group = QGroupBox()
+        localize_layout = QVBoxLayout(localize_group)
+        # localize_layout.setContentsMargins(0, 0, 0, 0)
 
 
-        xy_localise_layout = QHBoxLayout()
+        xy_localize_layout = QHBoxLayout()
         self.position_x = QSpinBox()
         # self.position_x.setPrefix("x")
         self.position_x.setMaximum(9999)
         self.position_x.setValue(800)
-        xy_localise_layout.addWidget(self.position_x)
+        xy_localize_layout.addWidget(self.position_x)
         self.position_y = QSpinBox()
         # self.position_y.setPrefix("y")
         self.position_y.setMaximum(9999)
         self.position_y.setValue(800)
-        xy_localise_layout.addWidget(self.position_y)
-        localise_layout.addLayout(xy_localise_layout)
+        xy_localize_layout.addWidget(self.position_y)
+        localize_layout.addLayout(xy_localize_layout)
 
         self.localize_button = QPushButton('Localize')
-        self.localize_button.clicked.connect(self.localise)
-        localise_layout.addWidget(self.localize_button)
+        self.localize_button.clicked.connect(self.localize)
+        localize_layout.addWidget(self.localize_button)
 
-        main_layout.addWidget(localise_group)
+        main_layout.addWidget(localize_group)
 
         main_layout.addStretch()
 
-    def localise(self):
+    def localize(self):
         self.scene.move_to(self.position_x.value(), self.position_y.value())
 
     def keyPressEvent(self, event):
@@ -49,8 +49,8 @@ class QSceneToolBar(QWidget):
                 self.position_y.selectAll()
             elif self.position_y.hasFocus():
                 self.position_y.clearFocus()
-                self.localise()
+                self.localize()
 
-    def set_xy_localise(self, x, y):
+    def set_xy_localize(self, x, y):
         self.position_x.setValue(floor(x))
         self.position_y.setValue(floor(y))

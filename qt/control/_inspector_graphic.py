@@ -19,8 +19,8 @@ class GraphicSubInspector(SubInspector):
         self.opacity_slider.setMaximum(100)
         self.opacity_slider.setValue(100)
         self.opacity_slider.valueChanged.connect(self.opacity_slider_changed)
-        self.localise_button = QPushButton("Localise")
-        self.localise_button.clicked.connect(self.localise_button_clicked)
+        self.localize_button = QPushButton("Localize")
+        self.localize_button.clicked.connect(self.localize_button_clicked)
 
         black = QColor(0, 0, 0)
         self.pen = OdvThinPen(black)
@@ -28,8 +28,8 @@ class GraphicSubInspector(SubInspector):
         self.high_brush = OdvHighBrush(black)
 
     def init_actions(self):
-        self.a_localise = QAction("Localise")
-        self.a_localise.triggered.connect(self.localise_button_clicked)
+        self.a_localize = QAction("Localize")
+        self.a_localize.triggered.connect(self.localize_button_clicked)
 
         self.a_show = QAction("Show")
         self.a_show.triggered.connect(self.show)
@@ -75,8 +75,8 @@ class GraphicSubInspector(SubInspector):
         self.graphic.setOpacity(self.opacity_slider.value() / 100)
         # self.update()
 
-    def localise_button_clicked(self):
-        self.graphic.localise()
+    def localize_button_clicked(self):
+        self.graphic.localize()
         self.visibility_checkbox.setChecked(True)
         self.global_update()
 
@@ -112,7 +112,7 @@ class GraphicSubInspector(SubInspector):
 
     def tree_menu_common_actions(self):
         rop = []
-        rop.append(self.a_localise)
+        rop.append(self.a_localize)
         if isinstance(self, GeometrySubInspector):
             if self.edit is True:
                 rop.append(self.a_save)
@@ -156,7 +156,7 @@ class GeometrySubInspector(GraphicSubInspector):
         l1.addLayout(self.edit_layout)
         l1.addStretch(1)
         l1.addWidget(self.visibility_checkbox)
-        l1.addWidget(self.localise_button)
+        l1.addWidget(self.localize_button)
         self.main_layout.addLayout(l1)
 
         self.init_graphic(color, graphic_type)
