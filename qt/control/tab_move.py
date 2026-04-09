@@ -1,9 +1,9 @@
-from PyQt6.QtGui import QColor
+from PyQt6.QtGui import QColor, QPolygonF
 from PyQt6.QtWidgets import QLabel
 
 from odv.data_section.move import Layer, Sector, Obstacle, Move
 from qt.control.control_section import QSectionControl
-from qt.control.generic_inspector import Inspector, QVisibilitySIW
+from qt.control.generic_inspector import Inspector, QGeometrySIW
 from qt.control.generic_tree import QGenericTreeItem
 from qt.graphics import GraphicPolygon, OdvThinPen, OdvLightBrush, OdvHighBrush
 
@@ -62,18 +62,24 @@ class ObstacleInspector(Inspector):
     def __init__(self):
         super().__init__()
 
-        self.visibility_siw = QVisibilitySIW(title="Polygon")
-        # self.visibility_siw.update_required.connect(self.update_both)
-        self.main_layout.addWidget(self.visibility_siw)
+        self.obstacle_siw = QGeometrySIW(geometry_name="Polygon")
+        self.obstacle_siw.update_required.connect(self.update_both)
+        self.obstacle_siw.value_changed.connect(self.update_model)
+        self.main_layout.addWidget(self.obstacle_siw)
 
         self.geometry_info_label = QLabel()
         self.main_layout.addWidget(self.geometry_info_label)
 
         self.main_layout.addStretch()
 
+    def update_model(self):
+        for item in self.items:
+            item.obstacle.poly = QPolygonF(item.graphic_obstacle.polygon)
+
+
     def connect_to(self, new_items):
         super().connect_to(new_items)
-        self.visibility_siw.connect_to([item.graphic_obstacle for item in self.items])
+        self.obstacle_siw.connect_to([item.graphic_obstacle for item in self.items])
 
         if len(self.items) == 1:
             n = len(self.items[0].obstacle.poly)
@@ -91,6 +97,7 @@ class GraphicObstacle(GraphicPolygon):
     thin_pen = OdvThinPen(QColor(255, 90, 40))
     light_brush = OdvLightBrush(QColor(255, 90, 40))
     high_brush = OdvHighBrush(QColor(255, 90, 40))
+    initial_opacity = 0.8
 
 
 class ObstacleItem(QGenericTreeItem):

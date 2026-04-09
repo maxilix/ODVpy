@@ -8,7 +8,7 @@ from odv.section import Section
 
 
 class Obstacle(OdvObject):
-    poly: QPolygonF
+    _poly: QPolygonF
 
     def __str__(self):
         return f"Obstacle {self.parent.sector_id + self.i + 1}"
@@ -17,19 +17,19 @@ class Obstacle(OdvObject):
     # def global_id(self):
     #     return self.parent.sector_id + self.i + 1
 
-    # @property
-    # def poly(self) -> QPolygonF:
-    #     return self._poly
-    #
-    # @poly.setter
-    # def poly(self, poly: QPolygonF):
-    #     # check if poly is clockwise
-    #     if poly.signed_area() <= 0:
-    #         # clockwise
-    #         self._poly = poly
-    #     else:
-    #         # counter-clockwise
-    #         self._poly = QPolygonF(poly[::-1])
+    @property
+    def poly(self) -> QPolygonF:
+        return self._poly
+
+    @poly.setter
+    def poly(self, poly: QPolygonF):
+        # check if poly is clockwise
+        if poly.signed_area() <= 0:
+            # clockwise
+            self._poly = poly
+        else:
+            # counter-clockwise
+            self._poly = QPolygonF(poly[::-1])
 
     @classmethod
     def from_stream(cls, stream: ReadStream, *, parent):

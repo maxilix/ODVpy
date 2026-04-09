@@ -42,17 +42,18 @@ class OdvGraphic(QGraphicsItem):
 
     # Todo remove localise, cause item is always localised by group (eventually group of 1)
     def localise(self):
+        raise DeprecationWarning
         self.scene().move_to_item(self)
 
-    def setVisible(self, visible: bool):
-        if visible != self.isVisible():
-            super().setVisible(visible)
-            self.item.update()
-
-    def setOpacity(self, opacity: float):
-        if opacity != self.opacity():
-            super().setOpacity(opacity)
-            self.item.update()
+    # def setVisible(self, visible: bool):
+    #     if visible != self.isVisible():
+    #         super().setVisible(visible)
+    #         self.item.update()
+    #
+    # def setOpacity(self, opacity: float):
+    #     if opacity != self.opacity():
+    #         super().setOpacity(opacity)
+    #         self.item.update()
 
 
 
@@ -80,10 +81,10 @@ class OdvEditGraphic(OdvGraphic):
         return self.scene().pointer
 
     def claim_pointer(self):
-        self.scene().claim_pointer(self)
+        return self.scene().claim_pointer(self)
 
     def release_pointer(self):
-        self.scene().release_pointer(self)
+        return self.scene().release_pointer(self)
 
     def enter_creation_mode(self):
         raise NotImplementedError

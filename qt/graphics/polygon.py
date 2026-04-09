@@ -11,7 +11,7 @@ from qt.graphics.polygon_elem import OdvEditPolygonShapeElement, OdvFixPolygonEl
 class GraphicPolygon(OdvEditGraphic):
     grid_alignment = QPointF(0.5, 0.5)
 
-    def __init__(self, item, polygon:QPolygonF | None = None):
+    def __init__(self, item, polygon:QPolygonF = QPolygonF()):
         super().__init__(item)
         self.polygon = polygon
         self.setZValue(10)
@@ -21,7 +21,7 @@ class GraphicPolygon(OdvEditGraphic):
         self.line_edit = []
         self.polygon_edit = None
 
-        if self.polygon is None:
+        if self.polygon.isEmpty():
             self._state = GraphicState.NoGraph
         else:
             self.polygon_fix = OdvFixPolygonElement(self, self.polygon)
@@ -29,15 +29,20 @@ class GraphicPolygon(OdvEditGraphic):
             self._state = GraphicState.Fix
 
     def enter_creation_mode(self):
-        if self.state == GraphicState.NoGraph:
+        assert self.state == GraphicState.NoGraph
+        if self.claim_pointer():
+            self.setVisible(True)
             self._state = GraphicState.Create
-            self.claim_pointer()
             self.point_edit = []
             self.line_edit = []
             self.polygon_edit = None
             self.item.update_both()
+        else:
+            print(f"WARNING: {self} cannot obtain pointer")
+
 
     def exit_creation_mode(self, save):
+        # print("exit creation mode")
         if self.state == GraphicState.Create:
             if save is True and len(self.point_edit) >= 3:
                 self.line_edit[-1].p2 = self.point_edit[0]
@@ -45,8 +50,8 @@ class GraphicPolygon(OdvEditGraphic):
                 deletable = len(self.point_edit) > 3
                 for p in self.point_edit:
                     p.deletable = deletable
-                self.shadow.setPolygon(QPolygonF([p.pos() for p in self.point_edit]))
-
+                self.shadow.setPolygon(QPolygonF(p.pos() for p in self.point_edit))
+                # self.polygon = QPolygonF(p.pos() for p in self.point_edit).truncated()
                 self._state = GraphicState.Edit
                 self.release_pointer()
             else:
@@ -56,33 +61,50 @@ class GraphicPolygon(OdvEditGraphic):
             self.item.update_both()
 
     def enter_edit_mode(self):
-        if self.state == GraphicState.Fix:
-            self._state = GraphicState.Edit
+        assert self.state == GraphicState.Fix
+        self.setVisible(True)
+        self._state = GraphicState.Edit
 
-            self.remove(self.polygon_fix)
-
-            deletable = len(self.polygon) > 3
-            self.point_edit = [OdvEditPointElement(self, p, deletable=deletable) for p in self.polygon]
-            self.polygon_edit = OdvEditPolygonShapeElement(self, self.point_edit, movable=True)
-            self.line_edit = [OdvEditLineElement(self, p1, p2, secable=True) for p1, p2 in
-                              zip(self.point_edit, self.point_edit[1:] + [self.point_edit[0]])]
-            self.item.update_both()
+        self.remove(self.polygon_fix)
+        deletable = len(self.polygon) > 3
+        self.point_edit = [OdvEditPointElement(self, p, deletable=deletable) for p in self.polygon]
+        self.polygon_edit = OdvEditPolygonShapeElement(self, self.point_edit, movable=True)
+        self.line_edit = [OdvEditLineElement(self, p1, p2, secable=True) for p1, p2 in
+                          zip(self.point_edit, self.point_edit[1:] + [self.point_edit[0]])]
+        self.item.update_both()
 
     def exit_edit_mode(self, save):
-        if self.state == GraphicState.Edit:
-            self._state = GraphicState.Fix
-            if save is True:
-                self.polygon.swap(QPolygonF(p.pos() for p in self.point_edit).truncated())
-            else:
-                # update shadow
-                self.shadow.setPolygon(self.polygon.translated(self.grid_alignment))
+        assert self.state == GraphicState.Edit
+        self._state = GraphicState.Fix
+        if save is True:
+            self.polygon.swap(QPolygonF(p.pos() for p in self.point_edit).truncated())
+        else:
+            # reset shadow
+            self.shadow.setPolygon(self.polygon.translated(self.grid_alignment))
+            if self.polygon.isEmpty():
+                self._state = GraphicState.NoGraph
 
-            self.remove(self.polygon_edit)
-            self.remove(self.line_edit)
-            self.remove(self.point_edit)
+        self.remove(self.polygon_edit)
+        self.remove(self.line_edit)
+        self.remove(self.point_edit)
 
-            self.polygon_fix = OdvFixPolygonElement(self, self.polygon)
-            self.item.update_both()
+        self.polygon_fix = OdvFixPolygonElement(self, self.polygon)
+        self.item.update_both()
+
+    def copy_from(self, graphic_item):
+        # print(type(graphic_item))
+        # print(type(self))
+        # exit()
+        assert isinstance(graphic_item, type(self))
+        self.delete()
+        self.polygon = QPolygonF(graphic_item.polygon)
+        self.polygon_fix = OdvFixPolygonElement(self, self.polygon)
+        self.point_edit = []
+        self.line_edit = []
+        self.polygon_edit = None
+        self.shadow.setPolygon(self.polygon.translated(self.grid_alignment))
+        self._state = GraphicState.Fix
+
 
     def delete(self):
         match self.state:
@@ -95,10 +117,11 @@ class GraphicPolygon(OdvEditGraphic):
                 self.remove(self.line_edit)
                 self.remove(self.point_edit)
             case GraphicState.Create:
+                # TODO remove and release the pointer
                 pass
 
         self.shadow.setPolygon(QPolygonF())
-        self.polygon = None
+        self.polygon = QPolygonF()
         self._state = GraphicState.NoGraph
         self.item.update_both()
 

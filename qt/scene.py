@@ -127,18 +127,23 @@ class QScene(QGraphicsScene):
             self.pointer.setBrush(self.pointer_item.high_brush)
             self.pointer.setVisible(True)
             # self.pointer.stackBefore([i for i in self.items() if i.parentItem() is None][0])
+            return True
         else:
             print(f"WARNING: pointer already exists for {self.pointer_item}")
+            return False
 
     def release_pointer(self, item):
         if self.pointer_item is None:
-            print(f"WARNING: ne pointer to release")
+            print(f"WARNING: no pointer to release")
+            return False
         else:
             if self.pointer_item == item:
                 self.pointer_item = None
                 self.pointer.setVisible(False)
+                return True
             else:
                 print(f"WARNING: pointer is owned by {self.pointer_item}, not {item}")
+                return False
 
     @staticmethod
     def focus_on(tree_item):

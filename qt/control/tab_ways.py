@@ -2,7 +2,7 @@ from PyQt6.QtGui import QColor
 
 from odv.data_section.ways import Patrol, Waypoint, Ways
 from qt.control.control_section import QSectionControl
-from qt.control.generic_inspector import Inspector, QVisibilitySIW
+from qt.control.generic_inspector import Inspector, QGeometrySIW
 from qt.control.generic_tree import QGenericTreeItem
 from qt.graphics import GraphicMultiLine, OdvThinPen, OdvLightBrush, OdvHighBrush
 
@@ -32,7 +32,7 @@ class PatrolInspector(Inspector):
     def __init__(self):
         super().__init__()
 
-        self.patrol_vsiw = QVisibilitySIW(title="Patrol", edit_buttons=True)
+        self.patrol_vsiw = QGeometrySIW(title="Patrol", edit_buttons=True)
         self.patrol_vsiw.update_required.connect(self.update)
         self.main_layout.addWidget(self.patrol_vsiw)
 

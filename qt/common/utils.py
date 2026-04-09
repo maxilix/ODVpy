@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QImage, QColor
 
 from common import *
@@ -14,7 +14,7 @@ def checkstate_from_list(l):
     else:
         return Qt.CheckState.Unchecked
 
-def bounding_rect_of(graphic_list):
+def bounding_rect_of(graphic_list) -> QRectF:
     rect = graphic_list[0].sceneBoundingRect()
     for g in graphic_list[1:]:
         rect = rect.united(g.sceneBoundingRect())

@@ -16,6 +16,11 @@ from qt.viewport import QViewport
 from settings import *
 
 
+# avoid recurrent warning like this
+# qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::zwp_text_input_v3_leave(wl_surface*) Got leave event for surface 0x0 with focusing surface 0x5611e36f3910
+os.environ["QT_LOGGING_RULES"] = "qt.qpa.wayland.textinput=false"
+
+
 class QWindow(QMainWindow):
     def __init__(self):
         super().__init__()

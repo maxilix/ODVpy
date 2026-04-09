@@ -10,7 +10,7 @@ from odv.data_section import Bgnd
 from qt.common.simple_messagebox import QErrorBox
 from qt.common.utils import image_to_qimage
 from qt.control.control_section import QSectionControl
-from qt.control.generic_inspector import Inspector, QVisibilitySIW
+from qt.control.generic_inspector import Inspector, QGeometrySIW
 from qt.control.generic_tree import QGenericTreeItem
 from qt.graphics import GraphicMap
 
@@ -23,9 +23,9 @@ class BgndInspector(Inspector):
         # BgndInspector can only be connected to a single item
         self.item = None
 
-        self.visibility_siw = QVisibilitySIW()
-        self.visibility_siw.update_required.connect(self.update)
-        self.main_layout.addWidget(self.visibility_siw)
+        # self.visibility_siw = QGeometrySIW()
+        # self.visibility_siw.update_required.connect(self.update)
+        # self.main_layout.addWidget(self.visibility_siw)
 
         ### DVM filename Widget #################################################
         dvm_file_layout = QHBoxLayout()
@@ -131,7 +131,7 @@ class BgndInspector(Inspector):
         self.factor_w = map_w / minimap_w
         self.factor_h = map_h / minimap_h
 
-        self.visibility_siw.connect_to(self.item.graphic_map)
+        # self.visibility_siw.connect_to(self.item.graphic_map)
 
         self.dvm_line_edit.setText(self.item.bgnd.dvm_filename)
         self.dvm_size_label.setText(f"DVM Image Size: {map_w} x {map_h}")

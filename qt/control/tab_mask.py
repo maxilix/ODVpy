@@ -1,6 +1,6 @@
 from odv.data_section.mask import Mask, MaskLayer, MaskEntry
 from qt.control.control_section import QSectionControl
-from qt.control.generic_inspector import Inspector, QVisibilitySIW
+from qt.control.generic_inspector import Inspector, QGeometrySIW
 from qt.control.generic_tree import QGenericTreeItem
 from qt.graphics import GraphicMask, GraphicMultiLine
 
@@ -9,11 +9,11 @@ class MaskEntryInspector(Inspector):
     def __init__(self):
         super().__init__()
 
-        self.mask_vsiw = QVisibilitySIW(title="Binary mask", opacity_slider=True, edit_buttons=True)
+        self.mask_vsiw = QGeometrySIW(title="Binary mask", opacity_slider=True, edit_buttons=True)
         self.mask_vsiw.update_required.connect(self.update)
         self.main_layout.addWidget(self.mask_vsiw)
 
-        self.l1_vsiw = QVisibilitySIW(title="L1", edit_buttons=True)
+        self.l1_vsiw = QGeometrySIW(title="L1", edit_buttons=True)
         self.l1_vsiw.update_required.connect(self.update)
         self.main_layout.addWidget(self.l1_vsiw)
 

@@ -30,7 +30,7 @@ class QGenericTreeItem(QTreeWidgetItem):
         self.setColor()
         title = self.name
         if any([graphic.state == GraphicState.Edit for graphic in self._graphics if isinstance(graphic, OdvEditGraphic)]):
-            title += " -Edit-"
+            title += " -edit-"
             self.setBold(True)
         # if self.inspector.valid_state is False:
         #     title += " -INVALID-"
@@ -102,10 +102,11 @@ class QGenericTreeItem(QTreeWidgetItem):
 
     def localise_graphics(self):
         if self._graphics:
-            self.show_graphics()
             rect = bounding_rect_of(self._graphics)
-            self.section_control.scene.move_to_rect(rect)
-            self.section_control.update_current_inspector()
+            if not rect.isEmpty():
+                self.show_graphics()
+                self.section_control.scene.move_to_rect(rect)
+                self.section_control.update_current_inspector()
 
     def focus(self):
         self.treeWidget().clearSelection()
