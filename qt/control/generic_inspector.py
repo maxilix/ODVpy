@@ -483,7 +483,6 @@ class QGeometrySIW(QSubInspectorWidget):
             l2_layout.addSpacing(60)
             main_layout.addLayout(l2_layout)
 
-        main_layout.addWidget(QHLine())
 
     def open_menu(self):
         self.m_copy_from.clear()
@@ -519,7 +518,6 @@ class QGeometrySIW(QSubInspectorWidget):
     def localize_triggered(self):
         [graphic.setVisible(True) for graphic in self.graphics]
         rect = bounding_rect_of(self.graphics)
-        # access the scene using the first graphic
         self.scene.move_to_rect(rect)
         self.update_required.emit()
 
