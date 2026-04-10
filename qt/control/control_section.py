@@ -1,7 +1,8 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QLabel, QStackedLayout, QSizePolicy
+from PyQt6.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QLabel, QStackedLayout, QSizePolicy, QPushButton
 
 from odv.odv_object import OdvObjectIterable
+from qt.common.separator_line import QHLine
 from qt.control.generic_tree import QGenericTree, QGenericTreeItem
 
 
@@ -26,16 +27,40 @@ class QSectionControl(QWidget):
         top_layout.setContentsMargins(0, 0, 0, 0)
 
         self.section_widget = QWidget()
-        self.section_widget.setFixedWidth(250)
+        self.section_widget.setFixedWidth(300)
         section_layout = QVBoxLayout(self.section_widget)
         section_layout.setContentsMargins(0, 0, 0, 0)
 
-        section_title = QLabel(self.section.fullname)
-        font = section_title.font()
+        name_label = QLabel(self.section.name)
+        font = name_label.font()
         font.setPointSize(22)
-        section_title.setFont(font)
-        # section_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        section_layout.addWidget(section_title)
+        name_label.setFont(font)
+        section_layout.addWidget(name_label)
+
+        fullname_label = QLabel(f"{self.section.fullname}")
+        font = fullname_label.font()
+        font.setPointSize(14)
+        fullname_label.setFont(font)
+        section_layout.addWidget(fullname_label)
+
+        section_layout.addWidget(QHLine())
+
+        import_export_layout = QHBoxLayout()
+        import_button = QPushButton("Import")
+        import_button.setStatusTip(f"Import the {self.section.name} form data or other DVD file.")
+        import_export_layout.addWidget(import_button)
+        import_export_layout.addSpacing(20)
+        export_button = QPushButton("Export")
+        export_button.setStatusTip(f"Save the current {self.section.name} into a data file.")
+
+        import_export_layout.addWidget(export_button)
+        section_layout.addLayout(import_export_layout)
+
+        section_layout.addWidget(QHLine())
+
+
+
+
         section_layout.addStretch()
 
         top_layout.addWidget(self.section_widget)
