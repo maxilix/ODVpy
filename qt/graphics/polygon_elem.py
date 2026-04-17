@@ -39,17 +39,14 @@ class OdvEditPolygonShapeElement(QGraphicsPathItem):
         for p in self.p_list:
             negative.addEllipse(p.boundingRect().translated(p.pos()))
         self.setPath(path - negative)
+
         super().update(rect)
 
     def mouseDoubleClickEvent(self, event):
         if self.movable and event.button() == Qt.MouseButton.LeftButton:
-            if len(self.p_list) > 20:
-                print(f"WARN : impossible to drag large polygons ({len(self.p_list)} points > 20)")
-                event.ignore()
-            else:
-                self._drag_position = self.mapToScene(event.pos()).truncated()
-                self.setBrush(self.parentItem().high_brush)
-                event.accept()
+            self._drag_position = self.mapToScene(event.pos()).truncated()
+            self.setBrush(self.parentItem().high_brush)
+            event.accept()
         else:
             event.ignore()
 
@@ -65,27 +62,15 @@ class OdvEditPolygonShapeElement(QGraphicsPathItem):
         if self.movable and self._drag_position is not None:
             delta = self.mapToScene(event.pos()).truncated() - self._drag_position
             for p in self.p_list:
-                p.move(delta)
+                p.move(delta, notify=False)  # the parent is not notified to avoid multiple updates
+            for l in self.parentItem().line_edit_items:
+                l.update()  # the lines must therefore be updated individually
+            self.update()
+            # the shadow and the edit zone must also be updated separately
+            self.parentItem().shadow.setPolygon(QPolygonF([p.pos() for p in self.p_list]))
+            self.parentItem().edit_zone.update()
+
             self._drag_position = self.mapToScene(event.pos()).truncated()
             event.accept()
         else:
             event.ignore()
-
-
-# class QCGHighlightablePolygon(QCGPolygon):
-#     def __init__(self, q_dvd_item, polygon: QPolygonF):
-#         super().__init__(q_dvd_item, polygon)
-#         self.setAcceptHoverEvents(True)
-#
-#     def hoverEnterEvent(self, event):
-#         # self._force_visibility = True
-#         # self.setBrush(QBrush(Qt.GlobalColor.transparent))
-#         self.setBrush(self.q_dvd_item.high_brush)
-#         # self.update()
-#         super().hoverEnterEvent(event)
-#
-#     def hoverLeaveEvent(self, event):
-#         # self._force_visibility = False
-#         self.setBrush(self.q_dvd_item.brush)
-#         # self.update()
-#         super().hoverLeaveEvent(event)

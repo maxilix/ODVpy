@@ -135,3 +135,6 @@ class MiscItem(QGenericTreeItem):
 
 class QMiscControl(QSectionControl):
     item_types = {Misc: MiscItem}
+    odv_types =       [Misc         ]
+    tree_item_types = [MiscItem     ]
+    inspector_types = [MiscInspector]

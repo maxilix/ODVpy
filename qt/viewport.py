@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt, QPropertyAnimation, pyqtProperty, QParallelAnimationGroup, QRectF, QEasingCurve, pyqtSignal
 from PyQt6.QtGui import QMouseEvent
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsItem
+from PyQt6.QtWidgets import QGraphicsView
 
 
 class QViewport(QGraphicsView):
@@ -40,8 +40,10 @@ class QViewport(QGraphicsView):
     #     super().resizeEvent(event)
 
     def leaveEvent(self, a0):
-        # unpleasant behavior with context menus
-        # self.info_bar.set_xy(None)
+        # TODO unpleasant behavior with context menus
+        self.info_bar.set_xy(None)
+        self.info_bar.set_tree_items([])
+
         super().leaveEvent(a0)
 
     def mousePressEvent(self, event):
@@ -92,7 +94,7 @@ class QViewport(QGraphicsView):
         self.x = mouse_scene_pos.x() + (h.pageStep() / 2 - mouse_view_pos.x()) / (self.zoom_shift_factor * self.zoom)
         self.y = mouse_scene_pos.y() + (v.pageStep() / 2 - mouse_view_pos.y()) / (self.zoom_shift_factor * self.zoom)
 
-        # Todo is it useful ?
+        # TODO is it useful ?
         # event.ignore()
 
     @pyqtProperty(float)

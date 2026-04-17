@@ -1,10 +1,11 @@
 from math import floor
 
-from PyQt6.QtCore import QRectF, Qt
+from PyQt6.QtCore import QRectF, Qt, QEvent
 from PyQt6.QtGui import QAction, QCursor
-from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem, QMenu, QGraphicsEllipseItem
+from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem, QMenu, QGraphicsEllipseItem, \
+    QApplication
 
-from qt.graphics.base import OdvGraphic, OdvShadow
+from qt.graphics.base import OdvGraphic, OdvShadow, OdvEditZone, OdvEditGraphic, GraphicState
 from qt.scene_tool_bar import QSceneToolBar
 
 
@@ -20,6 +21,16 @@ class QScene(QGraphicsScene):
         self.pointer.setVisible(False)
         super().addItem(self.pointer)
         self.pointer_item = None
+
+        # install itself as an EventFilter to watch all click
+        QApplication.instance().installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.MouseButtonPress:
+            if type(obj) != type(self):
+                # print(f"Click on object {obj}")
+                pass
+        return super().eventFilter(obj, event)
 
     def center_view(self, zoom=1.5):
         r = self.sceneRect().center()
@@ -40,7 +51,7 @@ class QScene(QGraphicsScene):
 
     def move_to(self, x, y, zoom=20, blink_pixel=False):
         self.viewport().move_to(x, y, zoom)
-        # if blink_pixel is True:  # Todo
+        # if blink_pixel is True:  # TODO
         #     self.pointer.setPos(x + 0.5, y + 0.5)
         #     self.pointer.setVisible(True)
         #     anim = QVariantAnimation(self)
@@ -52,6 +63,8 @@ class QScene(QGraphicsScene):
         #     anim.start()
         #     anim.finished.connect(lambda: self.pointer.setVisible(False))
         #     anim.finished.connect(lambda: self.pointer.setOpacity(1))
+
+    #TODO review adding/removing shadow mechanics
 
     def addItem(self, item):
         assert isinstance(item, OdvGraphic)
@@ -65,7 +78,7 @@ class QScene(QGraphicsScene):
         super().removeItem(item)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
-        shadow_list = [g.tree_item for g in self.items(event.scenePos()) if isinstance(g, OdvShadow)]
+        shadow_list = [g.tree_item for g in self.items(event.scenePos()) if isinstance(g, OdvShadow) and g.tree_item.hover_detection()]
         self.viewport().info_bar.set_tree_items(shadow_list)
         if self.pointer_item is not None:
             if (ga:=self.pointer_item.grid_alignment) is not None:
@@ -78,32 +91,31 @@ class QScene(QGraphicsScene):
             super().mouseMoveEvent(event)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
-        if self.pointer_item is not None:
-            if event.button() == Qt.MouseButton.RightButton:
-                menu = QMenu()
-                a_finalize = QAction("Finalize")
-                a_finalize.triggered.connect(lambda: self.pointer_item.exit_creation_mode(save=True))
-                a_cancel = QAction("Cancel")
-                a_cancel.triggered.connect(lambda: self.pointer_item.exit_creation_mode(save=False))
-                menu.addAction(a_finalize)
-                menu.addAction(a_cancel)
-                menu.exec(QCursor.pos())
-        else:
+        edit_zone_list = [g for g in self.items(event.scenePos()) if isinstance(g, OdvEditZone)]
+        if len(edit_zone_list) == 0:
+            for editable in [g for g in self.items() if isinstance(g, OdvEditGraphic)]:
+                if editable.state == GraphicState.Unlock:
+                    editable.lock()
+
+        if self.pointer_item is None:
             super().mousePressEvent(event)
             if event.button() == Qt.MouseButton.RightButton and not event.isAccepted():
                 menu = QMenu()
-                actions = []
-                for tree_item in [g.tree_item for g in self.items(event.scenePos()) if isinstance(g, OdvShadow)]:
-                    actions.append(QAction(tree_item.name))
-                    actions[-1].triggered.connect(lambda state, inner_item=tree_item: self.focus_on(inner_item))
-
                 x = floor(event.scenePos().x())
                 y = floor(event.scenePos().y())
                 save_pos = QAction(f"({x}, {y})")
                 save_pos.triggered.connect(lambda state: self.tool_bar.set_xy_localize(x, y))
                 menu.addAction(save_pos)
-                focus_on_menu = menu.addMenu("Focus on")
-                focus_on_menu.addActions(actions)
+
+                menu.addSeparator()
+
+                actions = []
+                for tree_item in [g.tree_item for g in self.items(event.scenePos()) if isinstance(g, OdvShadow) and g.tree_item.hover_detection()]:
+                    actions.append(QAction(tree_item.name))
+                    actions[-1].triggered.connect(lambda state, inner_item=tree_item: self.focus_on(inner_item))
+
+                menu.addActions(actions)
+
                 menu.exec(QCursor.pos())
 
     def mouseReleaseEvent(self, event):
@@ -115,8 +127,12 @@ class QScene(QGraphicsScene):
 
     def mouseDoubleClickEvent(self, event):
         if self.pointer_item is not None:
-            self.pointer_item.exit_creation_mode(save=True)
+            self.pointer_item.exit_creation_mode()
         else:
+            for editable in [g for g in self.items(event.scenePos()) if isinstance(g, OdvEditGraphic)]:
+                if editable.isVisible() and editable.state == GraphicState.Lock:
+                    editable.unlock()
+                    return
             super().mouseDoubleClickEvent(event)
 
     def claim_pointer(self, item):
@@ -126,7 +142,6 @@ class QScene(QGraphicsScene):
             self.pointer.setPen(self.pointer_item.thin_pen)
             self.pointer.setBrush(self.pointer_item.high_brush)
             self.pointer.setVisible(True)
-            # self.pointer.stackBefore([i for i in self.items() if i.parentItem() is None][0])
             return True
         else:
             print(f"WARNING: pointer already exists for {self.pointer_item}")
@@ -150,32 +165,3 @@ class QScene(QGraphicsScene):
         tree_item.focus()
         tree_item.show_graphics()
         tree_item.localize_graphics()
-
-    # def new_centered_line(self, scale:float):
-    #     r: QRectF = self.viewport().current_visible_scene_rect()
-    #     length = r.width() * scale
-    #     c = r.center()
-    #     p1 = QPointF(c.x() - length/2, c.y()).truncated()
-    #     p2 = QPointF(c.x() + length/2, c.y()).truncated()
-    #     return QLineF(p1, p2)
-    #
-    #
-    # def new_centered_polygon(self, scale:float):
-    #     r: QRectF = self.viewport().current_visible_scene_rect()
-    #     width = r.width() * scale
-    #     height = r.height() * scale
-    #     c = r.center()
-    #     p1 = QPointF(c.x() - width/2, c.y() - height/2).truncated()
-    #     p2 = QPointF(c.x() + width/2, c.y() - height/2).truncated()
-    #     p3 = QPointF(c.x() + width/2, c.y() + height/2).truncated()
-    #     p4 = QPointF(c.x() - width/2, c.y() + height/2).truncated()
-    #     return QPolygonF([p1, p2, p3, p4])
-    #
-    # def new_centered_gateway(self, scale:float):
-    #     r: QRectF = self.viewport().current_visible_scene_rect()
-    #     width = r.width() * scale
-    #     height = r.height() * scale
-    #     c = r.center()
-    #     p1 = QPointF(c.x() - width/2, c.y() - height/8).truncated()
-    #     p3 = QPointF(c.x() + width/2, c.y() - height/8).truncated()
-    #     return Gateway(p1, c, p3)

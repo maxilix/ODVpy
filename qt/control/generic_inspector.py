@@ -360,12 +360,10 @@ class QGeometrySIW(QSubInspectorWidget):
         self.a_create = QAction("Create", self)
         self.a_create.triggered.connect(self.create_triggered)
         self.m_copy_from = QMenu("Copy from")
-        self.a_edit = QAction("Edit", self)
-        self.a_edit.triggered.connect(self.edit_triggered)
-        self.a_save = QAction("Save", self)
-        self.a_save.triggered.connect(self.save_triggered)
-        self.a_cancel = QAction("Cancel", self)
-        self.a_cancel.triggered.connect(self.cancel_triggered)
+        self.a_unlock = QAction("Unlock", self)
+        self.a_unlock.triggered.connect(self.unlock_triggered)
+        self.a_lock = QAction("Lock", self)
+        self.a_lock.triggered.connect(self.lock_triggered)
         self.a_delete = QAction("Delete", self)
         self.a_delete.triggered.connect(self.delete_triggered)
         self.useless = QAction("", self)
@@ -378,9 +376,8 @@ class QGeometrySIW(QSubInspectorWidget):
         self.option_menu.addSeparator()
         self.option_menu.addAction(self.a_create)
         self.option_menu.addMenu(self.m_copy_from)
-        self.option_menu.addAction(self.a_edit)
-        self.option_menu.addAction(self.a_save)
-        self.option_menu.addAction(self.a_cancel)
+        self.option_menu.addAction(self.a_unlock)
+        self.option_menu.addAction(self.a_lock)
         self.option_menu.addSeparator()
         self.option_menu.addAction(self.a_delete)
         self.option_menu.addAction(self.useless)
@@ -405,8 +402,7 @@ class QGeometrySIW(QSubInspectorWidget):
         self.opacity_slider = QSlider(Qt.Orientation.Horizontal)
         self.opacity_slider.setMinimum(0)
         self.opacity_slider.setMaximum(100)
-        self.opacity_slider.sliderMoved.connect(self.opacity_slider_moved)
-        # self.opacity_slider.valueChanged.connect(self.opacity_slider_changed)
+        self.opacity_slider.sliderMoved.connect(self.opacity_slider_moved)  # Do not handle all move TODO
         l1_layout.addWidget(self.opacity_slider)
 
         self.opacity_reset_button = QToolButton()
@@ -414,10 +410,12 @@ class QGeometrySIW(QSubInspectorWidget):
         self.opacity_reset_button.clicked.connect(self.opacity_reset_button_clicked)
         l1_layout.addWidget(self.opacity_reset_button)
 
-        self.status_label = QLabel()
-        self.status_label.setFixedWidth(120)
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        l1_layout.addWidget(self.status_label)
+        l1_layout.addSpacing(20)
+
+        self.action_button = QPushButton()
+        self.action_button.setCheckable(True)
+        self.action_button.setFixedWidth(80)
+        l1_layout.addWidget(self.action_button)
 
         # l1_layout.addSpacing(30)
 
@@ -526,34 +524,33 @@ class QGeometrySIW(QSubInspectorWidget):
         g[0].enter_creation_mode(followers=g[1:])
         self.update_required.emit()
 
+    def exit_creation_triggered(self):
+        g = [graphic for graphic in self.graphics if graphic.state == GraphicState.Create]
+        assert len(g) == 1
+        g[0].exit_creation_mode()
+        self.update_required.emit()
+
     def copy_from_triggered(self, graphic_item):
         for graphic in self.graphics:
             graphic.copy_from(graphic_item)
         self.value_changed.emit()
         self.update_required.emit()
 
-    def edit_triggered(self):
+    def unlock_triggered(self):
         for graphic in self.graphics:
-            if graphic.state == GraphicState.Fix:
-                graphic.enter_edit_mode()
-                # graphic.setVisible(True)
+            if graphic.state == GraphicState.Lock:
+                graphic.unlock()
         self.update_required.emit()
 
-    def save_triggered(self):
+    def lock_triggered(self):
         for graphic in self.graphics:
-            if graphic.state == GraphicState.Edit:
-                graphic.exit_edit_mode(save=True)
+            if graphic.state == GraphicState.Unlock:
+                graphic.lock()
         self.value_changed.emit()
         self.update_required.emit()
 
-    def cancel_triggered(self):
-        for graphic in self.graphics:
-            if graphic.state == GraphicState.Edit:
-                graphic.exit_edit_mode(save=False)
-        self.update_required.emit()
-
-
     def delete_triggered(self):
+        # TODO remove the confirmation dialog box once the “Undo/Redo” feature is implemented
         if (n:=len(self.graphics)) == 1:
             msg = f"Do you really want to delete the \"{self.geometry_name}\" graphic ?"
         else:
@@ -587,9 +584,33 @@ class QGeometrySIW(QSubInspectorWidget):
 
         s = self.graphics[0].state
         if all(s == g.state for g in self.graphics[1:]):
-            self.status_label.setText(s.name)
+            self.action_button.setEnabled(True)
+            try:
+                # Qt raise a TypeError if the signal "button.clicked" is not connected
+                self.action_button.clicked.disconnect()
+            except TypeError:
+                pass
+            if s == GraphicState.NoGraph:
+                self.action_button.setChecked(False)
+                self.action_button.setText("Create")
+                self.action_button.clicked.connect(self.create_triggered)
+            elif s == GraphicState.Lock:
+                self.action_button.setChecked(False)
+                self.action_button.setText("Unlock")
+                self.action_button.clicked.connect(self.unlock_triggered)
+            elif s == GraphicState.Unlock:
+                self.action_button.setChecked(True)
+                self.action_button.setText("Unlocked")
+                self.action_button.clicked.connect(self.lock_triggered)
+            elif s == GraphicState.Create:
+                self.action_button.setChecked(True)
+                self.action_button.setText("Creating")
+                self.action_button.clicked.connect(self.exit_creation_triggered)
+            else:
+                raise
         else:
-            self.status_label.setText("multiple")
+            self.action_button.setEnabled(False)
+            self.action_button.setText("multiple")
 
 
         # Localize Action
@@ -615,37 +636,26 @@ class QGeometrySIW(QSubInspectorWidget):
             self.a_create.setEnabled(False)
 
         # Edit Action
-        if (n:=[graphic.state == GraphicState.Fix for graphic in self.graphics].count(True)) > 0:
-            self.a_edit.setEnabled(True)
+        if (n:=[graphic.state == GraphicState.Lock for graphic in self.graphics].count(True)) > 0:
+            self.a_unlock.setEnabled(True)
             edit_tool_tip = f"Edit the {n} {self.geometry_name}{"s" if n > 1 else ""} currently in fix mode"
             for graphic in self.graphics:
-                if graphic.state == GraphicState.Fix:
+                if graphic.state == GraphicState.Lock:
                     edit_tool_tip += f"\n - {graphic.item.name}"
-            self.a_edit.setToolTip(edit_tool_tip)
+            self.a_unlock.setToolTip(edit_tool_tip)
         else:
-            self.a_edit.setEnabled(False)
+            self.a_unlock.setEnabled(False)
 
         # Save Action
-        if (n:=[graphic.state == GraphicState.Edit for graphic in self.graphics].count(True)) > 0:
-            self.a_save.setEnabled(True)
+        if (n:=[graphic.state == GraphicState.Unlock for graphic in self.graphics].count(True)) > 0:
+            self.a_lock.setEnabled(True)
             save_tool_tip = f"Save the {n} {self.geometry_name}{"s" if n > 1 else ""} currently in edit mode"
             for graphic in self.graphics:
-                if graphic.state == GraphicState.Edit:
+                if graphic.state == GraphicState.Unlock:
                     save_tool_tip += f"\n - {graphic.item.name}"
-            self.a_save.setToolTip(save_tool_tip)
+            self.a_lock.setToolTip(save_tool_tip)
         else:
-            self.a_save.setEnabled(False)
-
-        # Cancel Action
-        if (n:=[graphic.state == GraphicState.Edit for graphic in self.graphics].count(True)) > 0:
-            self.a_cancel.setEnabled(True)
-            cancel_tool_tip = f"Cancel the {n} {self.geometry_name}{"s" if n > 1 else ""} currently in edit mode"
-            for graphic in self.graphics:
-                if graphic.state == GraphicState.Edit:
-                    cancel_tool_tip += f"\n - {graphic.item.name}"
-            self.a_cancel.setToolTip(cancel_tool_tip)
-        else:
-            self.a_cancel.setEnabled(False)
+            self.a_lock.setEnabled(False)
 
         # Delete Action
         if (n:=[graphic.state != GraphicState.NoGraph for graphic in self.graphics].count(True)) > 0:
@@ -658,7 +668,6 @@ class QGeometrySIW(QSubInspectorWidget):
         else:
             self.a_delete.setEnabled(False)
 
-        # if self.opacity_slider is not None:
         min_opacity = min([int(100 * graphic.opacity()) for graphic in self.graphics])
         self.opacity_slider.setValue(min_opacity)
 

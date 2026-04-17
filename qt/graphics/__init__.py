@@ -34,6 +34,13 @@ class OdvHighBrush(OdvBrush):
         super().__init__(color, HIGH_BRUSH_ALPHA)
 
 
+def darker_pen(pen, factor=150):
+    new_pen = QPen(pen)
+    color = pen.color().darker(factor)
+    new_pen.setColor(color)
+    return new_pen
+
+
 
 from .point import GraphicPoint
 from .line import GraphicLine, GraphicMultiLine, GraphicGateway

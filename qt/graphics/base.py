@@ -2,8 +2,8 @@ from enum import Enum
 from typing import List
 
 from PyQt6.QtCore import QRectF, QPointF, Qt
-from PyQt6.QtGui import QColor, QBrush, QPolygonF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPolygonItem
+from PyQt6.QtGui import QColor, QBrush, QPolygonF, QPainterPathStroker, QPainterPath
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPolygonItem, QGraphicsPathItem
 
 from qt.graphics import OdvThinPen, OdvLightBrush, OdvHighBrush
 from qt.graphics.line_elem import OdvEditLineElement
@@ -60,8 +60,8 @@ class OdvGraphic(QGraphicsItem):
 
 class GraphicState(Enum):
     NoGraph = 0
-    Fix = 1
-    Edit = 2
+    Lock = 1
+    Unlock = 2
     Create = 3
 
 
@@ -71,6 +71,7 @@ class OdvEditGraphic(OdvGraphic):
     def __init__(self, item):
         super().__init__(item)
         self._state = GraphicState.NoGraph
+        self.edit_zone = OdvEditZone(self)
         self._followers = []
 
     @property
@@ -79,8 +80,17 @@ class OdvEditGraphic(OdvGraphic):
 
     @property
     def pointer(self):
-        assert self == self.scene().pointer_item
-        return self.scene().pointer
+        if self == self.scene().pointer_item:
+            return self.scene().pointer
+        return None
+
+    def setVisible(self, visibility: bool):
+        if self.scene() is not None and visibility is False:
+            if self.state == GraphicState.Unlock:
+                self.lock()
+            elif self.state == GraphicState.Create:
+                self.delete()
+        super().setVisible(visibility)
 
     def claim_pointer(self):
         return self.scene().claim_pointer(self)
@@ -91,16 +101,16 @@ class OdvEditGraphic(OdvGraphic):
     def enter_creation_mode(self, followers:List[OdvEditGraphic]):
         raise NotImplementedError
 
-    def exit_creation_mode(self, save):
+    def exit_creation_mode(self):
         raise NotImplementedError
 
     def copy_from(self, graphic_item):
         raise NotImplementedError
 
-    def enter_edit_mode(self):
+    def unlock(self):
         raise NotImplementedError
 
-    def exit_edit_mode(self, save):
+    def lock(self):
         raise NotImplementedError
 
     def delete(self):
@@ -122,10 +132,33 @@ class OdvShadow(QGraphicsPolygonItem):
         super().__init__()
         self.tree_item = tree_item
         self.setPolygon(polygon)
-        self.setPen(OdvThinPen(Qt.GlobalColor.transparent))
-        # self.setPen(OdvThinPen(Qt.GlobalColor.black))
+        # self.setPen(OdvThinPen(Qt.GlobalColor.transparent))
+        self.setPen(OdvThinPen(Qt.GlobalColor.black))
         self.setBrush(QBrush(Qt.GlobalColor.transparent))
         self.setZValue(0)
 
     def __bool__(self):
         return self.polygon() != QPolygonF()
+
+
+class OdvEditZone(QGraphicsPathItem):
+    def __init__(self, graphic_item: OdvEditGraphic):
+        assert isinstance(graphic_item, OdvEditGraphic)
+        super().__init__(graphic_item)
+        self.stroker = QPainterPathStroker()
+        self.stroker.setWidth(20)
+        self.stroker.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+
+    def update(self, rect: QRectF = QRectF()):
+        super().update(rect)
+        path = QPainterPath()
+        if (parent:=self.parentItem()).state == GraphicState.Unlock:
+            poly = parent.shadow.polygon()
+            if not poly.isEmpty():
+                if not poly.isClosed():
+                    poly.append(poly.first())
+                path.addPolygon(poly)
+                path = self.stroker.createStroke(path) + path
+            else:
+                print(f"WARNING: Shadow of {parent} is empty.")
+        self.setPath(path)

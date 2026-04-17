@@ -1,11 +1,13 @@
 from PyQt6.QtCore import QLineF, QRectF, Qt
-from PyQt6.QtGui import QAction, QTransform, QPainter, QCursor
-from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QMenu
+from PyQt6.QtGui import QTransform, QPainter, QPen
+from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QGraphicsEllipseItem
 
+from qt.graphics import darker_pen
 from qt.graphics.point_elem import OdvEditPointElement
 
+
 class QGraphicsLargeLineItem(QGraphicsLineItem):
-    _scale = 6.0
+    _scale = 5.0
 
     def shape(self):
         # virtually extends the line width for click detection
@@ -81,12 +83,24 @@ class OdvFixLineElement(QGraphicsLargeLineItem):
 class OdvEditLineElement(QGraphicsLargeLineItem):
     def __init__(self, parent_item, p1: OdvEditPointElement, p2: OdvEditPointElement, secable: bool = False):  # , deletable: bool = False):
         super().__init__(parent_item)
-        self.setPen(parent_item.thin_pen)
-        self.secable = secable
+        pen = QPen(self.parentItem().thin_pen)
+        pen.setStyle(Qt.PenStyle.DotLine)
+        self.setPen(pen)
+
+        self.setAcceptHoverEvents(True)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
+
+        size = p1.size
+        self.point = QGraphicsEllipseItem(self)
+        self.point.setRect(-size / 2, -size / 2, size, size)
+        self.point.setPen(darker_pen(self.parentItem().thin_pen))
+        self.point.setVisible(False)
+
         # set the private attribute directly to perform a single update
         self._p1 = p1
         self._p2 = p2
         self.update()
+        self.secable = secable
 
     @property
     def p1(self):
@@ -120,13 +134,37 @@ class OdvEditLineElement(QGraphicsLargeLineItem):
         super().update(rect)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton:
-            scene_position = self.mapToScene(event.pos())
-            menu = QMenu()
-            a_add_point = QAction("Add Point")
-            a_add_point.triggered.connect(lambda: self.parentItem().add_point(scene_position, self))
-            menu.addAction(a_add_point)
-            menu.exec(QCursor.pos())
+        ctrl = bool(event.modifiers() & Qt.KeyboardModifier.ControlModifier)
+        if event.button() == Qt.MouseButton.LeftButton:
+            if ctrl:
+                if self.secable:
+                    self.parentItem().add_point(event.scenePos(), self)
+
             event.accept()
         else:
             event.ignore()
+
+    def hoverEnterEvent(self, event):
+        self.setFocus()
+        ctrl = bool(event.modifiers() & Qt.KeyboardModifier.ControlModifier)
+        self.point.setVisible(ctrl and self.secable)
+        self.point.setPos(event.scenePos().truncated() + self.parentItem().grid_alignment)
+
+    def hoverMoveEvent(self, event):
+        self.point.setPos(event.scenePos().truncated() + self.parentItem().grid_alignment)
+
+    def hoverLeaveEvent(self, event):
+        self.point.setVisible(False)
+
+    def keyPressEvent(self, event):
+        if self.isUnderMouse():
+            ctrl = bool(event.modifiers() & Qt.KeyboardModifier.ControlModifier)
+            self.point.setVisible(ctrl and self.secable)
+        else:
+            self.clearFocus()
+
+    def keyReleaseEvent(self, event):
+        if self.isUnderMouse():
+            self.point.setVisible(False)
+        else:
+            self.clearFocus()

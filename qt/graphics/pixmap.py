@@ -34,11 +34,11 @@ class GraphicMask(OdvEditGraphic):
         self.shadow = OdvShadow(item, QPolygonF([QPointF(x,y) for x,y in self.mask_image.hull()])
                                 .translated(self.pos() + QPointF(0.5,0.5)))
 
-        self._state = GraphicState.Fix
+        self._state = GraphicState.Lock
 
-    def enter_edit_mode(self):
-        if self.state == GraphicState.Fix:
-            self._state = GraphicState.Edit
+    def unlock(self):
+        if self.state == GraphicState.Lock:
+            self._state = GraphicState.Unlock
 
             self.remove(self.mask_fix)
 
@@ -57,9 +57,9 @@ class GraphicMask(OdvEditGraphic):
             self.rect_edit.setPen(rect_pen)
             self.rect_edit.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIgnoresParentOpacity)
 
-    def exit_edit_mode(self, save):
-        if self.state == GraphicState.Edit:
-            self._state = GraphicState.Fix
+    def lock(self, save):
+        if self.state == GraphicState.Unlock:
+            self._state = GraphicState.Lock
             if save is True:
                 self.copy_mask_image.crop_to_view()
                 # save mask_image in model

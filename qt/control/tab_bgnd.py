@@ -171,3 +171,6 @@ class BgndItem(QGenericTreeItem):
 
 class QBgndControl(QSectionControl):
     item_types = {Bgnd: BgndItem}
+    odv_types =       [Bgnd         ]
+    tree_item_types = [BgndItem     ]
+    inspector_types = [BgndInspector]

@@ -127,6 +127,9 @@ class QGenericTreeItem(QTreeWidgetItem):
         self.treeWidget().scrollToItem(self)
         self.section_control.control.setCurrentWidget(self.section_control)
 
+    def hover_detection(self):
+        return self.section_control.hover_detection.isChecked(type(self._odv_object))
+
 
 
 class QGenericTree(QTreeWidget):

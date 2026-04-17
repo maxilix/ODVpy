@@ -86,8 +86,7 @@ class ObstacleInspector(Inspector):
 
         if len(self.items) == 1:
             n = len(self.items[0].obstacle.poly)
-            # TODO enable drag of large polynom
-            self.geometry_info_label.setText(f"The current saved polygon has {n} points.\n{"WARNING, polygons larger than 20 points cannot be dragged du to performance issues." if n > 20 else ""}")
+            self.geometry_info_label.setText(f"The current saved polygon has {n} points.")
         else:
             self.geometry_info_label.setText(f"")
 
@@ -147,8 +146,7 @@ class SectorInspector(Inspector):
 
         if len(self.items) == 1:
             n = len(self.items[0].sector.poly)
-            # TODO enable drag of large polynom
-            self.geometry_info_label.setText(f"The current saved polygon has {n} points.{"\nWARNING, polygons larger than 20 points cannot be dragged\nPerformance issues" if n > 20 else ""}")
+            self.geometry_info_label.setText(f"The current saved polygon has {n} points.")
             self.obstacle_list_label.setText(f"The {self.items[0].name} has {len(self.items[0].sector.obstacle_list)} obstacles.")
         else:
             self.geometry_info_label.setText(f"")
@@ -217,3 +215,9 @@ class QMoveControl(QSectionControl):
                   Layer: LayerItem,
                   Sector: SectorItem,
                   Obstacle: ObstacleItem}
+
+
+    odv_types =       [Move,          Layer,          Sector,          Obstacle         ]
+    tree_item_types = [MoveItem,      LayerItem,      SectorItem,      ObstacleItem     ]
+    inspector_types = [MoveInspector, LayerInspector, SectorInspector, ObstacleInspector]
+

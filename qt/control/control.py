@@ -53,9 +53,9 @@ class QControl(QTabWidget):
         self.tab["BGND"] = QBgndControl(self, level.data["BGND"])
         self.tab["MOVE"] = QMoveControl(self, level.data["MOVE"])
         # self.tab["SGHT"] = QSectionControl(self, level.dvd.sght)
-        self.tab["MASK"] = QMaskControl(self, level.data["MASK"])
-        self.tab["WAYS"] = QWaysControl(self, level.data["WAYS"])
-        self.tab["ELEM"] = None
+        # self.tab["MASK"] = QMaskControl(self, level.data["MASK"])
+        # self.tab["WAYS"] = QWaysControl(self, level.data["WAYS"])
+        # self.tab["ELEM"] = None
         # self.tab["FXBK"] = None
         # self.tab["MSIC"] = None
         # self.tab["SND"] = None
@@ -79,6 +79,25 @@ class QControl(QTabWidget):
         self.setCurrentWidget(self.tab["MOVE"])
         # self.scene.center_view(zoom=0.6)
 
+        # artificial widgets
+        # self.addTab(QWidget(), "SGHT")
+        # self.addTab(QWidget(), "MASK")
+        # self.addTab(QWidget(), "WAYS")
+        # self.addTab(QWidget(), "ELEM")
+        # self.addTab(QWidget(), "FXBK")
+        # self.addTab(QWidget(), "MSIC")
+        # self.addTab(QWidget(), "SND")
+        # self.addTab(QWidget(), "PAT")
+        # self.addTab(QWidget(), "BOND")
+        # self.addTab(QWidget(), "MAT")
+        # self.addTab(QWidget(), "LIFT")
+        # self.addTab(QWidget(), "AI")
+        # self.addTab(QWidget(), "BUIL")
+        # self.addTab(QWidget(), "SCRP")
+        # self.addTab(QWidget(), "JUMP")
+        # self.addTab(QWidget(), "CART")
+        # self.addTab(QWidget(), "DLGS")
+        # self.addTab(QWidget(), "SCB")
 
         # button = scene.addWidget(QPushButton("Button 1"))
         # button.setFlag(button.GraphicsItemFlag.ItemIgnoresTransformations)

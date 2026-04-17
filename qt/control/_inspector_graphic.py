@@ -186,17 +186,17 @@ class GeometrySubInspector(GraphicSubInspector):
     def edit_button_clicked(self):
         self.visibility_checkbox.setChecked(True)
         self.edit_layout.setCurrentWidget(self.edit_out)
-        self.graphic.enter_edit_mode()
+        self.graphic.unlock()
         self.global_update()
 
     def save_button_clicked(self):
         self.edit_layout.setCurrentWidget(self.edit_in)
-        self.graphic.exit_edit_mode(save=True)
+        self.graphic.lock(save=True)
         self.global_update()
 
     def cancel_button_clicked(self):
         self.edit_layout.setCurrentWidget(self.edit_in)
-        self.graphic.exit_edit_mode(save=False)
+        self.graphic.lock(save=False)
         self.global_update()
 
 
