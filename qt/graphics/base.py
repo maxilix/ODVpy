@@ -41,11 +41,6 @@ class OdvGraphic(QGraphicsItem):
             child.update(rect)
         super().update(rect)
 
-    # Todo remove localize, cause item is always localized by group (eventually group of 1)
-    def localize(self):
-        raise DeprecationWarning
-        self.scene().move_to_item(self)
-
 
 
 class GraphicState(Enum):
