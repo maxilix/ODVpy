@@ -94,6 +94,7 @@ class OdvEditLineElement(QGraphicsLargeLineItem):
         self.point = QGraphicsEllipseItem(self)
         self.point.setRect(-size / 2, -size / 2, size, size)
         self.point.setPen(darker_pen(self.parentItem().thin_pen))
+        self.point.setPos(p1.pos())
         self.point.setVisible(False)
 
         # set the private attribute directly to perform a single update

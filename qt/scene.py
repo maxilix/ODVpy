@@ -65,6 +65,7 @@ class QScene(QGraphicsScene):
         #     anim.finished.connect(lambda: self.pointer.setOpacity(1))
 
     #TODO review adding/removing shadow mechanics
+    #TODO review accept/ignore of event in the whole graphic item chain (and propagation)
 
     def addItem(self, item):
         assert isinstance(item, OdvGraphic)
@@ -97,26 +98,35 @@ class QScene(QGraphicsScene):
                 if editable.state == GraphicState.Unlock:
                     editable.lock()
 
-        if self.pointer_item is None:
+        if self.pointer_item is not None:
             super().mousePressEvent(event)
-            if event.button() == Qt.MouseButton.RightButton and not event.isAccepted():
+        else:
+            if event.button() == Qt.MouseButton.RightButton:# and not event.isAccepted():
                 menu = QMenu()
                 x = floor(event.scenePos().x())
                 y = floor(event.scenePos().y())
                 save_pos = QAction(f"({x}, {y})")
                 save_pos.triggered.connect(lambda state: self.tool_bar.set_xy_localize(x, y))
                 menu.addAction(save_pos)
-
                 menu.addSeparator()
-
                 actions = []
                 for tree_item in [g.tree_item for g in self.items(event.scenePos()) if isinstance(g, OdvShadow) and g.tree_item.hover_detection()]:
                     actions.append(QAction(tree_item.name))
                     actions[-1].triggered.connect(lambda state, inner_item=tree_item: self.focus_on(inner_item))
-
                 menu.addActions(actions)
-
                 menu.exec(QCursor.pos())
+            elif event.button() == Qt.MouseButton.LeftButton and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                editables = [g for g in self.items(event.scenePos()) if isinstance(g, OdvEditGraphic)]
+                unlocked = 0
+                for editable in editables:
+                    if editable.isVisible() and editable.state == GraphicState.Lock:
+                        editable.unlock()
+                        unlocked += 1
+                if unlocked == 0:
+                    super().mousePressEvent(event)
+            else:
+                super().mousePressEvent(event)
+
 
     def mouseReleaseEvent(self, event):
         if self.pointer_item is not None:
@@ -128,12 +138,7 @@ class QScene(QGraphicsScene):
     def mouseDoubleClickEvent(self, event):
         if self.pointer_item is not None:
             self.pointer_item.exit_creation_mode()
-        else:
-            for editable in [g for g in self.items(event.scenePos()) if isinstance(g, OdvEditGraphic)]:
-                if editable.isVisible() and editable.state == GraphicState.Lock:
-                    editable.unlock()
-                    return
-            super().mouseDoubleClickEvent(event)
+        super().mouseDoubleClickEvent(event)
 
     def claim_pointer(self, item):
         if self.pointer_item is None:

@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QPointF
-from PyQt6.QtGui import QPolygonF
+from PyQt6.QtGui import QPolygonF, QPainterPath
 
 from qt.graphics.base import OdvEditGraphic, GraphicState
 from qt.graphics.line_elem import OdvEditLineElement
@@ -19,6 +19,11 @@ class GraphicPolygon(OdvEditGraphic):
         self.line_edit_items = []
         self.shape_edit_item = None
         self.shadow.setPolygon(polygon.translated(self.grid_alignment))
+
+    def shape(self):
+        path = QPainterPath()
+        path.addPolygon(self.polygon.translated(self.grid_alignment))
+        return path
 
     @property
     def polygon(self) -> QPolygonF:

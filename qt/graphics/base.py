@@ -46,16 +46,6 @@ class OdvGraphic(QGraphicsItem):
         raise DeprecationWarning
         self.scene().move_to_item(self)
 
-    # def setVisible(self, visible: bool):
-    #     if visible != self.isVisible():
-    #         super().setVisible(visible)
-    #         self.item.update()
-    #
-    # def setOpacity(self, opacity: float):
-    #     if opacity != self.opacity():
-    #         super().setOpacity(opacity)
-    #         self.item.update()
-
 
 
 class GraphicState(Enum):
@@ -91,6 +81,10 @@ class OdvEditGraphic(OdvGraphic):
             elif self.state == GraphicState.Create:
                 self.delete()
         super().setVisible(visibility)
+
+    def shape(self):
+        print(self)
+        raise NotImplementedError
 
     def claim_pointer(self):
         return self.scene().claim_pointer(self)
