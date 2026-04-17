@@ -5,6 +5,7 @@ from .rw_stream import RWStreamable
 from .exception import ReadingError, NegativeUnsignedError, TooBigError, TooSmallError
 
 
+
 class Bytes(bytes, RWStreamable):
 
     @classmethod
@@ -17,6 +18,7 @@ class Bytes(bytes, RWStreamable):
 
     def to_stream(self, stream):
         stream.write_raw(self)
+
 
 
 # class Bool(int, RWStreamable):
@@ -33,6 +35,7 @@ class Bytes(bytes, RWStreamable):
 #             stream.write_raw(b'\x01')
 #         else:
 #             stream.write_raw(b'\x00')
+
 
 
 class LittleEndianInteger(int, RWStreamable):
@@ -72,9 +75,11 @@ class LittleEndianInteger(int, RWStreamable):
         stream.write_raw(raw_bytes)
 
 
+
 class Char(LittleEndianInteger):
     length = 1
     signed = True
+
 
 
 class Short(LittleEndianInteger):
@@ -82,9 +87,11 @@ class Short(LittleEndianInteger):
     signed = True
 
 
+
 class Int(LittleEndianInteger):
     length = 4
     signed = True
+
 
 
 class UChar(LittleEndianInteger):
@@ -92,14 +99,17 @@ class UChar(LittleEndianInteger):
     signed = False
 
 
+
 class UShort(LittleEndianInteger):
     length = 2
     signed = False
 
 
+
 class UInt(LittleEndianInteger):
     length = 4
     signed = False
+
 
 
 class Float(float, RWStreamable):
@@ -110,13 +120,12 @@ class Float(float, RWStreamable):
     @classmethod
     def from_stream(cls, stream):
         raw_bytes = stream.read_raw(4)
-        # stream.debug_print(raw_bytes.hex())
-        # print(unpack('f', raw_bytes)[0])
         return cls(unpack('f', raw_bytes)[0])
 
     def to_stream(self, stream):
         raw_bytes = pack('f', self)
         stream.write_raw(raw_bytes)
+
 
 
 class String(str, RWStreamable):
@@ -137,22 +146,3 @@ class String(str, RWStreamable):
     def to_stream(self, stream):
         raw_bytes = self.encode("latin1")
         stream.write_raw(raw_bytes)
-
-
-# class Array(RWStreamable):
-#     @classmethod
-#     def from_stream(cls, stream, object_type=None, *, comment=None, in_line=False):
-#         assert issubclass(object_type, RWStreamable)
-#         size = stream.read(UShort)
-#         if comment is not None:
-#             stream.debug_comment(comment)
-#         if in_line is True:
-#             stream.debug_new_space()
-#         else:
-#             stream.debug_indent(+1)
-#         rop = [stream.read(object_type) for _ in range(size)]
-#         if in_line is True:
-#             stream.debug_new_space()
-#         else:
-#             stream.debug_indent(-1)
-#         return rop

@@ -3,11 +3,13 @@ import random
 import shutil
 
 
+
 def extension(filename):
     try:
         return filename.rsplit(".", 1)[1].lower()
     except IndexError:
         return None
+
 
 
 def remove_extension(filename):
@@ -17,6 +19,7 @@ def remove_extension(filename):
         return filename
 
 
+
 def temp_filename(prefix=".", suffix=".temp", alphabet="0123456789abcdef", length=8):
     rop = ""
     while os.path.exists(rop):
@@ -24,6 +27,7 @@ def temp_filename(prefix=".", suffix=".temp", alphabet="0123456789abcdef", lengt
     # temp_file = open(temp_filename, "w")
     # temp_file.close()
     return rop
+
 
 
 def copy(source, destination):

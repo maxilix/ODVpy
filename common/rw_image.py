@@ -11,6 +11,7 @@ from .rw_stream import RWStreamable, RStreamable, ReadStream, WriteStream
 from .rw_base import UShort, UInt, Bytes, UChar
 
 
+
 class Pixel(RStreamable):
 
 	def __init__(self, r,g,b,a=255):
@@ -34,6 +35,7 @@ class Pixel(RStreamable):
 		g8 = ((r5g6b5 >> 5) & 0x3F) * 4
 		b8 = (r5g6b5 & 0x1F) * 8
 		return cls(r8, g8, b8)
+
 
 
 class Image(RWStreamable):
@@ -85,7 +87,7 @@ class Image(RWStreamable):
 			decompressed = bz2.decompress(data)
 		else:
 			# to_stream always write bz2 compression
-			raise NotImplemented(f"compression type {compression}")
+			raise NotImplementedError(f"compression type {compression}")
 
 		image_565 = np.frombuffer(decompressed, dtype=np.uint16).reshape((height, width))
 		image = np.zeros((height, width, 3), dtype=np.uint8)
@@ -109,6 +111,7 @@ class Image(RWStreamable):
 		size = len(data)
 		stream.write(UInt(size))
 		stream.write(Bytes(data))
+
 
 
 class MaskImage(RWStreamable):
@@ -263,6 +266,7 @@ class MaskImage(RWStreamable):
 		return hull
 
 	def to_stream(self, stream):
+		# Write mask without compression
 		w = self.width
 		h = self.height
 		line_length = ceil(w / 8)
@@ -277,4 +281,3 @@ class MaskImage(RWStreamable):
 		data = b_line_length + b_descriptor + (b_line_length + b_descriptor).join(lines_array)
 		stream.write(UShort(len(data)))
 		stream.write(Bytes(data))
-

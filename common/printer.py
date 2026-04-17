@@ -1,10 +1,10 @@
-
-import sys
 import io
 
 from . import ReadStream
 
+
 # ─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼
+
 
 
 class Indent(object):
@@ -29,7 +29,6 @@ class Indent(object):
         if self._value > 0:
             rop += " ├─ "
         return rop
-
 
 
 
@@ -63,11 +62,6 @@ class Printer(object):
             self._write(" ├─ ")
 
         self._indent -= 1
-
-    # def new_group(self, object_to_read, description):
-    #     self._write(group_name)
-
-
 
     def print_all(self):
         print(self._output_stream)

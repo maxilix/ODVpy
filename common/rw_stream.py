@@ -13,10 +13,12 @@ class RStreamable(ABC):
         pass
 
 
+
 class WStreamable(ABC):
     @abstractmethod
     def to_stream(self, stream):
         pass
+
 
 
 class RWStreamable(RStreamable, WStreamable, ABC):
@@ -100,6 +102,7 @@ class ReadStream(object):
     #     os.makedirs(os.path.dirname(filename), exist_ok=True)
     #     with open(filename, "w") as file:
     #         file.write(self._debug_output.getvalue())
+
 
 
 class WriteStream(object):
