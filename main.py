@@ -58,7 +58,7 @@ class QWindow(QMainWindow):
         file_menu.addAction(close_level_action)
 
         quit_action = QAction("Quit", self)
-        quit_action.triggered.connect(exit)
+        quit_action.triggered.connect(app.quit)
         file_menu.addAction(quit_action)
         # ============================== File menu ==============================
 
