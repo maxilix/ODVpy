@@ -1,0 +1,25 @@
+
+[project]
+name = "ODVpy"
+version = "0.1.0.dev0"
+description = "A mission editor for Desperados: Wanted Dead or Alive"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Maxe", email = "" },
+]
+requires-python = ">=3.11"
+dependencies = [
+    "PyQt6",
+    "opencv-python",
+    "numpy",
+    "matplotlib",
+]
+ 
+[project.scripts]
+odvpy = "main:main"
+ 
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.backends.legacy:build"
