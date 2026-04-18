@@ -2,11 +2,10 @@ import hashlib
 import os
 import re
 
-from .data_section import *
-from settings import *
-from config import CONFIG
-
 from common import copy, InvalidHashError, ReadStream, WriteStream, Bytes
+from config import Config
+from game_data import *
+from .data_section import *
 
 
 def original_name(index, root=None):
@@ -22,26 +21,6 @@ def original_name(index, root=None):
 
     return str(os.path.join(*name))
 
-# data_section_type = [Misc,
-#                      Bgnd,
-#                      Move,
-#                      Sght,
-#                      Mask,
-#                      Ways,
-#                      Elem,
-#                      Fxbk,
-#                      Msic,
-#                      Snd,
-#                      Pat,
-#                      Bond,
-#                      Mat,
-#                      Lift,
-#                      Ai,
-#                      Buil,
-#                      Scrp,
-#                      Jump,
-#                      Cart,
-#                      Dlgs]
 
 class Level(object):
     def __init__(self, abs_filename, index=None):
@@ -74,7 +53,7 @@ class Level(object):
         self.data["ELEM"] = stream.read(Elem)
         self.data["FXBK"] = stream.read(Fxbk)
         self.data["MSIC"] = stream.read(Msic)
-        self.data["SND "] = stream.read(Snd)
+        self.data["SND"] = stream.read(Snd)
         self.data["PAT"]  = stream.read(Pat)
         # self.data["BOND"] = stream.read(Bond)
         # self.data["MAT"]  = stream.read(Mat)
@@ -123,7 +102,7 @@ class Level(object):
     #         try:
     #             self._dvm = DvmParser(self.abs_name + ".dvm")
     #         except FileNotFoundError as e:
-    #             if 0 <= self.index <= 25 and CONFIG.automatically_load_original_dvm is True:
+    #             if 0 <= self.index <= 25 :
     #                 self._dvm = DvmParser(original_name(self.index, root=CONFIG.backup_path) + ".dvm")
     #             else:
     #                 raise e
@@ -158,11 +137,11 @@ class Level(object):
         # return True
 
     def backup(self):
-        assert CONFIG.installation_path in self.abs_filename
+        assert Config.installation_path in self.abs_filename
         if self.is_original() is False:
             raise InvalidHashError()
         source = self.abs_filename
-        destination = self.abs_filename.replace(CONFIG.installation_path, CONFIG.backup_path)
+        destination = self.abs_filename.replace(Config.installation_path, Config.backup_path)
         copy(f"{source}.dvd", f"{destination}.dvd")
         copy(f"{source}.dvm", f"{destination}.dvm")
         copy(f"{source}.scb", f"{destination}.scb")
@@ -170,10 +149,10 @@ class Level(object):
              f"{destination[:-9]}{os.sep}briefing{os.sep}d00bs{self.index:02}")
 
     def restore(self):
-        assert CONFIG.backup_path in self.abs_filename
+        assert Config.backup_path in self.abs_filename
         assert self.is_original()
         source = self.abs_filename
-        destination = self.abs_filename.replace(CONFIG.backup_path, CONFIG.installation_path)
+        destination = self.abs_filename.replace(Config.backup_path, Config.installation_path)
         copy(f"{source}.dvd", f"{destination}.dvd")
         copy(f"{source}.dvm", f"{destination}.dvm")
         copy(f"{source}.scb", f"{destination}.scb")
@@ -182,7 +161,7 @@ class Level(object):
 
     def insert_in_game(self):
         source = self.abs_filename
-        destination = original_name(self.index, root=CONFIG.installation_path)
+        destination = original_name(self.index, root=Config.installation_path)
 
         stream = WriteStream()
         stream.write(self.data["MISC"])
@@ -225,10 +204,10 @@ class Level(object):
 class BackupedLevel(Level):
     def __init__(self, index):
         assert 0 <= index <= 25
-        super().__init__(original_name(index, root=CONFIG.backup_path), index)
+        super().__init__(original_name(index, root=Config.backup_path), index)
 
 
 class InstalledLevel(Level):
     def __init__(self, index):
         assert 0 <= index <= 25
-        super().__init__(original_name(index, root=CONFIG.installation_path), index)
+        super().__init__(original_name(index, root=Config.installation_path), index)

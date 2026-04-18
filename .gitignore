@@ -1,6 +1,7 @@
 ### ODVpy Editor
 backup/
 config.json
+config.toml
 
 # tests
 tests/

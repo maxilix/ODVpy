@@ -1,54 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from common import *
-
-# 20 dvd sections in order
-section_fullname = {"MISC": "Parameters",
-                    "BGND": "Maps",
-                    "MOVE": "Movement Areas",
-                    "SGHT": "3D Elements",
-                    "MASK": "Visual Masks",
-                    "WAYS": "Patrols",
-                    "ELEM": "Elements",
-                    "FXBK": "Sound Effects",
-                    "MSIC": "Musics",
-                    "SND ": "Sounds",
-                    "PAT ": "Patches",
-                    "BOND": "Bonds",
-                    "MAT ": "Materials",
-                    "LIFT": "Vertical Links",
-                    "AI  ": "AI Tactics",
-                    "BUIL": "Buildings",
-                    "SCRP": "Scipts",
-                    "JUMP": "Jump Zones",
-                    "CART": "Moving Objects",
-                    "DLGS": "Dialogs"}
-
-"""
-DVM/BGND    Loading map             Chargement de la carte
-PAT         Loading updates         Chargement des modifications
-ELEM        Loading actors          Chargement des acteurs
-MOVE        Loading areas           Chargement des secteurs
-MOVE        Loading pathfinder      Chargement du générateur de chemin
-SGHT        Loading 3D Elements     Chargement de vision volumétrique
-MISC        Loading parameters      Chargement des paramètres spécifiques
-BOND        Loading bonds           Chargement des liaisons de zones
-FXBK        Loading SFX info        Chargement des sources sonores
-MAT         Loading materials       Chargement des matériaux
-LIFT        Loading links           Chargement des liaisons verticales
-BUIL        Loading buildings       Chargement des batiments
-WAYS        Loading waypoints       Chargement des chemins de rondes
-SCRP        Loading scripts         Chargement des scripts
-AI          Loading AI tactics      Chargement des tactiques d'IA
-JUMP        Loading jump zones      Chargement des zones de saut
-CART        Loading moving objects  Chargement des objets mobiles
-DLGS        Loading dialogues       Chargement des dialogues
-MSIC        Loading music           Chargement des musiques
-SND         Loading sound           Chargement des sons
-WAYS        Loading waypoints       Chargement des chemins de rondes
-"""
-
-
+from game_data import *
 
 
 class Section(RWStreamable):
@@ -71,7 +24,7 @@ class Section(RWStreamable):
 
     @property
     def fullname(self):
-        return section_fullname[self._section_name]
+        return SECTION_FULLNAME[self._section_name]
 
     @classmethod
     def from_stream(cls, stream):

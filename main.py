@@ -4,7 +4,8 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileD
     QVBoxLayout
 
 from common import *
-from config import CONFIG
+from config import Config
+from game_data import *
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
 from qt.control.control import QControl
@@ -13,7 +14,6 @@ from qt.preferences import QPreferencesDialog
 from qt.scene import QScene
 from qt.scene_tool_bar import QSceneToolBar
 from qt.viewport import QViewport
-from settings import *
 
 
 # avoid recurrent warning like this
@@ -228,10 +228,11 @@ class QWindow(QMainWindow):
 
 
 if __name__ == '__main__':
-    CONFIG.load()
+    Config.load()
     app = QApplication([])
     # print(QStyleFactory.keys())
     app.setStyle('Fusion')
     window = QWindow()
     window.show()
     app.exec()
+    Config.save()
