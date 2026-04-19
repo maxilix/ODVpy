@@ -5,12 +5,12 @@ from PyQt6.QtGui import QRegularExpressionValidator
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QLineEdit, QFileDialog, \
     QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QGraphicsRectItem
 
+from app_context import AppContext as AC
 from common import ReadStream, Image
 from odv.data_section import Bgnd
 from qt.common.simple_messagebox import QErrorBox
 from qt.common.utils import image_to_qimage
-from qt.control.control_section import QSectionControl
-from qt.control.generic_inspector import Inspector, QGeometrySIW
+from qt.control.generic_inspector import Inspector
 from qt.control.generic_tree import QGenericTreeItem
 from qt.graphics import GraphicMap
 
@@ -146,7 +146,7 @@ class BgndInspector(Inspector):
         self.minimap_scene.addItem(self.minimap_item)
         self.minimap_rect_item = QGraphicsRectItem()
         self.minimap_scene.addItem(self.minimap_rect_item)
-        self.item.section_control.scene.viewport().view_changed.connect(self.refresh_minimap)
+        AC.scene.viewport().view_changed.connect(self.refresh_minimap)
 
 
 class BgndItem(QGenericTreeItem):
@@ -166,11 +166,3 @@ class BgndItem(QGenericTreeItem):
         self.graphic_map = GraphicMap(self, image_to_qimage(self.bgnd.map_image))
         self.add_graphic(self.graphic_map)
         self.graphic_map.setVisible(True)
-
-
-
-class QBgndControl(QSectionControl):
-    item_types = {Bgnd: BgndItem}
-    odv_types =       [Bgnd         ]
-    tree_item_types = [BgndItem     ]
-    inspector_types = [BgndInspector]

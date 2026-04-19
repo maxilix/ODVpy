@@ -141,6 +141,8 @@ ORIGINAL_LEVEL_NAME = [
 ]
 # 20 dvd sections in order
 
+NB_SECTION = 20
+
 SECTION_FLAG = ["MISC",
                 "BGND",
                 "MOVE",
@@ -162,26 +164,26 @@ SECTION_FLAG = ["MISC",
                 "CART",
                 "DLGS"]
 
-SECTION_FULLNAME = {"MISC": "Parameters",
-                    "BGND": "Maps",
-                    "MOVE": "Movement Areas",
-                    "SGHT": "3D Elements",
-                    "MASK": "Visual Masks",
-                    "WAYS": "Patrols",
-                    "ELEM": "Elements",
-                    "FXBK": "Sound Effects",
-                    "MSIC": "Musics",
-                    "SND ": "Sounds",
-                    "PAT ": "Patches",
-                    "BOND": "Bonds",
-                    "MAT ": "Materials",
-                    "LIFT": "Vertical Links",
-                    "AI  ": "AI Tactics",
-                    "BUIL": "Buildings",
-                    "SCRP": "Scripts",
-                    "JUMP": "Jump Zones",
-                    "CART": "Moving Objects",
-                    "DLGS": "Dialogs"}
+SECTION_FULLNAME = ["Parameters",
+                    "Maps",
+                    "Movement Areas",
+                    "3D Elements",
+                    "Visual Masks",
+                    "Patrols",
+                    "Elements",
+                    "Sound Effects",
+                    "Musics",
+                    "Sounds",
+                    "Patches",
+                    "Bonds",
+                    "Materials",
+                    "Vertical Links",
+                    "AI Tactics",
+                    "Buildings",
+                    "Scripts",
+                    "Jump Zones",
+                    "Moving Objects",
+                    "Dialogs"]
 
 """
 MISC        Loading parameters      Chargement des paramètres spécifiques

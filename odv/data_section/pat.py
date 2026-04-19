@@ -4,7 +4,7 @@ from odv.section import Section
 
 
 class Pat(Section):
-    _section_name = "PAT "
+    _section_id = 10
     _section_version = 10
 
     def _load(self, substream: ReadStream) -> None:

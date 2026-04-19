@@ -35,7 +35,7 @@ class BondLine(OdvObject):
 
 
 class Bond(Section, OdvObjectIterable):
-    _section_name = "BOND"
+    _section_id = 11
     _section_version = 2
 
     move: Move

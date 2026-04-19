@@ -162,7 +162,7 @@ class Layer(OdvObjectIterable):
 
 
 class Move(Section, OdvObjectIterable):
-    _section_name = "MOVE"
+    _section_id = 2
     _section_version = 1
 
     layer_list: list[Layer]
@@ -198,7 +198,7 @@ class Move(Section, OdvObjectIterable):
                 return len(list(iter(self)))
         return SI()
 
-    def _load(self, substream: ReadStream) -> None:
+    def _load(self, substream: ReadStream, level) -> None:
         nb_layer = substream.read(UShort)
         # for _ in range(nb_layer):
         #     self.add_child(substream.read(Layer, parent=self))

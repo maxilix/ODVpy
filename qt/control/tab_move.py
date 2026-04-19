@@ -3,7 +3,6 @@ from PyQt6.QtWidgets import QLabel
 
 from odv.data_section.move import Layer, Sector, Obstacle, Move
 from qt.common.separator_line import QHLine
-from qt.control.control_section import QSectionControl
 from qt.control.generic_inspector import Inspector, QGeometrySIW
 from qt.control.generic_tree import QGenericTreeItem
 from qt.graphics import GraphicPolygon, OdvThinPen, OdvLightBrush, OdvHighBrush
@@ -207,17 +206,3 @@ class MoveItem(QGenericTreeItem):
     def __init__(self, section_control, move:Move):
         super().__init__(section_control, move)
         self.move = move
-
-#########################################################################
-
-class QMoveControl(QSectionControl):
-    item_types = {Move: MoveItem,
-                  Layer: LayerItem,
-                  Sector: SectorItem,
-                  Obstacle: ObstacleItem}
-
-
-    odv_types =       [Move,          Layer,          Sector,          Obstacle         ]
-    tree_item_types = [MoveItem,      LayerItem,      SectorItem,      ObstacleItem     ]
-    inspector_types = [MoveInspector, LayerInspector, SectorInspector, ObstacleInspector]
-

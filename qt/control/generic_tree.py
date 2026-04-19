@@ -6,6 +6,8 @@ from qt.common.utils import bounding_rect_of, same_type
 from qt.control.generic_inspector import Inspector
 from qt.graphics.base import OdvEditGraphic, GraphicState
 
+from app_context import AppContext as AC
+
 
 class QGenericTreeItem(QTreeWidgetItem):
     inspector_type = Inspector
@@ -36,10 +38,6 @@ class QGenericTreeItem(QTreeWidgetItem):
         if len(self._graphics) > 0:
             if isinstance(self._graphics[0], OdvEditGraphic):
                 title += f" {self._graphics[0].state.name}"
-
-
-
-
 
         # if self.inspector.valid_state is False:
         #     title += " -INVALID-"
@@ -78,17 +76,13 @@ class QGenericTreeItem(QTreeWidgetItem):
     def name(self):
         return self._odv_object.name
 
-    # @property
-    # def scene(self):
-    #     return self.section_control.scene
-
     def add_graphic(self, graphic_item):
         self._graphics.append(graphic_item)
-        self.section_control.scene.addItem(graphic_item)
+        AC.scene.addItem(graphic_item)
 
     def remove_graphic(self, graphic_item):
         self._graphics.remove(graphic_item)
-        self.section_control.scene.removeItem(graphic_item)
+        AC.scene.removeItem(graphic_item)
 
     def graphics_visibility_state(self):
         l = [g.isVisible() for g in self._graphics]
@@ -114,7 +108,7 @@ class QGenericTreeItem(QTreeWidgetItem):
             rect = bounding_rect_of(self._graphics)
             if not rect.isEmpty():
                 self.show_graphics()
-                self.section_control.scene.move_to_rect(rect)
+                AC.scene.move_to_rect(rect)
                 self.section_control.update_current_inspector()
 
     def focus(self):
@@ -125,7 +119,7 @@ class QGenericTreeItem(QTreeWidgetItem):
             parent = parent.parent()
         self.setSelected(True)
         self.treeWidget().scrollToItem(self)
-        self.section_control.control.setCurrentWidget(self.section_control)
+        AC.control.setCurrentWidget(self.section_control)
 
     def hover_detection(self):
         return self.section_control.hover_detection.isChecked(type(self._odv_object))

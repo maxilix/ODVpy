@@ -105,7 +105,7 @@ class MaskLayer(OdvObjectIterable):
 
 
 class Mask(Section, OdvObjectIterable):
-    _section_name = "MASK"
+    _section_id = 4
     _section_version = 4
 
     layer_list = list[MaskLayer]

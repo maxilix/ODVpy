@@ -4,7 +4,7 @@ from odv.section import Section
 
 
 class Fxbk(Section):
-    _section_name = "FXBK"
+    _section_id = 7
     _section_version = 3
 
     def _load(self, substream: ReadStream) -> None:

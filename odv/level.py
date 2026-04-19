@@ -2,91 +2,61 @@ import hashlib
 import os
 import re
 
-from common import copy, InvalidHashError, ReadStream, WriteStream, Bytes
+from common import copy, InvalidHashError, ReadStream, WriteStream, Bytes, original_name
 from config import Config
 from game_data import *
 from .data_section import *
 
 
-def original_name(index, root=None):
-    if root is None:
-        name = []
-    else:
-        name = [root]
-    if index == 0:
-        name.append("demo")
-    name.append("data")
-    name.append("levels")
-    name.append(f"level_{index:02}")
-
-    return str(os.path.join(*name))
-
 
 class Level(object):
-    def __init__(self, abs_filename, index=None):
+    def __init__(self, abs_filename="", index=None):
         self.abs_filename = abs_filename  # absolute filename without extension
-        if index is None:
-            try:
-                m = re.findall(r"level_(\d\d)", self.abs_filename)
-                self.index = int(m[-1])
-            except IndexError:
-                self.index = -1
+        # if index is None:
+        #     try:
+        #         m = re.findall(r"level_(\d\d)", self.abs_filename)
+        #         self.index = int(m[-1])
+        #     except IndexError:
+        #         self.index = -1
+        # else:
+        #     self.index = index
+        if abs_filename:
+            dvd_filename = self.abs_filename + ".dvd"
+            stream = ReadStream.from_file(dvd_filename)
+
+            self.data = [
+                stream.read(Misc),
+                stream.read(Bgnd),
+                stream.read(Move),
+                stream.read(Sght),
+                stream.read(Mask),
+                stream.read(Ways),
+                # stream.read(Elem),
+                # stream.read(Fxbk),
+                # stream.read(Msic),
+                # stream.read(Snd),
+                # stream.read(Pat),
+                # stream.read(Bond),
+                # stream.read(Mat),
+                # stream.read(Lift),
+                # stream.read(Ai),
+                # stream.read(Buil),
+                # stream.read(Scrp),
+                # stream.read(Jump),
+                # stream.read(Cart),
+                # stream.read(Dlgs),
+            ]
+            self.tail = stream.read_raw()
         else:
-            self.index = index
+            self.data = [None]*NB_SECTION
 
-        self._dvd_filename = self.abs_filename + ".dvd"
-        stream = ReadStream.from_file(self._dvd_filename)
-
-        self.data = dict()
-        self.data["MISC"] = stream.read(Misc)
-        self.data["MISC"].load()
-        self.data["BGND"] = stream.read(Bgnd)
-        self.data["BGND"].load(abs_filename=self.abs_filename)
-        self.data["MOVE"] = stream.read(Move)
-        self.data["MOVE"].load()
-        self.data["SGHT"] = stream.read(Sght)
+        # self.data["MISC"].load()
+        # self.data["BGND"].load(abs_filename=self.abs_filename)
+        # self.data["MOVE"].load()
         # self.data["SGHT"].load(move=self.data["MOVE"])
-        self.data["MASK"] = stream.read(Mask)
-        self.data["MASK"].load()
-        self.data["WAYS"] = stream.read(Ways)
-        self.data["WAYS"].load(move=self.data["MOVE"])
-        self.data["ELEM"] = stream.read(Elem)
-        self.data["FXBK"] = stream.read(Fxbk)
-        self.data["MSIC"] = stream.read(Msic)
-        self.data["SND"] = stream.read(Snd)
-        self.data["PAT"]  = stream.read(Pat)
-        # self.data["BOND"] = stream.read(Bond)
-        # self.data["MAT"]  = stream.read(Mat)
-        # self.data["LIFT"] = stream.read(Lift)
-        # self.data["AI"]   = stream.read(Ai)
-        # self.data["BUIL"] = stream.read(Buil)
-        # self.data["SCRP"] = stream.read(Scrp)
-        # self.data["JUMP"] = stream.read(Jump)
-        # self.data["CART"] = stream.read(Cart)
-        # self.data["DLGS"] = stream.read(Dlgs)
+        # self.data["MASK"].load()
+        # self.data["WAYS"].load(move=self.data["MOVE"])
 
-        self.tail = stream.read_raw()
-
-        # self.misc = stream.read(Misc)
-        # self.bgnd = stream.read(Bgnd)
-        # self.move = stream.read(Move)
-        # self.sght = stream.read(Sght)
-        # self.mask = stream.read(Mask)
-        # self.ways = stream.read(Ways)
-        # self.elem = stream.read(Elem)
-        # self.fxbk = stream.read(Fxbk)
-        # self.msic = stream.read(Msic)
-        # self.snd  = stream.read(Snd )
-        # self.pat  = stream.read(Pat )
-        # self.bond = stream.read(Bond)
-        # self.mat  = stream.read(Mat )
-        # self.lift = stream.read(Lift)
-        # self.ai   = stream.read(Ai  )
-        # self.buil = stream.read(Buil)
-        # self.scrp = stream.read(Scrp)
-        # self.jump = stream.read(Jump)
-        # self.cart = stream.read(Cart)
-        # self.dlgs = stream.read(Dlgs)
 
 
 

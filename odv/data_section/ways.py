@@ -173,7 +173,7 @@ class Patrol(OdvObjectIterable):
 
 
 class Ways(Section, OdvObjectIterable):
-    _section_name = "WAYS"
+    _section_id = 5
     _section_version = 1
 
     move: Move

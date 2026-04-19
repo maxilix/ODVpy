@@ -44,7 +44,7 @@ class DlgsDebriefing(RStreamable):
 
 
 class Dlgs(Section):
-    _section_name = "DLGS"
+    _section_id = 19
     _section_version = 4
 
     def _load(self, substream: ReadStream) -> None:

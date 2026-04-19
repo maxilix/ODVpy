@@ -4,7 +4,7 @@ from odv.section import Section
 
 
 class Msic(Section):
-    _section_name = "MSIC"
+    _section_id = 8
     _section_version = 1
 
     def _load(self, substream: ReadStream) -> None:

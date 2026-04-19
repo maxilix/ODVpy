@@ -5,10 +5,10 @@ from odv.section import Section
 
 
 class Misc(Section, OdvObject):
-    _section_name = "MISC"
+    _section_id = 0
     _section_version = 6
 
-    def _load(self, substream: ReadStream) -> None:
+    def _load(self, substream: ReadStream, level) -> None:
         # Unk
         self.unk0 = substream.read(Bytes, 1)
 

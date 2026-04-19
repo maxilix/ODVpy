@@ -4,7 +4,7 @@ from odv.section import Section
 
 
 class Elem(Section):
-    _section_name = "ELEM"
+    _section_id = 6
     _section_version = 28
 
     def _load(self, substream: ReadStream) -> None:

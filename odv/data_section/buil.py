@@ -170,7 +170,7 @@ class SpecialDoors(OdvObjectIterable):
 
 
 class Buil(Section, OdvObjectIterable):
-    _section_name = "BUIL"
+    _section_id = 15
     _section_version = 4
 
     move: Move

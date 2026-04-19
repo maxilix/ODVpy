@@ -73,7 +73,7 @@ class JumpArea(OdvObject):
 
 
 class Jump(Section, OdvObjectIterable):
-    _section_name = "JUMP"
+    _section_id = 17
     _section_version = 1
 
     move: Move

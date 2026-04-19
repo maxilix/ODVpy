@@ -25,6 +25,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from PyQt6.QtCore import pyqtSignal, QObject
+
 if TYPE_CHECKING:
     from odv.level import Level
     from qt.scene import QScene
@@ -32,8 +34,10 @@ if TYPE_CHECKING:
     from qt.control.control import QControl
 
 
-class _AppContext():
+class _AppContext(QObject):
     """Singleton — access via the module-level ``AppContext`` instance."""
+
+    level_changed = pyqtSignal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -47,42 +51,52 @@ class _AppContext():
     # ------------------------------------------------------------------
 
     @property
-    def level(self) -> "Level":
-        assert self._level is not None, "AppContext.level accessed before assignment"
+    def level(self) -> "Level | None":
+        # assert self._level is not None, "AppContext.level accessed before assignment"
         return self._level
+
+    @level.setter
+    def level(self, level: "Level | None") -> None:
+        self._level = level
+        self.level_changed.emit()
 
     @property
     def scene(self) -> "QScene":
         assert self._scene is not None, "AppContext.scene accessed before assignment"
         return self._scene
 
+    # @scene.setter
+    # def scene(self, scene: "QScene | None") -> None:
+    #     self._scene = scene
+
     @property
     def tool_bar(self) -> "QSceneToolBar":
         assert self._tool_bar is not None, "AppContext.tool_bar accessed before assignment"
         return self._tool_bar
+
+    # @tool_bar.setter
+    # def tool_bar(self, tool_bar: "QSceneToolBar | None") -> None:
+    #     self._tool_bar = tool_bar
 
     @property
     def control(self) -> "QControl":
         assert self._control is not None, "AppContext.control accessed before assignment"
         return self._control
 
+    # @control.setter
+    # def control(self, control: "QControl | None") -> None:
+    #     self._control = control
+
     # ------------------------------------------------------------------
     # Lifecycle
     # ------------------------------------------------------------------
 
-    def load(self, *, level, scene, tool_bar, control) -> None:
-        """Assign all context objects at once (level loaded)."""
-        self._level    = level
+    def set_ui(self, *, scene, tool_bar, control) -> None:
+        """Assign all ui context objects at once)."""
         self._scene    = scene
         self._tool_bar = tool_bar
         self._control  = control
 
-    def unload(self) -> None:
-        """Reset all references to None (level unloaded)."""
-        self._level    = None
-        self._scene    = None
-        self._tool_bar = None
-        self._control  = None
 
 
 # ---------------------------------------------------------------------------

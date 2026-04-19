@@ -45,7 +45,7 @@ class Script(OdvObject):
 
 
 class Scrp(Section, OdvObjectIterable):
-    _section_name = "SCRP"
+    _section_id = 16
     _section_version = 1
 
     def _load(self, substream: ReadStream) -> None:

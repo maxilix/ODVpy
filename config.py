@@ -71,6 +71,7 @@ class _Config:
         try:
             with open(self.filename, "rb") as f:
                 data = tomllib.load(f)
+            print(f"[Config] load from '{self.filename}'.")
         except FileNotFoundError:
             print(f"[Config] '{self.filename}' not found — using defaults.")
             return

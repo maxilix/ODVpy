@@ -2,7 +2,6 @@ from PyQt6.QtWidgets import QLabel, QHBoxLayout, QSpinBox, QPushButton, QDoubleS
 
 from common import Short, UShort
 from odv.data_section import Misc
-from qt.control.control_section import QSectionControl
 from qt.control.generic_inspector import Inspector
 from qt.control.generic_tree import QGenericTreeItem
 
@@ -129,12 +128,3 @@ class MiscItem(QGenericTreeItem):
                 f"  unk1:\t{int.from_bytes(self.misc.unk1)}\n"
                 f"  unk2:\t{int.from_bytes(self.misc.unk2)}\n"
                 f"  thunder:\t{self.misc.tail}")
-
-
-
-
-class QMiscControl(QSectionControl):
-    item_types = {Misc: MiscItem}
-    odv_types =       [Misc         ]
-    tree_item_types = [MiscItem     ]
-    inspector_types = [MiscInspector]

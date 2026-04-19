@@ -4,7 +4,7 @@ from odv.section import Section
 
 
 class Ai(Section):
-    _section_name = "AI  "
+    _section_id = 14
     _section_version = 2
 
     def _load(self, substream: ReadStream) -> None:

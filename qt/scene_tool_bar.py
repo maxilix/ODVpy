@@ -3,12 +3,13 @@ from math import floor
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QSpinBox, QPushButton, QGroupBox
 
+from app_context import AppContext as AC
+
 
 class QSceneToolBar(QWidget):
 
-    def __init__(self, scene):
+    def __init__(self):
         super().__init__()
-        self.scene = scene
 
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -40,7 +41,7 @@ class QSceneToolBar(QWidget):
         main_layout.addStretch()
 
     def localize(self):
-        self.scene.move_to(self.position_x.value(), self.position_y.value())
+        AC.scene.move_to(self.position_x.value(), self.position_y.value())
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:

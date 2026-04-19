@@ -64,7 +64,7 @@ class LiftArea(OdvObject):
 
 
 class Lift(Section, OdvObjectIterable):
-    _section_name = "LIFT"
+    _section_id = 13
     _section_version = 2
 
 

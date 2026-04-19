@@ -10,6 +10,8 @@ from qt.common.utils import bounding_rect_of
 from qt.graphics.base import GraphicState
 from qt.scene import QScene
 
+from app_context import AppContext as AC
+
 
 class QSubInspectorWidget(QWidget):
     update_required = pyqtSignal()
@@ -346,12 +348,12 @@ class QGeometrySIW(QSubInspectorWidget):
         self.init_actions()
         self.init_ui(position_buttons)
 
-    @property
-    def scene(self) -> QScene:
-        current = self.parent()
-        while not hasattr(current, "scene"):
-            current = current.parent()
-        return current.scene
+    # @property
+    # def scene(self) -> QScene:
+    #     current = self.parent()
+    #     while not hasattr(current, "scene"):
+    #         current = current.parent()
+    #     return current.scene
 
 
     def init_actions(self):
@@ -485,7 +487,7 @@ class QGeometrySIW(QSubInspectorWidget):
     def open_menu(self):
         self.m_copy_from.clear()
         actions = []
-        for scene_item in self.scene.items():
+        for scene_item in AC.scene.items():
             if isinstance(scene_item, type(self.graphics[0])):
                 action = QAction(f"{scene_item.item.name}", self)
                 actions.append(action)

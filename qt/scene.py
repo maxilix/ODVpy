@@ -6,14 +6,12 @@ from PyQt6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsI
     QApplication
 
 from qt.graphics.base import OdvGraphic, OdvShadow, OdvEditZone, OdvEditGraphic, GraphicState
-from qt.scene_tool_bar import QSceneToolBar
 
 
 class QScene(QGraphicsScene):
-    tool_bar: QSceneToolBar
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__()
         self.pointer = QGraphicsEllipseItem()
         size = 2.2
         self.pointer.setRect(-size / 2, -size / 2, size, size)

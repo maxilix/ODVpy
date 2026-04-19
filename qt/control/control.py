@@ -1,131 +1,52 @@
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QMouseEvent, QCursor, QAction
-from PyQt6.QtWidgets import QTabWidget, QMenu
+from PyQt6.QtWidgets import QTabWidget, QMenu, QWidget
 
-from qt.control.tab_bgnd import QBgndControl
-from qt.control.tab_mask import QMaskControl
-from qt.control.tab_misc import QMiscControl
-from qt.control.tab_move import QMoveControl
-from qt.control.tab_ways import QWaysControl
+from game_data import SECTION_FLAG
+
+from app_context import AppContext as AC
+from qt.control.control_section import QSectionControl
 
 
 class QControl(QTabWidget):
-
     sendStatus = pyqtSignal(str, int)
 
-
-    def __init__(self, parent, scene, level):
-        super().__init__(parent)
-        self.scene = scene
-        self.level = level
-        # self.setMinimumWidth(500)
-
-        # class QControlBar(QTabBar):
-        #     def __init__(self, parent=None):
-        #         super().__init__(parent)
-        #         self.addTab("+")
-        #         self.setStyleSheet("""
-        #         QTabBar::tab {
-        #             padding-top: 8px;
-        #             padding-bottom: 8px;
-        #             padding-left: 6px;
-        #             padding-right: 6px;
-        #         }
-        #         """)
-        #
-        #     def mousePressEvent(self, event):
-        #         if event.button() == Qt.MouseButton.LeftButton and self.tabAt(event.pos()) == (self.count() - 1):
-        #             print("ADD")
-        #         else:
-        #             if event.button() == Qt.MouseButton.RightButton:
-        #                 tab_index = self.tabAt(event.pos())
-        #                 self.parent().tab_clicked(tab_index)
-        #             super().mousePressEvent(event)
-        # self.setTabBar(QControlBar(self))
+    def __init__(self):
+        super().__init__()
 
         self.setTabPosition(QTabWidget.TabPosition.East)
-        self.setMovable(True)
+        self.setMovable(False)
 
-        # self.currentChanged.connect(self.current_changed)
+        for i in range(3):
+            try:
+                self.addTab(QSectionControl(i), SECTION_FLAG[i])
+            except Exception as e:
+                print(f"[Section tab {SECTION_FLAG[i]}] Widget Error '{e}'.")
+                self.addTab(QWidget(), SECTION_FLAG[i])
 
-        self.tab = dict()
-        self.tab["MISC"] = QMiscControl(self, level.data["MISC"])
-        self.tab["BGND"] = QBgndControl(self, level.data["BGND"])
-        self.tab["MOVE"] = QMoveControl(self, level.data["MOVE"])
-        # self.tab["SGHT"] = QSectionControl(self, level.dvd.sght)
-        # self.tab["MASK"] = QMaskControl(self, level.data["MASK"])
-        # self.tab["WAYS"] = QWaysControl(self, level.data["WAYS"])
-        # self.tab["ELEM"] = None
-        # self.tab["FXBK"] = None
-        # self.tab["MSIC"] = None
-        # self.tab["SND"] = None
-        # self.tab["PAT"] = None
-        # self.tab["BOND"] = QBondTabControl(self, level.dvd.bond)
-        # self.tab["MAT"] = None
-        # self.tab["LIFT"] = QLiftTabControl(self, level.dvd.lift)
-        # self.tab["AI"] = None
-        # self.tab["BUIL"] = QBuilTabControl(self, [level.dvd.buil.buildings, level.dvd.buil.special_doors])
-        # self.tab["SCRP"] = QScrpTabControl(self, level.dvd.scrp)
-        # self.tab["JUMP"] = QJumpTabControl(self, level.dvd.jump)
-        # self.tab["CART"] = None
-        # self.tab["DLGS"] = None
-        # self.tab["SCB"] = None # QScbTabControl(self, level.scb.classes)
+        # adjust the width to fit the children
+        self.setFixedWidth(self.minimumSizeHint().width())
 
-        self.add_tab("MISC")
-        self.add_tab("BGND")
-        self.add_tab("MOVE")
-        # self.add_tab("MASK")
-        # self.add_tab("WAYS")
-        self.setCurrentWidget(self.tab["MOVE"])
-        # self.scene.center_view(zoom=0.6)
-
-        # artificial widgets
-        # self.addTab(QWidget(), "SGHT")
-        # self.addTab(QWidget(), "MASK")
-        # self.addTab(QWidget(), "WAYS")
-        # self.addTab(QWidget(), "ELEM")
-        # self.addTab(QWidget(), "FXBK")
-        # self.addTab(QWidget(), "MSIC")
-        # self.addTab(QWidget(), "SND")
-        # self.addTab(QWidget(), "PAT")
-        # self.addTab(QWidget(), "BOND")
-        # self.addTab(QWidget(), "MAT")
-        # self.addTab(QWidget(), "LIFT")
-        # self.addTab(QWidget(), "AI")
-        # self.addTab(QWidget(), "BUIL")
-        # self.addTab(QWidget(), "SCRP")
-        # self.addTab(QWidget(), "JUMP")
-        # self.addTab(QWidget(), "CART")
-        # self.addTab(QWidget(), "DLGS")
-        # self.addTab(QWidget(), "SCB")
-
-        # button = scene.addWidget(QPushButton("Button 1"))
-        # button.setFlag(button.GraphicsItemFlag.ItemIgnoresTransformations)
-        # button.setPos(20, 50)
-        # button.setFlags(button.flags() | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-
-
-    def mousePressEvent(self, event: QMouseEvent):
-        # TODO make the click detectable only on the TabBar rect
-        if event.button() == Qt.MouseButton.RightButton:
-            tab_index = self.tabBar().tabAt(self.tabBar().mapFromParent(event.pos()))
-            menu = QMenu()
-            if tab_index != -1:
-                section_name = self.tabText(tab_index)
-                close_action = QAction(f"Close {section_name}")
-                close_action.triggered.connect(lambda state, name=section_name: self.close_tab(name))
-                menu.addAction(close_action)
-                menu.addSeparator()
-
-            add_actions = []
-            for section_name in self.tab:
-                if self.tab[section_name] is not None and section_name not in [self.tabText(i) for i in range(self.count())]:
-                    add_actions.append(QAction(f"Add {section_name}"))
-                    add_actions[-1].triggered.connect(lambda state, name=section_name: self.add_tab(name))
-            menu.addActions(add_actions)
-            menu.exec(QCursor.pos())
-
-        super().mousePressEvent(event)
+    # def mousePressEvent(self, event: QMouseEvent):
+    #     # TODO make the click detectable only on the TabBar rect
+    #     if event.button() == Qt.MouseButton.RightButton:
+    #         tab_index = self.tabBar().tabAt(self.tabBar().mapFromParent(event.pos()))
+    #         menu = QMenu()
+    #         if tab_index != -1:
+    #             section_name = self.tabText(tab_index)
+    #             close_action = QAction(f"Close {section_name}")
+    #             close_action.triggered.connect(lambda state, name=section_name: self.close_tab(name))
+    #             menu.addAction(close_action)
+    #             menu.addSeparator()
+    #
+    #         add_actions = []
+    #         for section_name in self.tab:
+    #             if self.tab[section_name] is not None and section_name not in [self.tabText(i) for i in range(self.count())]:
+    #                 add_actions.append(QAction(f"Add {section_name}"))
+    #                 add_actions[-1].triggered.connect(lambda state, name=section_name: self.add_tab(name))
+    #         menu.addActions(add_actions)
+    #         menu.exec(QCursor.pos())
+    #     super().mousePressEvent(event)
 
     def close_tab(self, name):
         if name == "BGND":
@@ -133,13 +54,7 @@ class QControl(QTabWidget):
         else:
             print(f"close {name}")
 
-    def add_tab(self, name):
-        # new_tab_index = data_section_flag.index(name)
-        # local_index = 0
-        # while data_section_flag.index(self.tabText(local_index)) < data_section_flag.index(name):
-        #     local_index += 1
-        # self.insertTab(local_index, self.tab[name], name)
-
-        self.addTab(self.tab[name], name)
-        self.tab[name].load()
-        self.setCurrentWidget(self.tab[name])
+    def update(self):
+        super().update()
+        for i in range(3):
+            self.widget(i).update()

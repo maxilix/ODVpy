@@ -145,7 +145,7 @@ class GroundSight(object):
 
 
 class Sght(Section, OdvObjectIterable):
-    _section_name = "SGHT"
+    _section_id = 3
     _section_version = 6
 
     move: Move

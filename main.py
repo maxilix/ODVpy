@@ -1,11 +1,12 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QWidget, \
-    QVBoxLayout
+    QVBoxLayout, QHBoxLayout
 
 from common import *
 from config import Config
 from game_data import *
+from app_context import AppContext as AC
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
 from qt.control.control import QControl
@@ -27,11 +28,10 @@ class QWindow(QMainWindow):
 
         self.setWindowTitle('ODVpy Editor')
         self.showMaximized()
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(1000, 800)
 
-        # self.current_level = None
-        self.current_level = BackupedLevel(4)
-        # self.current_level = Level("./dev/empty_level/empty_level_19")
+        # AC.level = BackupedLevel(4)
+        # AC.level = Level("./dev/empty_level/empty_level_19")
 
         self.status_bar = self.statusBar()
 
@@ -45,35 +45,35 @@ class QWindow(QMainWindow):
                 open_original_level_action = QAction(f"Demo level", self)
             else:
                 open_original_level_action = QAction(f"Level {i}", self)
-            open_original_level_action.triggered.connect(lambda state, index=i: self.load_original_level(index))
+            open_original_level_action.triggered.connect(lambda state, index=i: self.open_original_level(index))
             open_original_level_action.setStatusTip(f'Open Mission {i} : {ORIGINAL_LEVEL_NAME[i]}')
             open_original_submenu.addAction(open_original_level_action)
 
         open_custom_level_action = QAction(f"Open Custom level", self)
-        open_custom_level_action.triggered.connect(self.load_custom_level)
+        open_custom_level_action.triggered.connect(self.open_custom_level)
         file_menu.addAction(open_custom_level_action)
 
         close_level_action = QAction("Close level", self)
-        close_level_action.triggered.connect(self.unload_level)
+        close_level_action.triggered.connect(self.close_level)
         file_menu.addAction(close_level_action)
 
         quit_action = QAction("Quit", self)
         quit_action.triggered.connect(app.quit)
         file_menu.addAction(quit_action)
-        # ============================== File menu ==============================
+        # =======================================================================
 
         # ============================== Edit menu ==============================
         edit_menu = menu.addMenu("Edit")
         open_preferences_dialog_action = QAction("Preferences", self)
         open_preferences_dialog_action.triggered.connect(self.open_preferences_dialog)
         edit_menu.addAction(open_preferences_dialog_action)
-        # ============================== Edit menu ==============================
+        # =======================================================================
 
         # ============================== Mod manager menu =======================
         mod_manager_menu = menu.addMenu("Mod")
 
         self.insert_current_level_action = QAction("Insert in game", self)
-        self.insert_current_level_action.triggered.connect(self.insert_current_level)
+        # self.insert_current_level_action.triggered.connect(self.insert_current_level)
         mod_manager_menu.addAction(self.insert_current_level_action)
 
         backup_submenu = mod_manager_menu.addMenu("Backup")
@@ -101,9 +101,35 @@ class QWindow(QMainWindow):
                 restore_action = QAction(f"Level {i}", self)
             restore_action.triggered.connect(lambda state, index=i: self.restore_level([index]))
             restore_submenu.addAction(restore_action)
-        # ============================== Mod manager menu =======================
+        # =======================================================================
 
-        self.set_widget()
+        main_widget = QWidget(self)
+        main_layout = QHBoxLayout(main_widget)
+
+        # visualizer = QWidget(main_widget)
+        visualizer_layout = QVBoxLayout()
+
+        self.tool_bar = QSceneToolBar()
+        self.scene = QScene()
+        self.info_bar = QInfoBar()
+        self.viewport = QViewport(self.scene, self.info_bar)
+
+        visualizer_layout.addWidget(self.tool_bar)
+        visualizer_layout.addWidget(self.viewport)
+        visualizer_layout.addWidget(self.info_bar)
+
+        main_layout.addLayout(visualizer_layout)
+
+        self.control = QControl()
+        self.control.sendStatus.connect(self.status_bar.showMessage)
+
+        main_layout.addWidget(self.control)
+
+
+        self.setCentralWidget(main_widget)
+
+        AC.set_ui(scene=self.scene, tool_bar=self.tool_bar, control=self.control)
+        AC.level = Level()
 
         self.status_bar.showMessage('Ready', 5000)
 
@@ -132,15 +158,15 @@ class QWindow(QMainWindow):
         if len(selected) > 1:
             QInfoBox("Restore Completed").exec()
 
-    def insert_current_level(self):
-        assert self.current_level is not None
-        self.current_level.insert_in_game()
+    # def insert_current_level(self):
+    #     assert AC.level is not None
+    #     AC.level.insert_in_game()
 
     def open_preferences_dialog(self):
         dialog = QPreferencesDialog(self)
         dialog.exec()
 
-    def load_custom_level(self):
+    def open_custom_level(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
         dialog.setDirectory(os.curdir + os.sep + "dev" + os.sep + "empty_level")
@@ -156,57 +182,14 @@ class QWindow(QMainWindow):
             filenames = dialog.selectedFiles()
             if len(filenames) == 1:
                 filename_we = remove_extension(filenames[0])
-                self.current_level = Level(filename_we)
-                self.set_widget()
+                AC.level = Level(filename_we)
 
-    def load_original_level(self, index):
-        self.current_level = BackupedLevel(index)
-        self.set_widget()
-
-    def unload_level(self):
-        self.current_level = None
-        self.set_widget()
-
-    def set_widget(self):
-        if self.current_level is None:
-            self.insert_current_level_action.setEnabled(False)
-            main_widget = QLabel("Select level")
-            main_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        else:
-            self.insert_current_level_action.setEnabled(True)
-            main_widget = QSplitter()
-            main_widget.setOrientation(Qt.Orientation.Horizontal)
-            main_widget.setChildrenCollapsible(False)
-
-            visualizer = QWidget(main_widget)
-            info_bar = QInfoBar(visualizer)
-            scene = QScene(visualizer)
-            viewport = QViewport(scene, info_bar)
-            control = QControl(main_widget, scene, self.current_level)
-            control.sendStatus.connect(self.status_bar.showMessage)
-            tool_bar = QSceneToolBar(scene)
-            scene.tool_bar = tool_bar
-
-            # print(viewport.zoom)
-            # viewport.zoom = 0.5  # set zoom first, as it defines the margins around the dvm
-            # viewport.x = 100
-            # viewport.y = 100
-            # print("zoom", viewport.zoom)
-            # print("x", viewport.x)
-            # print("y", viewport.y)
+    def open_original_level(self, index):
+        AC.level = BackupedLevel(index)
 
 
-            layout = QVBoxLayout(visualizer)
-            layout.addWidget(tool_bar)
-            layout.addWidget(viewport)
-            layout.addWidget(info_bar)
-
-
-            main_widget.addWidget(visualizer)
-            main_widget.addWidget(control)
-
-        self.setCentralWidget(main_widget)
-
+    def close_level(self):
+        AC.level = Level()
 
 # def set_dark_mode(app):
 #     dark_palette = QPalette()

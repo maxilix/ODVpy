@@ -19,7 +19,7 @@ class MobileElement(OdvObject):
 
 
 class Cart(Section, OdvObjectIterable):
-    _section_name = "CART"
+    _section_id = 18
     _section_version = 5
 
     def _load(self, substream: ReadStream) -> None:

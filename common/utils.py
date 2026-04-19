@@ -34,3 +34,18 @@ def copy(source, destination):
     if source != destination:
         os.makedirs(os.path.dirname(destination), exist_ok=True)
         shutil.copy2(source, destination)
+
+
+
+def original_name(index, root=None):
+    if root is None:
+        name = []
+    else:
+        name = [root]
+    if index == 0:
+        name.append("demo")
+    name.append("data")
+    name.append("levels")
+    name.append(f"level_{index:02}")
+
+    return str(os.path.join(*name))
