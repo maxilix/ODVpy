@@ -80,9 +80,14 @@ class QGenericTreeItem(QTreeWidgetItem):
         self._graphics.append(graphic_item)
         AC.scene.addItem(graphic_item)
 
-    def remove_graphic(self, graphic_item):
-        self._graphics.remove(graphic_item)
-        AC.scene.removeItem(graphic_item)
+    def remove_graphic(self, graphic_item=None):
+        if graphic_item is None:
+            for g in self._graphics:
+                AC.scene.removeItem(g)
+            self._graphics = []
+        else:
+            AC.scene.removeItem(graphic_item)
+            self._graphics.remove(graphic_item)
 
     def graphics_visibility_state(self):
         l = [g.isVisible() for g in self._graphics]

@@ -31,12 +31,10 @@ class QScene(QGraphicsScene):
         return super().eventFilter(obj, event)
 
     def center_view(self, zoom=1.5):
-        r = self.sceneRect().center()
-        x = r.x()
-        y = r.y()
+        r = self.itemsBoundingRect().center()
         self.viewport().zoom = zoom
-        self.viewport().x = x
-        self.viewport().y = y
+        self.viewport().x = r.x()
+        self.viewport().y = r.y()
 
     def viewport(self):
         return self.views()[0]

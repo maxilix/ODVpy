@@ -29,10 +29,6 @@ class QWindow(QMainWindow):
         self.setWindowTitle('ODVpy Editor')
         self.showMaximized()
         self.setMinimumSize(1000, 800)
-
-        # AC.level = BackupedLevel(4)
-        # AC.level = Level("./dev/empty_level/empty_level_19")
-
         self.status_bar = self.statusBar()
 
         menu = self.menuBar()
@@ -125,11 +121,12 @@ class QWindow(QMainWindow):
 
         main_layout.addWidget(self.control)
 
-
         self.setCentralWidget(main_widget)
 
         AC.set_ui(scene=self.scene, tool_bar=self.tool_bar, control=self.control)
-        AC.level = Level()
+
+        AC.level = BackupedLevel(4)
+        # AC.level = Level()
 
         self.status_bar.showMessage('Ready', 5000)
 

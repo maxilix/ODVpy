@@ -75,7 +75,6 @@ class QHoverDetectionCheckboxesWidget(QWidget):
 
 class QSectionControl(QWidget):
     section_id: int
-    _loaded: bool = False
 
     def __init__(self, section_id):
 
@@ -112,7 +111,7 @@ class QSectionControl(QWidget):
         section_layout.addWidget(QHLine())
 
         self.load_button = QPushButton()
-        self.load_button.clicked.connect(self.load)
+        self.load_button.clicked.connect(self.load_button_clicked)
         section_layout.addWidget(self.load_button)
 
         hover_detection_layout = QHBoxLayout()
@@ -156,10 +155,27 @@ class QSectionControl(QWidget):
         self.inspector_wrong_selection_widget = QLabel("Select one or more elements of the same type to inspect them")
         self.inspector_wrong_selection_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.inspector_stack_layout.addWidget(self.inspector_wrong_selection_widget)
+        self.inspector_unload_section_widget = QLabel(f"The {SECTION_FLAG[self.section_id]} section is currently unloaded")
+        self.inspector_unload_section_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.inspector_stack_layout.addWidget(self.inspector_unload_section_widget)
 
         main_layout.addWidget(inspector_stack_widget)
 
-        AC.level_changed.connect(self.level_changed)
+
+    @property
+    def loaded(self):
+        if self.tree_items == dict():
+            assert self.inspectors == dict()
+            return False
+        else:
+            assert self.tree_items != dict()
+            return True
+
+    def load_button_clicked(self):
+        if self.loaded:
+            self.unload()
+        else:
+            self.load()
 
     def load(self):
         def recursive_load(odv_current_object, odv_parent_object=None):
@@ -189,10 +205,19 @@ class QSectionControl(QWidget):
             self.tree_items[section].setExpanded(True)
             if not isinstance(section, OdvObjectIterable):
                 self.tree.setEnabled(False)
-            self._loaded = True
-        else:
-            self._loaded = False
-        # self.update()
+            self.update()
+
+    def unload(self):
+        if self.loaded:
+            for k in self.tree_items:
+                self.tree_items[k].remove_graphic()
+            self.tree.clear()
+            self.tree_items.clear()
+            for k in self.inspectors:
+                self.inspector_stack_layout.removeWidget(self.inspectors[k])
+            self.inspectors.clear()
+            self.update()
+
 
     def item_selection_changed(self):
         selected = self.tree.selectedItems()
@@ -212,20 +237,14 @@ class QSectionControl(QWidget):
         if section is None:
             self.load_button.setText("No data to load")
             self.load_button.setEnabled(False)
+            self.inspector_stack_layout.setCurrentWidget(self.inspector_unload_section_widget)
         else:
             self.load_button.setEnabled(True)
-            print(self._loaded)
-            if self._loaded:
+            if self.loaded:
                 self.load_button.setText("Unload data")
             else:
                 self.load_button.setText("Load data")
+                self.inspector_stack_layout.setCurrentWidget(self.inspector_unload_section_widget)
 
-    def level_changed(self):
-        # unload all data
-        if SECTION_FLAG[self.section_id] in Config.loaded_section:
-            self.load()
-        self.update()
 
-        if self.section_id == 1:  # BGND
-            if self._loaded:
-                AC.scene.center_view()
+

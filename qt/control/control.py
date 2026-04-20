@@ -2,6 +2,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QMouseEvent, QCursor, QAction
 from PyQt6.QtWidgets import QTabWidget, QMenu, QWidget
 
+from config import Config
 from game_data import SECTION_FLAG
 
 from app_context import AppContext as AC
@@ -27,6 +28,9 @@ class QControl(QTabWidget):
         # adjust the width to fit the children
         self.setFixedWidth(self.minimumSizeHint().width())
 
+        AC.level_changed.connect(self.level_changed)
+
+
     # def mousePressEvent(self, event: QMouseEvent):
     #     # TODO make the click detectable only on the TabBar rect
     #     if event.button() == Qt.MouseButton.RightButton:
@@ -48,13 +52,18 @@ class QControl(QTabWidget):
     #         menu.exec(QCursor.pos())
     #     super().mousePressEvent(event)
 
-    def close_tab(self, name):
-        if name == "BGND":
-            print("BGND cannot be closed")
-        else:
-            print(f"close {name}")
-
     def update(self):
         super().update()
-        for i in range(3):
+        for i in range(self.count()):
             self.widget(i).update()
+
+    def level_changed(self):
+        for i in range(self.count()):
+            self.widget(i).unload()
+
+        for i in range(self.count()):
+            if SECTION_FLAG[i] in Config.loaded_section:
+                self.widget(i).load()
+            self.widget(i).update()
+
+        AC.scene.center_view(zoom=0.75)

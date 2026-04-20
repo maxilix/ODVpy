@@ -47,6 +47,12 @@ class Level(object):
                 # stream.read(Dlgs),
             ]
             self.tail = stream.read_raw()
+
+            # As long as not all sections have been read #
+            self.data += [None] * 14
+            assert len(self.data) == 20
+            ##############################################
+
         else:
             self.data = [None]*NB_SECTION
 
