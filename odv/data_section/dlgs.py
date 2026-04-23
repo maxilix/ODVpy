@@ -47,7 +47,7 @@ class Dlgs(Section):
     _section_id = 19
     _section_version = 4
 
-    def _load(self, substream: ReadStream) -> None:
+    def _load(self, substream: ReadStream, level) -> None:
         self.index_text = substream.read(UInt)
         self.index_wave = substream.read(UInt)
         self.DlgsTextWaveEntries_list = []

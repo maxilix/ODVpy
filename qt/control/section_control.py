@@ -1,75 +1,31 @@
-from PyQt6.QtCore import Qt, QPoint
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QLabel, QStackedLayout, QSizePolicy, QPushButton, \
-    QWidgetAction, QCheckBox, QMenu, QToolButton
+import os
 
-from config import Config
-from game_data import SECTION_FLAG, SECTION_FULLNAME
-from odv.data_section import Misc, Bgnd
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QLabel, QStackedLayout, QSizePolicy, QPushButton, \
+    QFileDialog, QComboBox
+
+from app_context import AppContext as AC
+from common import remove_extension
+from game_data import SECTION_FLAG, SECTION_FULLNAME, SECTION_DEPENDENCIES, NB_SECTION
+from odv import Level
+from odv.data_section import Misc, Bgnd, Sght
 from odv.data_section.move import Sector, Obstacle, Move, Layer
+from odv.data_section.sght import SightObstacle
 from odv.odv_object import OdvObjectIterable
 from qt.common.separator_line import QHLine
 from qt.control.generic_tree import QGenericTree
+from qt.control.section_control_widgets import QHoverDetectionCheckboxesWidget
 from qt.control.tab_bgnd import BgndItem, BgndInspector
 from qt.control.tab_misc import MiscItem, MiscInspector
 from qt.control.tab_move import MoveItem, MoveInspector, LayerItem, LayerInspector, SectorItem, SectorInspector, \
     ObstacleItem, ObstacleInspector
-
-from app_context import AppContext as AC
+from qt.control.tab_sght import SghtItem, SghtInspector, SightObstacleItem, SightObstacleInspector
 
 type_match = []
 type_match.append([(Misc, MiscItem, MiscInspector)])
 type_match.append([(Bgnd, BgndItem, BgndInspector)])
-type_match.append([(Move, MoveItem,MoveInspector), (Layer, LayerItem, LayerInspector), (Sector, SectorItem, SectorInspector), (Obstacle, ObstacleItem, ObstacleInspector)])
-
-class QHoverDetectionCheckboxesWidget(QWidget):
-    def __init__(self, odv_types):
-        super().__init__()
-        self.odv_types = odv_types
-
-        layout = QHBoxLayout(self)
-
-        self.button = QToolButton()
-        self.button.setFixedHeight(20)
-        self.button.setFixedWidth(20)
-        self.button.setArrowType(Qt.ArrowType.DownArrow)
-        self.button.setEnabled(True)  # ------------------- #
-        self.button.clicked.connect(self.show_menu)         #
-        if len(odv_types) > 1:                              #
-            layout.addWidget(self.button)                   #
-        else:                                               #
-            layout.addSpacing(26)                           #
-                                                            #
-        self.checkboxes = [QCheckBox()]                     #
-                                                            #
-        self.checkboxes[0].setChecked(True)  # ------------ #
-        self.checkboxes[0].stateChanged.connect(lambda: self.button.setEnabled(self.checkboxes[0].isChecked()))
-        layout.addWidget(self.checkboxes[0])
-
-        layout.addWidget(QLabel(odv_types[0].__name__))
-
-        if len(odv_types) > 1:
-            self.menu = QMenu()
-
-            for item_type in odv_types[1:]:
-                cb = QCheckBox(item_type.__name__)
-                cb.setChecked(True)
-                cb.setStyleSheet("""
-                    QCheckBox {
-                        padding: 6px 8px 6px 8px;  /* réduit vertical, garde espace gauche */
-                        margin: 0px;
-                    }
-                """)
-                action = QWidgetAction(self.menu)
-                action.setDefaultWidget(cb)
-                self.menu.addAction(action)
-                self.checkboxes.append(cb)
-
-    def show_menu(self):
-        self.menu.exec(self.button.mapToGlobal(self.checkboxes[0].rect().bottomLeft() + QPoint(18,12)))
-
-    def isChecked(self, t):
-        i = self.odv_types.index(t)
-        return self.checkboxes[0].isChecked() and self.checkboxes[i].isChecked()
+type_match.append([(Move, MoveItem, MoveInspector), (Layer, LayerItem, LayerInspector), (Sector, SectorItem, SectorInspector), (Obstacle, ObstacleItem, ObstacleInspector)])
+type_match.append([(Sght, SghtItem, SghtInspector), (SightObstacle, SightObstacleItem, SightObstacleInspector)])
 
 
 
@@ -97,6 +53,15 @@ class QSectionControl(QWidget):
         section_layout.setContentsMargins(0, 0, 0, 0)
 
         name_label = QLabel(f"{SECTION_FLAG[self.section_id]} Section")
+        tips = []
+        if SECTION_DEPENDENCIES[self.section_id]:
+            tips.append(f"{SECTION_FLAG[self.section_id]} depends on {", ".join([SECTION_FLAG[s] for s in SECTION_DEPENDENCIES[self.section_id]])}")
+        transpose_dependencies = [i for i in range(NB_SECTION) if self.section_id in SECTION_DEPENDENCIES[i]]
+        if transpose_dependencies:
+            tips.append(f"{", ".join([SECTION_FLAG[s] for s in transpose_dependencies])} depend on {SECTION_FLAG[self.section_id]}")
+        name_label.setToolTip("\n".join(tips))
+
+
         font = name_label.font()
         font.setPointSize(22)
         name_label.setFont(font)
@@ -110,9 +75,15 @@ class QSectionControl(QWidget):
 
         section_layout.addWidget(QHLine())
 
-        self.load_button = QPushButton()
-        self.load_button.clicked.connect(self.load_button_clicked)
-        section_layout.addWidget(self.load_button)
+        loading_layout = QHBoxLayout()
+        loading_layout.addWidget(QLabel("Loading type"))
+        self.load_combobox = QComboBox()
+        self.load_combobox.addItem("Unload")
+        self.load_combobox.addItem("Lazy")
+        self.load_combobox.addItem("Complete")
+        self.load_combobox.activated.connect(self.load_combobox_user_change)
+        loading_layout.addWidget(self.load_combobox)
+        section_layout.addLayout(loading_layout)
 
         hover_detection_layout = QHBoxLayout()
         hover_detection_layout.addWidget(QLabel("Hover detection"))
@@ -127,6 +98,7 @@ class QSectionControl(QWidget):
         import_export_layout.addSpacing(120)
         import_button = QPushButton("Import")
         import_button.setStatusTip(f"Import the {SECTION_FLAG[self.section_id]} section form data or other DVD file.")
+        import_button.clicked.connect(self.import_button_clicked)
         import_export_layout.addWidget(import_button)
         import_export_layout.addSpacing(10)
         export_button = QPushButton("Export")
@@ -171,11 +143,33 @@ class QSectionControl(QWidget):
             assert self.tree_items != dict()
             return True
 
-    def load_button_clicked(self):
-        if self.loaded:
-            self.unload()
-        else:
-            self.load()
+    def load_combobox_user_change(self, index):
+        match index:
+            case 0:
+                self.unload()
+            case 1:
+                AC.level.data[self.section_id].load(AC.level)
+                self.unload()
+            case 2:
+                self.load()
+
+    def import_button_clicked(self):
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dialog.setDirectory(os.curdir)
+        s = SECTION_FLAG[self.section_id]
+        filters = [f"Any {s.capitalize()} data file (*.dvd *.odv{s.lower()})",
+                   f"DVD file (*.dvd)",
+                   f"{s.capitalize()} file (*.odv{s.lower()})",
+                   f"Any file (*)"]
+        dialog.setNameFilters(filters)
+        dialog.exec()
+        filename = dialog.selectedFiles()[0]
+        filename_we = remove_extension(filename)
+        self.unload()
+        AC.level.data[self.section_id] = Level(filename_we).data[self.section_id]
+
+
 
     def load(self):
         def recursive_load(odv_current_object, odv_parent_object=None):
@@ -196,16 +190,16 @@ class QSectionControl(QWidget):
             if isinstance(odv_current_object, OdvObjectIterable):
                 for odv_child_object in odv_current_object:
                     recursive_load(odv_child_object, odv_current_object)
-
-        section = AC.level.data[self.section_id]
-        if section is not None:
-            section.load(AC.level)
-            recursive_load(section, None)
-            self.tree_items[section].setSelected(True)
-            self.tree_items[section].setExpanded(True)
-            if not isinstance(section, OdvObjectIterable):
-                self.tree.setEnabled(False)
-            self.update()
+        if not self.loaded:
+            section = AC.level.data[self.section_id]
+            if section is not None:
+                section.load(AC.level)
+                recursive_load(section, None)
+                self.tree_items[section].setSelected(True)
+                self.tree_items[section].setExpanded(True)
+                if not isinstance(section, OdvObjectIterable):
+                    self.tree.setEnabled(False)
+        self.update()
 
     def unload(self):
         if self.loaded:
@@ -216,7 +210,7 @@ class QSectionControl(QWidget):
             for k in self.inspectors:
                 self.inspector_stack_layout.removeWidget(self.inspectors[k])
             self.inspectors.clear()
-            self.update()
+        self.update()
 
 
     def item_selection_changed(self):
@@ -235,15 +229,18 @@ class QSectionControl(QWidget):
         super().update()
         section = AC.level.data[self.section_id]
         if section is None:
-            self.load_button.setText("No data to load")
-            self.load_button.setEnabled(False)
+            self.load_combobox.setCurrentIndex(0)
+            self.load_combobox.setEnabled(False)
             self.inspector_stack_layout.setCurrentWidget(self.inspector_unload_section_widget)
         else:
-            self.load_button.setEnabled(True)
+            self.load_combobox.setEnabled(True)
             if self.loaded:
-                self.load_button.setText("Unload data")
+                self.load_combobox.setCurrentIndex(2)
             else:
-                self.load_button.setText("Load data")
+                if section.loaded:
+                    self.load_combobox.setCurrentIndex(1)
+                else:
+                    self.load_combobox.setCurrentIndex(0)
                 self.inspector_stack_layout.setCurrentWidget(self.inspector_unload_section_widget)
 
 

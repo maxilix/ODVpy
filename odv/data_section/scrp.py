@@ -1,6 +1,7 @@
 from typing import Self
 
 from common import *
+from odv.data_section import Move
 from odv.odv_object import OdvObjectIterable, OdvObject
 from odv.section import Section
 
@@ -48,7 +49,13 @@ class Scrp(Section, OdvObjectIterable):
     _section_id = 16
     _section_version = 1
 
-    def _load(self, substream: ReadStream) -> None:
+    move: Move
+
+    def __iter__(self):
+        raise NotImplementedError
+
+    def _load(self, substream: ReadStream, level) -> None:
+        self.move = level.data[2]
         nb_script = substream.read(UShort)
         for _ in range(nb_script):
             self.add_child(substream.read(Script, parent=self))

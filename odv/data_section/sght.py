@@ -48,7 +48,7 @@ class SightObstacle(OdvObject):
         if self.sector is None:
             return super().__str__()
         else:
-            return f"{super().__str__()} walkable{self.walkable_sight_id}"
+            return f"{super().__str__()} - W{self.walkable_sight_id}"
 
     @property
     def walkable_sight_id(self):
@@ -168,13 +168,11 @@ class Sght(Section, OdvObjectIterable):
                 return len(list(iter(subself)))
         return WSI()
 
-    def _load(self, substream: ReadStream, * , move) -> None:
-        self.move = move
+    def _load(self, substream: ReadStream, level) -> None:
+        self.move = level.data[2]
         self.ground_sight = GroundSight()
         nb_sight_obstacle = substream.read(UShort)
-        self.sight_obstacle_list = [substream.read(SightObstacle, parent=self, move=move) for _ in range(nb_sight_obstacle)]
-        # for _ in range(nb_sight_obstacle):
-        #     self.add_child(substream.read(SightObstacle, parent=self, move=move))
+        self.sight_obstacle_list = [substream.read(SightObstacle, parent=self, move=self.move) for _ in range(nb_sight_obstacle)]
 
     def _save(self, substream: WriteStream) -> None:
         nb_sight_obstacle = len(self)

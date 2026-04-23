@@ -98,7 +98,6 @@ class MiscInspector(Inspector):
     def radius_value_changed(self):
         self.item.misc.view_length = self.radius_box.value()
 
-
     def connect_to(self, new_items):
         # MiscInspector can only be connected to a single item
         assert len(new_items) == 1
@@ -115,7 +114,6 @@ class MiscInspector(Inspector):
 
 
 class MiscItem(QGenericTreeItem):
-    inspector_type = MiscInspector
 
     def __init__(self,section_control, misc:Misc):
         super().__init__(section_control, misc)

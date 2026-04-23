@@ -182,13 +182,12 @@ class Ways(Section, OdvObjectIterable):
     def __iter__(self):
         return iter(self.patrol_list)
 
-    def _load(self, substream: ReadStream, *, move) -> None:
-        self.move = move
+    def _load(self, substream: ReadStream, level) -> None:
+        self.move = level.data[2]
         nb_patrol = substream.read(UShort)
         # print(f"{nb_patrol=}")
 
-        self.patrol_list = [substream.read(Patrol, parent=self, move=move) for _ in range(nb_patrol)]
-        # assert
+        self.patrol_list = [substream.read(Patrol, parent=self, move=self.move) for _ in range(nb_patrol)]
 
     def _save(self, substream: WriteStream) -> None:
         pass

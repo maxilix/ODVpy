@@ -8,7 +8,6 @@ class Section(RWStreamable):
 
     _section_id: int
     _section_version: int
-    _section_dependencies = []
 
     def __init__(self, data, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,12 +39,14 @@ class Section(RWStreamable):
         return cls(data)
 
     def load(self, level):
-        substream = ReadStream(self._data)
-        self._load(substream, level)
-        next_byte = substream.read(Bytes, 1)
-        assert next_byte == b''
-        self._loaded = True
-        print(f"Section {SECTION_FLAG[self._section_id]} loaded")
+        if not self.loaded:
+            [level.data[dependence].load(level) for dependence in SECTION_DEPENDENCIES[self._section_id]]
+            substream = ReadStream(self._data)
+            self._load(substream, level)
+            next_byte = substream.read(Bytes, 1)
+            assert next_byte == b''
+            self._loaded = True
+            print(f"Section {SECTION_FLAG[self._section_id]} loaded")
 
     @abstractmethod
     def _load(self, substream: ReadStream, level) -> None:

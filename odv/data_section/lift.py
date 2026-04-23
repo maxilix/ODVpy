@@ -67,13 +67,14 @@ class Lift(Section, OdvObjectIterable):
     _section_id = 13
     _section_version = 2
 
+    def __iter__(self):
+        raise NotImplementedError
 
-
-    def _load(self, substream: ReadStream, *, move) -> None:
-        self.move = move
+    def _load(self, substream: ReadStream, level) -> None:
+        self.move = level.data[2]
         nb_lift = substream.read(UShort)
         for _ in range(nb_lift):
-            self.add_child(substream.read(LiftArea, parent=self, move=move))
+            self.add_child(substream.read(LiftArea, parent=self, move=self.move))
 
     def _save(self, substream: WriteStream) -> None:
         nb_lift = len(self)

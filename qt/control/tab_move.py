@@ -7,55 +7,6 @@ from qt.control.generic_inspector import Inspector, QGeometrySIW
 from qt.control.generic_tree import QGenericTreeItem
 from qt.graphics import GraphicPolygon, OdvThinPen, OdvLightBrush, OdvHighBrush
 
-
-# class ObstacleInspector(Inspector):
-#     deletable = True
-#     draggable = True
-#     child_name = ""  # cannot add child
-#
-#     def init_sub_inspector(self):
-#         self.sub_inspector_group["Polygon"] = [
-#             GeometrySubInspector(self, "poly", color=QColor(255, 90, 40)),
-#         ]
-#
-#
-# class SectorInspector(Inspector):
-#     # path color QColor(180, 110, 30)
-#     deletable = True
-#     child_name = "Obstacle"
-#
-#     def init_sub_inspector(self):
-#         self.sub_inspector_group["Polygon"] = [
-#             GeometrySubInspector(self, "poly", color=QColor(160, 200, 40)),
-#         ]
-#
-#     def new_odv_child(self):
-#         new_obstacle = Obstacle(self.odv_object)
-#         new_obstacle.poly = self._tab_control.scene.new_centered_polygon(scale=0.25)
-#         return new_obstacle
-#
-#
-# class LayerInspector(Inspector):
-#     deletable = True
-#     child_name = "Main Area"
-#
-#     def new_odv_child(self):
-#         new_sector = Sector(self.odv_object)
-#         new_sector.poly = self._tab_control.scene.new_centered_polygon(scale=0.9)
-#         return new_sector
-#
-#
-#
-# class MoveInspector(Inspector):
-#     deletable = False
-#     child_name = "Layer"
-#
-#     def new_odv_child(self):
-#         new_layer = Layer(self.odv_object)
-#         return new_layer
-
-
-
 #########################################################################
 
 class ObstacleInspector(Inspector):
@@ -98,8 +49,6 @@ class GraphicObstacle(GraphicPolygon):
 
 
 class ObstacleItem(QGenericTreeItem):
-    inspector_type = ObstacleInspector
-    draggable = True
 
     def __init__(self, section_control, obstacle: Obstacle):
         super().__init__(section_control, obstacle)
@@ -129,8 +78,6 @@ class SectorInspector(Inspector):
         self.geometry_info_label = QLabel()
         self.main_layout.addWidget(self.geometry_info_label)
 
-
-
         self.main_layout.addStretch()
 
     def update_model(self):
@@ -158,9 +105,8 @@ class SectorGraphic(GraphicPolygon):
     high_brush = OdvHighBrush(QColor(160, 200, 40))
     initial_opacity = 1
 
+
 class SectorItem(QGenericTreeItem):
-    inspector_type = SectorInspector
-    draggable = True
 
     def __init__(self, section_control, sector: Sector):
         super().__init__(section_control, sector)
@@ -179,9 +125,8 @@ class LayerInspector(Inspector):
     def connect_to(self, new_items):
         super().connect_to(new_items)
 
+
 class LayerItem(QGenericTreeItem):
-    inspector_type = LayerInspector
-    draggable = True
 
     def __init__(self, section_control, layer: Layer):
         super().__init__(section_control, layer)
@@ -198,10 +143,7 @@ class MoveInspector(Inspector):
         super().connect_to(new_items)
 
 
-
 class MoveItem(QGenericTreeItem):
-    inspector_type = MoveInspector
-    draggable = False
 
     def __init__(self, section_control, move:Move):
         super().__init__(section_control, move)

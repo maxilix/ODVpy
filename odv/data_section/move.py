@@ -200,8 +200,6 @@ class Move(Section, OdvObjectIterable):
 
     def _load(self, substream: ReadStream, level) -> None:
         nb_layer = substream.read(UShort)
-        # for _ in range(nb_layer):
-        #     self.add_child(substream.read(Layer, parent=self))
         self.layer_list = [substream.read(Layer, parent=self) for _ in range(nb_layer)]
         self.pathfinder = substream.read(PathFinder)
 

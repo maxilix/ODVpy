@@ -31,40 +31,24 @@ class Level(object):
                 stream.read(Sght),
                 stream.read(Mask),
                 stream.read(Ways),
-                # stream.read(Elem),
-                # stream.read(Fxbk),
-                # stream.read(Msic),
-                # stream.read(Snd),
-                # stream.read(Pat),
-                # stream.read(Bond),
-                # stream.read(Mat),
-                # stream.read(Lift),
-                # stream.read(Ai),
-                # stream.read(Buil),
-                # stream.read(Scrp),
-                # stream.read(Jump),
-                # stream.read(Cart),
-                # stream.read(Dlgs),
-            ]
-            self.tail = stream.read_raw()
-
-            # As long as not all sections have been read #
-            self.data += [None] * 14
-            assert len(self.data) == 20
-            ##############################################
-
+                stream.read(Elem),
+                stream.read(Fxbk),
+                stream.read(Msic),
+                stream.read(Snd),
+                stream.read(Pat),
+                stream.read(Bond),
+                stream.read(Mat),
+                stream.read(Lift),
+                stream.read(Ai),
+                stream.read(Buil),
+                stream.read(Scrp),
+                stream.read(Jump),
+                stream.read(Cart),
+                stream.read(Dlgs)]
+            assert stream.read_raw() == b''
+            assert len(self.data) == NB_SECTION
         else:
             self.data = [None]*NB_SECTION
-
-        # self.data["MISC"].load()
-        # self.data["BGND"].load(abs_filename=self.abs_filename)
-        # self.data["MOVE"].load()
-        # self.data["SGHT"].load(move=self.data["MOVE"])
-        # self.data["MASK"].load()
-        # self.data["WAYS"].load(move=self.data["MOVE"])
-
-
-
 
     # @property
     # def scb(self):

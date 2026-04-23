@@ -23,10 +23,6 @@ class BgndInspector(Inspector):
         # BgndInspector can only be connected to a single item
         self.item = None
 
-        # self.visibility_siw = QGeometrySIW()
-        # self.visibility_siw.update_required.connect(self.update)
-        # self.main_layout.addWidget(self.visibility_siw)
-
         ### DVM filename Widget #################################################
         dvm_file_layout = QHBoxLayout()
         dvm_file_layout.setContentsMargins(0, 0, 0, 0)
@@ -134,7 +130,7 @@ class BgndInspector(Inspector):
         # self.visibility_siw.connect_to(self.item.graphic_map)
 
         self.dvm_line_edit.setText(self.item.bgnd.dvm_filename)
-        self.dvm_size_label.setText(f"DVM Image Size: {map_w} x {map_h}")
+        self.dvm_size_label.setText(f"Map Size: {map_w} x {map_h}")
 
         self.minimap_scene.clear()
         mf = 0.15  # marge factor
@@ -150,7 +146,6 @@ class BgndInspector(Inspector):
 
 
 class BgndItem(QGenericTreeItem):
-    inspector_type = BgndInspector
 
     def __init__(self, section_control, bgnd:Bgnd):
         super().__init__(section_control, bgnd)

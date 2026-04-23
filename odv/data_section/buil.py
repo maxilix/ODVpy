@@ -177,10 +177,13 @@ class Buil(Section, OdvObjectIterable):
     buildings: Buildings
     special_doors: SpecialDoors
 
-    def _load(self, substream: ReadStream, *, move) -> None:
-        self.move = move
-        self.buildings = substream.read(Buildings, move=move)
-        self.special_doors = substream.read(SpecialDoors, move=move)
+    def __iter__(self):
+        raise NotImplementedError
+
+    def _load(self, substream: ReadStream, level) -> None:
+        self.move = level.data[2]
+        self.buildings = substream.read(Buildings, move=self.move)
+        self.special_doors = substream.read(SpecialDoors, move=self.move)
 
     def _save(self, substream: WriteStream) -> None:
         substream.write(self.buildings)

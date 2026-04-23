@@ -185,6 +185,28 @@ SECTION_FULLNAME = ["Parameters",
                     "Moving Objects",
                     "Dialogs"]
 
+SECTION_DEPENDENCIES = [[],         # MISC
+                        [],         # BGND
+                        [],         # MOVE
+                        [2],        # SGHT
+                        [],         # MASK
+                        [2],        # WAYS
+                        [2,3,5],    # ELEM
+                        [],         # FXBK
+                        [],         # MSIC
+                        [],         # SND
+                        [],         # PAT
+                        [2,3],      # BOND
+                        [],         # MAT
+                        [],         # LIFT
+                        [],         # AI
+                        [2],        # BUIL
+                        [2],        # SCRP
+                        [2],        # JUMP
+                        [],         # CART
+                        []]         # DLGS
+# The transposed dependencies are compute on the fly
+
 """
 MISC        Loading parameters      Chargement des paramètres spécifiques
 BGND        Loading map             Chargement de la carte

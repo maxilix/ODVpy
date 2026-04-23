@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from odv.level import Level
     from qt.scene import QScene
     from qt.scene_tool_bar import QSceneToolBar
-    from qt.control.control import QControl
+    from qt.control.main_control import QControl
 
 
 class _AppContext(QObject):
@@ -59,6 +59,7 @@ class _AppContext(QObject):
     def level(self, level: "Level | None") -> None:
         self._level = level
         self.level_changed.emit()
+        print("[AppContext] Whole Level is set")
 
     @property
     def scene(self) -> "QScene":

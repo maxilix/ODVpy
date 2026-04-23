@@ -2,16 +2,12 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QDropEvent
 from PyQt6.QtWidgets import QTreeWidgetItem, QAbstractItemView, QTreeWidget
 
-from qt.common.utils import bounding_rect_of, same_type
-from qt.control.generic_inspector import Inspector
-from qt.graphics.base import OdvEditGraphic, GraphicState
-
 from app_context import AppContext as AC
+from qt.common.utils import bounding_rect_of, same_type
+from qt.graphics.base import OdvEditGraphic
 
 
 class QGenericTreeItem(QTreeWidgetItem):
-    inspector_type = Inspector
-    draggable = False
 
     def __init__(self, section_control, odv_object):
         super().__init__()

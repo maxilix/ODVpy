@@ -78,11 +78,14 @@ class Jump(Section, OdvObjectIterable):
 
     move: Move
 
-    def _load(self, substream: ReadStream, *, move) -> None:
-        self.move = move
+    def __iter__(self):
+        raise NotImplementedError
+
+    def _load(self, substream: ReadStream, level) -> None:
+        self.move = level.data[2]
         nb_jump_area = substream.read(UShort)
         for _ in range(nb_jump_area):
-            self.add_child(substream.read(JumpArea, parent=self, move=move))
+            self.add_child(substream.read(JumpArea, parent=self, move=self.move))
 
     def _save(self, substream: WriteStream) -> None:
         nb_jump_area = len(self)

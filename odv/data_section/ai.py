@@ -7,7 +7,7 @@ class Ai(Section):
     _section_id = 14
     _section_version = 2
 
-    def _load(self, substream: ReadStream) -> None:
+    def _load(self, substream: ReadStream, level) -> None:
         substream.read_raw()
 
     def _save(self, substream: WriteStream) -> None:

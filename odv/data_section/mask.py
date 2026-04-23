@@ -113,7 +113,7 @@ class Mask(Section, OdvObjectIterable):
     def __iter__(self):
         return iter(self.layer_list)
 
-    def _load(self, substream: ReadStream):
+    def _load(self, substream: ReadStream, level) -> None:
         nb_layer = substream.read(UShort)
         self.layer_list = [substream.read(MaskLayer, parent=self) for _ in range(nb_layer)]
 

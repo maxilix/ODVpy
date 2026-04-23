@@ -41,12 +41,15 @@ class Bond(Section, OdvObjectIterable):
     move: Move
     sght: Sght
 
-    def _load(self, substream: ReadStream, *, move, sght) -> None:
-        self.move = move
-        self.sght = sght
+    def __iter__(self):
+        raise NotImplementedError
+
+    def _load(self, substream: ReadStream, level) -> None:
+        self.move = level.data[2]
+        self.sght = level.data[3]
         nb_bond_line = substream.read(UShort)
         for _ in range(nb_bond_line):
-            self.add_child(substream.read(BondLine, parent=self, move=move, sght=sght))
+            self.add_child(substream.read(BondLine, parent=self, move=self.move, sght=self.sght))
 
     def _save(self, substream: WriteStream) -> None:
         nb_bond_line = len(self)

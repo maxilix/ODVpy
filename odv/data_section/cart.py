@@ -22,9 +22,12 @@ class Cart(Section, OdvObjectIterable):
     _section_id = 18
     _section_version = 5
 
-    def _load(self, substream: ReadStream) -> None:
-        tail = substream.read_raw().hex(" ", 1)
-        print(tail)
+    def __iter__(self):
+        raise NotImplementedError
+
+    def _load(self, substream: ReadStream, level) -> None:
+        tail = substream.read_raw()
+        print(tail.hex(" ", 1))
         exit()
         nb_mobile = substream.read(UShort)
         for _ in range(nb_mobile):

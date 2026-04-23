@@ -1,21 +1,19 @@
-from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QSplitter, QFileDialog, QWidget, \
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QWidget, \
     QVBoxLayout, QHBoxLayout
 
+from app_context import AppContext as AC
 from common import *
 from config import Config
 from game_data import *
-from app_context import AppContext as AC
 from odv.level import Level, BackupedLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
-from qt.control.control import QControl
-from qt.scene_info_bar import QInfoBar
+from qt.control.main_control import QControl
 from qt.preferences import QPreferencesDialog
 from qt.scene import QScene
+from qt.scene_info_bar import QInfoBar
 from qt.scene_tool_bar import QSceneToolBar
 from qt.viewport import QViewport
-
 
 # avoid recurrent warning like this
 # qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::zwp_text_input_v3_leave(wl_surface*) Got leave event for surface 0x0 with focusing surface 0x5611e36f3910
@@ -165,8 +163,8 @@ class QWindow(QMainWindow):
 
     def open_custom_level(self):
         dialog = QFileDialog(self)
-        dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
-        dialog.setDirectory(os.curdir + os.sep + "dev" + os.sep + "empty_level")
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dialog.setDirectory(os.path.join(os.curdir,"dev","empty_level"))
         filters = ["Any Level file (*.dvd *.dvm *.scb *.stf)",
                    "DVD file (*.dvd)",
                    "DVM file (*.dvm)",
@@ -174,12 +172,10 @@ class QWindow(QMainWindow):
                    "STF file (*.stf)",
                    "Any file (*)"]
         dialog.setNameFilters(filters)
-        # dialog.setViewMode(QFileDialog.ViewMode.List)
-        if dialog.exec():
-            filenames = dialog.selectedFiles()
-            if len(filenames) == 1:
-                filename_we = remove_extension(filenames[0])
-                AC.level = Level(filename_we)
+        dialog.exec()
+        filename = dialog.selectedFiles()[0]
+        filename_we = remove_extension(filename)
+        AC.level = Level(filename_we)
 
     def open_original_level(self, index):
         AC.level = BackupedLevel(index)
