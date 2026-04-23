@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 
 
 class RStreamable(ABC):
-    has_graphic = False
     @classmethod
     @abstractmethod
     def from_stream(cls, stream):
@@ -61,7 +60,6 @@ class ReadStream(object):
     def read(self, object_type, *arg, **kwarg):
         # assert issubclass(object_type, RStreamable)
         rop = object_type.from_stream(self, *arg, **kwarg)
-
         return rop
 
     # @debug

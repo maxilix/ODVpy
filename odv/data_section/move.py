@@ -192,10 +192,10 @@ class Move(Section, OdvObjectIterable):
                     return iter([None] + [s for layer in self for s in layer])
                 else:
                     return iter(s for layer in self for s in layer)
-            def __getitem__(self, item):
-                return list(iter(self))[item]
-            def __len__(self):
-                return len(list(iter(self)))
+            def __getitem__(subself, item):
+                return list(iter(subself))[item]
+            def __len__(subself):
+                return len(list(iter(subself)))
         return SI()
 
     def _load(self, substream: ReadStream, level) -> None:
