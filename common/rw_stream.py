@@ -62,6 +62,9 @@ class ReadStream(object):
         rop = object_type.from_stream(self, *arg, **kwarg)
         return rop
 
+    def seek(self, offset, whence):
+        self._input.seek(offset, whence)
+
     # @debug
     # def debug_print(self, hex_string: str):
     #     if hex_string != "":

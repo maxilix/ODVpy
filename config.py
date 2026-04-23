@@ -60,7 +60,7 @@ class _Config:
         # init default values
 
         # loading
-        self.loaded_section: list[str] = ["MISC", "BGND", "MOVE"]
+        self.loaded_section: list[str] = ["BGND"]
 
         # paths
         self.installation_path: str = ""

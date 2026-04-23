@@ -5,10 +5,8 @@ from PyQt6.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QLabel, QStackedL
     QFileDialog, QComboBox
 
 from app_context import AppContext as AC
-from common import remove_extension
 from game_data import SECTION_FLAG, SECTION_FULLNAME, SECTION_DEPENDENCIES, NB_SECTION
-from odv import Level
-from odv.data_section import Misc, Bgnd, Sght
+from odv.data_section import Misc, Bgnd, Sght, section_types
 from odv.data_section.move import Sector, Obstacle, Move, Layer
 from odv.data_section.sght import SightObstacle
 from odv.odv_object import OdvObjectIterable
@@ -103,6 +101,7 @@ class QSectionControl(QWidget):
         import_export_layout.addSpacing(10)
         export_button = QPushButton("Export")
         export_button.setStatusTip(f"Save the current {SECTION_FLAG[self.section_id]} section into a data file.")
+        export_button.clicked.connect(self.export_button_clicked)
         import_export_layout.addWidget(export_button)
         # import_export_layout.addSpacing(20)
         section_layout.addLayout(import_export_layout)
@@ -133,7 +132,6 @@ class QSectionControl(QWidget):
 
         main_layout.addWidget(inspector_stack_widget)
 
-
     @property
     def loaded(self):
         if self.tree_items == dict():
@@ -156,6 +154,7 @@ class QSectionControl(QWidget):
     def import_button_clicked(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
         dialog.setDirectory(os.curdir)
         s = SECTION_FLAG[self.section_id]
         filters = [f"Any {s.capitalize()} data file (*.dvd *.odv{s.lower()})",
@@ -163,13 +162,22 @@ class QSectionControl(QWidget):
                    f"{s.capitalize()} file (*.odv{s.lower()})",
                    f"Any file (*)"]
         dialog.setNameFilters(filters)
-        dialog.exec()
-        filename = dialog.selectedFiles()[0]
-        filename_we = remove_extension(filename)
-        self.unload()
-        AC.level.data[self.section_id] = Level(filename_we).data[self.section_id]
+        if dialog.exec():
+            filename = dialog.selectedFiles()[0]
+            self.unload()
+            AC.level.data[self.section_id] = section_types[self.section_id].from_file(filename)
 
-
+    def export_button_clicked(self):
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.FileMode.AnyFile)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        dialog.setDirectory(os.curdir)
+        flag = SECTION_FLAG[self.section_id]
+        if dialog.exec():
+            filename = dialog.selectedFiles()[0]
+            if not os.path.isfile(filename):
+                filename += f".odv{flag.lower()}"
+            AC.level.data[self.section_id].to_file(filename)
 
     def load(self):
         def recursive_load(odv_current_object, odv_parent_object=None):
@@ -212,7 +220,6 @@ class QSectionControl(QWidget):
             self.inspectors.clear()
         self.update()
 
-
     def item_selection_changed(self):
         selected = self.tree.selectedItems()
         if selected == [] or any([type(selected[0]) != type(e) for e in selected[1:]]):
@@ -242,6 +249,3 @@ class QSectionControl(QWidget):
                 else:
                     self.load_combobox.setCurrentIndex(0)
                 self.inspector_stack_layout.setCurrentWidget(self.inspector_unload_section_widget)
-
-
-

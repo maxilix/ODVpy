@@ -38,6 +38,24 @@ class Section(RWStreamable):
         data = stream.read(Bytes, size - 4)  # minus version size
         return cls(data)
 
+    @classmethod
+    def from_file(cls, filename):
+        # TODO "with open(filename, 'wb') as file" and try
+        # TODO implement and handle spécific error
+        # TODO probably remove seek from ReadStream
+        stream = ReadStream.from_file(filename)
+        while True:
+            flag = stream.read(String, 4)
+            if flag == "":
+                raise ValueError(f"Flag {SECTION_FLAG[cls._section_id]} unfound.")
+            if flag == SECTION_FLAG[cls._section_id]:
+                stream.seek(-4, os.SEEK_CUR)  # return at the flag position
+                return cls.from_stream(stream)
+            else:
+                print(f"[Section {flag}] passed.")
+                size = stream.read(UInt)
+                stream.seek(size, os.SEEK_CUR)
+
     def load(self, level):
         if not self.loaded:
             [level.data[dependence].load(level) for dependence in SECTION_DEPENDENCIES[self._section_id]]
@@ -46,7 +64,7 @@ class Section(RWStreamable):
             next_byte = substream.read(Bytes, 1)
             assert next_byte == b''
             self._loaded = True
-            print(f"Section {SECTION_FLAG[self._section_id]} loaded")
+            print(f"[Section {SECTION_FLAG[self._section_id]}] loaded.")
 
     @abstractmethod
     def _load(self, substream: ReadStream, level) -> None:
@@ -61,6 +79,12 @@ class Section(RWStreamable):
         stream.write(UInt(len(self._data) + 4))  # plus version size
         stream.write(Version(self._section_version))
         stream.write(Bytes(self._data))
+
+    def to_file(self, filename):
+        stream = WriteStream()
+        self.to_stream(stream)
+        with open(filename, 'wb') as file:
+            file.write(stream.get_value())
 
     def save(self):
         substream = WriteStream()
