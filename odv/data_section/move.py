@@ -1,7 +1,7 @@
 from typing import Self
 
 from common import *
-from debug import timeit
+from dev.debug import timeit
 from odv.odv_object import OdvObjectIterable, OdvObject
 from odv.data_section.move_pathfinder import PathFinder
 from odv.section import Section

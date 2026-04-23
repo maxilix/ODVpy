@@ -1,6 +1,6 @@
 from config import CONFIG
-from debug import PRO_RATA
-from odv.level import BackupedLevel, Level
+from dev.debug import PRO_RATA
+from odv.level import BackupedLevel
 
 CONFIG.load()
 

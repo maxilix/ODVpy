@@ -1,10 +1,9 @@
 from functools import reduce
 
-from PyQt6.QtCore import QRectF, QPointF, QLineF
-from PyQt6.QtGui import QPolygonF
+from PyQt6.QtCore import QRectF
 
 from common import *
-from debug import timeit, T
+from dev.debug import timeit, T
 
 
 # geometry recourses
