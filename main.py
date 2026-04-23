@@ -164,6 +164,7 @@ class QWindow(QMainWindow):
     def open_custom_level(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
         dialog.setDirectory(os.path.join(os.curdir,"dev","empty_level"))
         filters = ["Any Level file (*.dvd *.dvm *.scb *.stf)",
                    "DVD file (*.dvd)",
@@ -172,10 +173,10 @@ class QWindow(QMainWindow):
                    "STF file (*.stf)",
                    "Any file (*)"]
         dialog.setNameFilters(filters)
-        dialog.exec()
-        filename = dialog.selectedFiles()[0]
-        filename_we = remove_extension(filename)
-        AC.level = Level(filename_we)
+        if dialog.exec():
+            filename = dialog.selectedFiles()[0]
+            filename_we = remove_extension(filename)
+            AC.level = Level(filename_we)
 
     def open_original_level(self, index):
         AC.level = BackupedLevel(index)

@@ -166,10 +166,10 @@ class QSectionControl(QWidget):
         dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
         dialog.setDirectory(os.curdir)
-        s = SECTION_FLAG[self.section_id]
-        filters = [f"Any {s.capitalize()} data file (*.dvd *.odv{s.lower()})",
+        flag = SECTION_FLAG[self.section_id]
+        filters = [f"Any {flag.capitalize()} data file (*.dvd *.odv{flag.lower()})",
                    f"DVD file (*.dvd)",
-                   f"{s.capitalize()} file (*.odv{s.lower()})",
+                   f"{flag.capitalize()} file (*.odv{flag.lower()})",
                    f"Any file (*)"]
         dialog.setNameFilters(filters)
         if dialog.exec():
