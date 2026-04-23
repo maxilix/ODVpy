@@ -24,29 +24,7 @@ class Level(object):
             dvd_filename = self.abs_filename + ".dvd"
             stream = ReadStream.from_file(dvd_filename)
 
-            self.data = [
-                stream.read(Misc),
-                stream.read(Bgnd),
-                stream.read(Move),
-                stream.read(Sght),
-                stream.read(Mask),
-                stream.read(Ways),
-                stream.read(Elem),
-                stream.read(Fxbk),
-                stream.read(Msic),
-                stream.read(Snd),
-                stream.read(Pat),
-                stream.read(Bond),
-                stream.read(Mat),
-                stream.read(Lift),
-                stream.read(Ai),
-                stream.read(Buil),
-                stream.read(Scrp),
-                stream.read(Jump),
-                stream.read(Cart),
-                stream.read(Dlgs)]
-            assert stream.read_raw() == b''
-            assert len(self.data) == NB_SECTION
+            self.data = [stream.read(section_types[i]) for i in range(NB_SECTION)]
         else:
             self.data = [None]*NB_SECTION
 

@@ -18,3 +18,24 @@ from .scrp import Scrp
 from .jump import Jump
 from .cart import Cart
 from .dlgs import Dlgs
+
+section_types = [Misc,
+                 Bgnd,
+                 Move,
+                 Sght,
+                 Mask,
+                 Ways,
+                 Elem,
+                 Fxbk,
+                 Msic,
+                 Snd,
+                 Pat,
+                 Bond,
+                 Mat,
+                 Lift,
+                 Ai,
+                 Buil,
+                 Scrp,
+                 Jump,
+                 Cart,
+                 Dlgs]
