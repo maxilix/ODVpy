@@ -73,6 +73,12 @@ class QSectionControl(QWidget):
 
         section_layout.addWidget(QHLine())
 
+        status_layout = QHBoxLayout()
+        status_layout.addWidget(QLabel("Section status"))
+        self.status_label = QLabel()
+        status_layout.addWidget(self.status_label)
+        section_layout.addLayout(status_layout)
+
         loading_layout = QHBoxLayout()
         loading_layout.addWidget(QLabel("Loading type"))
         self.load_combobox = QComboBox()
@@ -94,21 +100,19 @@ class QSectionControl(QWidget):
 
         import_export_layout = QHBoxLayout()
         import_export_layout.addSpacing(120)
-        import_button = QPushButton("Import")
-        import_button.setStatusTip(f"Import the {SECTION_FLAG[self.section_id]} section form data or other DVD file.")
-        import_button.clicked.connect(self.import_button_clicked)
-        import_export_layout.addWidget(import_button)
+        self.import_button = QPushButton("Import")
+        self.import_button.setStatusTip(f"Import the {SECTION_FLAG[self.section_id]} section form data or other DVD file.")
+        self.import_button.clicked.connect(self.import_button_clicked)
+        import_export_layout.addWidget(self.import_button)
         import_export_layout.addSpacing(10)
-        export_button = QPushButton("Export")
-        export_button.setStatusTip(f"Save the current {SECTION_FLAG[self.section_id]} section into a data file.")
-        export_button.clicked.connect(self.export_button_clicked)
-        import_export_layout.addWidget(export_button)
+        self.export_button = QPushButton("Export")
+        self.export_button.setStatusTip(f"Save the current {SECTION_FLAG[self.section_id]} section into a data file.")
+        self.export_button.clicked.connect(self.export_button_clicked)
+        import_export_layout.addWidget(self.export_button)
         # import_export_layout.addSpacing(20)
         section_layout.addLayout(import_export_layout)
 
         section_layout.addWidget(QHLine())
-
-        # section_layout.addStretch()
 
         top_layout.addWidget(self.section_widget)
 
@@ -116,7 +120,6 @@ class QSectionControl(QWidget):
         self.tree.itemSelectionChanged.connect(self.item_selection_changed)
         self.tree.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Minimum)
         self.tree.setFixedWidth(300)
-        self.tree.setFixedHeight(400)
         top_layout.addWidget(self.tree)
 
         main_layout.addWidget(top_widget)
@@ -140,6 +143,13 @@ class QSectionControl(QWidget):
         else:
             assert self.tree_items != dict()
             return True
+
+    @property
+    def status(self):
+        if AC.level.data[self.section_id].loaded:
+            return "Valid"  #TODO
+        else:
+            return "Unverified"
 
     def load_combobox_user_change(self, index):
         match index:
@@ -166,6 +176,7 @@ class QSectionControl(QWidget):
             filename = dialog.selectedFiles()[0]
             self.unload()
             AC.level.data[self.section_id] = section_types[self.section_id].from_file(filename)
+        self.update()
 
     def export_button_clicked(self):
         dialog = QFileDialog(self)
@@ -205,8 +216,6 @@ class QSectionControl(QWidget):
                 recursive_load(section, None)
                 self.tree_items[section].setSelected(True)
                 self.tree_items[section].setExpanded(True)
-                if not isinstance(section, OdvObjectIterable):
-                    self.tree.setEnabled(False)
         self.update()
 
     def unload(self):
@@ -238,14 +247,22 @@ class QSectionControl(QWidget):
         if section is None:
             self.load_combobox.setCurrentIndex(0)
             self.load_combobox.setEnabled(False)
+            self.status_label.setText("No Data")
+            self.hover_detection.setEnabled(False)
+            self.export_button.setEnabled(False)
             self.inspector_stack_layout.setCurrentWidget(self.inspector_unload_section_widget)
+            self.tree.setEnabled(False)
         else:
             self.load_combobox.setEnabled(True)
+            self.status_label.setText(self.status)
+            self.hover_detection.setEnabled(self.loaded)
+            self.export_button.setEnabled(True)
+            self.tree.setEnabled(self.loaded)
             if self.loaded:
                 self.load_combobox.setCurrentIndex(2)
             else:
+                self.inspector_stack_layout.setCurrentWidget(self.inspector_unload_section_widget)
                 if section.loaded:
                     self.load_combobox.setCurrentIndex(1)
                 else:
                     self.load_combobox.setCurrentIndex(0)
-                self.inspector_stack_layout.setCurrentWidget(self.inspector_unload_section_widget)
