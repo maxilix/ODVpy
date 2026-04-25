@@ -1,7 +1,0 @@
-# required
-PyQt6
-opencv-python
-numpy
-
-# optional
-matplotlib
