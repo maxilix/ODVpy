@@ -1,8 +1,8 @@
 from PyQt6.QtGui import QImage, QPixmap, QPolygonF
 
-from qt.graphics_old.base import OdvGraphic
-from qt.graphics_old.pixmap_elem import OdvFixPixmapElement
-from qt.graphics_old.polygon_elem import OdvFixPolygonElement
+from old_code.graphics_old.base import OdvGraphic
+from old_code.graphics_old.pixmap_elem import OdvFixPixmapElement
+from old_code.graphics_old.polygon_elem import OdvFixPolygonElement
 
 
 class GraphicMask(OdvGraphic):

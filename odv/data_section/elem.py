@@ -1,4 +1,4 @@
-from common import *
+from odv.common import *
 from odv.data_section import Sght, Ways, Move
 
 from odv.section import Section

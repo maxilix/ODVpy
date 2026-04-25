@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Iterator, Self, Any
 
-from common import RWStreamable
+from odv.common import RWStreamable
 
 
 class OdvObject(RWStreamable, ABC):

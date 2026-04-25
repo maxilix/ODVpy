@@ -1,8 +1,8 @@
 from PyQt6.QtCore import QRectF, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from qt.graphics_old.line_elem import OdvEditLineElement
-from qt.graphics_old.point_elem import OdvEditPointElement
+from old_code.graphics_old.line_elem import OdvEditLineElement
+from old_code.graphics_old.point_elem import OdvEditPointElement
 
 
 class OdvGraphic(QGraphicsItem):

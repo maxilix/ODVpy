@@ -1,9 +1,9 @@
 from PyQt6.QtCore import QLineF, QPointF
 
-from common import Gateway
-from qt.graphics_old.base import OdvGraphic
-from qt.graphics_old.line_elem import OdvEditLineElement, OdvFixLineElement, OdvArrowElement
-from qt.graphics_old.point_elem import OdvEditPointElement
+from odv.common import Gateway
+from old_code.graphics_old.base import OdvGraphic
+from old_code.graphics_old.line_elem import OdvEditLineElement, OdvFixLineElement, OdvArrowElement
+from old_code.graphics_old.point_elem import OdvEditPointElement
 
 
 class GraphicLine(OdvGraphic):

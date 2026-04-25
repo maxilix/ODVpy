@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QLineF, QPointF
 from PyQt6.QtGui import QPolygonF
 
-from common import Gateway
+from odv.common import Gateway
 from qt.graphics.base import OdvGraphic, OdvEditGraphic, GraphicState
 from qt.graphics.line_elem import OdvEditLineElement, OdvFixLineElement, OdvArrowElement
 from qt.graphics.point_elem import OdvEditPointElement

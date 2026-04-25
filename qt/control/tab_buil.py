@@ -1,11 +1,11 @@
 from PyQt6.QtGui import QColor
 
-from common import *
+from odv.common import *
 from odv.data_section.buil import Door, Building, SpecialDoors, Buildings
 from qt.control.generic_inspector import Inspector
-from qt.control._sub_inspector import IntegerBoxInspector, InfoSubInspector, ConstantEnumListInspector, \
+from old_code.control_old._sub_inspector import IntegerBoxInspector, InfoSubInspector, ConstantEnumListInspector, \
     MultiCheckBoxInspector, CheckBoxInspector, IntegerTwinBoxInspector, OdvObjectListSubInspector
-from qt.control._inspector_graphic import GeometrySubInspector
+from old_code.control_old._inspector_graphic import GeometrySubInspector
 from qt.control.control_section import QTabControlGenericTree
 
 DOOR_TYPE = {0: "Invisible Door",

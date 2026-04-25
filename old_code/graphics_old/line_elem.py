@@ -2,9 +2,9 @@ from PyQt6.QtCore import QLineF, QRectF
 from PyQt6.QtGui import QAction, QTransform, QPainter
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem
 
-from qt.graphics_old import QGraphicsLargeLineItem
-from qt.graphics_old.base_elem import OdvGraphicElement
-from qt.graphics_old.point_elem import OdvEditPointElement
+from old_code.graphics_old import QGraphicsLargeLineItem
+from old_code.graphics_old.base_elem import OdvGraphicElement
+from old_code.graphics_old.point_elem import OdvEditPointElement
 
 
 class OdvArrowElement(OdvGraphicElement, QGraphicsItem):

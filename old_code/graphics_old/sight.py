@@ -1,10 +1,10 @@
 from PyQt6.QtCore import QLineF, QPointF
 from PyQt6.QtGui import QPolygonF
 
-from qt.graphics_old.base import OdvGraphic
-from qt.graphics_old.line_elem import OdvFixLineElement
-from qt.graphics_old.point_elem import OdvEditPointElement
-from qt.graphics_old.polygon_elem import OdvFixPolygonElement
+from old_code.graphics_old.base import OdvGraphic
+from old_code.graphics_old.line_elem import OdvFixLineElement
+from old_code.graphics_old.point_elem import OdvEditPointElement
+from old_code.graphics_old.polygon_elem import OdvFixPolygonElement
 
 
 class GraphicSightObstacle(OdvGraphic):

@@ -2,7 +2,7 @@ from PyQt6.QtCore import Qt, QPointF, QLineF
 from PyQt6.QtGui import QAction, QPainter
 from PyQt6.QtWidgets import QGraphicsSceneMouseEvent, QGraphicsEllipseItem, QGraphicsItem, QGraphicsLineItem
 
-from qt.graphics_old.base_elem import OdvGraphicElement
+from old_code.graphics_old.base_elem import OdvGraphicElement
 
 POINT_SIZE = 2.2
 

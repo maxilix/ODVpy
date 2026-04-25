@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QPointF
 
-from qt.graphics_old.base import OdvGraphic
-from qt.graphics_old.point_elem import OdvEditPointElement, OdvFixPointElement
+from old_code.graphics_old.base import OdvGraphic
+from old_code.graphics_old.point_elem import OdvEditPointElement, OdvFixPointElement
 
 
 class GraphicPoint(OdvGraphic):

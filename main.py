@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QWidget, \
     QVBoxLayout, QHBoxLayout
 
 from app_context import AppContext as AC
-from common import *
+from odv.common import *
 from config import Config
 from game_data import *
 from odv.level import Level, BackupedLevel, InstalledLevel

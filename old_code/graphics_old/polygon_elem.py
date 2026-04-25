@@ -2,8 +2,8 @@ from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QPolygonF, QPen, QPainterPath
 from PyQt6.QtWidgets import QGraphicsPolygonItem, QGraphicsPathItem, QGraphicsSceneMouseEvent
 
-from qt.graphics_old.base_elem import OdvGraphicElement
-from qt.graphics_old.point_elem import OdvEditPointElement
+from old_code.graphics_old.base_elem import OdvGraphicElement
+from old_code.graphics_old.point_elem import OdvEditPointElement
 
 
 class OdvFixPolygonElement(OdvGraphicElement, QGraphicsPolygonItem):

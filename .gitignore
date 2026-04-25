@@ -6,6 +6,7 @@ config.toml
 tests/
 scripts/
 dev/
+old_code/
 ign_*
 aspr*
 

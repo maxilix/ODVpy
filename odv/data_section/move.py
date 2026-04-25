@@ -1,6 +1,6 @@
 from typing import Self
 
-from common import *
+from odv.common import *
 from dev.debug import timeit
 from odv.odv_object import OdvObjectIterable, OdvObject
 from odv.data_section.move_pathfinder import PathFinder

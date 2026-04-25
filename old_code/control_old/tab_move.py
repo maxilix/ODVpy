@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QStackedLayout
 
 from dvd.move import Layer, Sector, Obstacle, Move
 from odv.odv_object import OdvRoot
-from qt.control.widget_generic_tree import QGenericTreeItem, QGenericTreeWidget
+from old_code.widget_generic_tree import QGenericTreeItem, QGenericTreeWidget
 from qt.control_old.inspector_abstract import Inspector
 
 from qt.control_old.inspector_graphic import GeometrySubInspector

@@ -1,6 +1,6 @@
 import time
 
-from common import *
+from odv.common import *
 
 import sys
 from types import ModuleType, FunctionType
