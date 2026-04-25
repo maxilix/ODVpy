@@ -1,7 +1,7 @@
 from typing import Self
 
-from common import *
-from common import ReadStream
+from odv.common import *
+from odv.common import ReadStream
 from odv.odv_object import OdvObjectIterable, OdvObject
 from .move import Sector, Move
 

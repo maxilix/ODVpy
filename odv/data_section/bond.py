@@ -1,6 +1,6 @@
 from typing import Self
 
-from common import *
+from odv.common import *
 from odv.odv_object import OdvObjectIterable, OdvObject
 from .move import Layer, Move
 from odv.section import Section

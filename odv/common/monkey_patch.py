@@ -3,7 +3,7 @@ from math import floor
 from PyQt6.QtCore import QPointF, QLineF
 from PyQt6.QtGui import QPolygonF
 
-from common import ReadStream, Short
+from odv.common import ReadStream, Short
 
 
 # QPointF monkey patch

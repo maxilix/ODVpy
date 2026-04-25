@@ -1,4 +1,4 @@
-from common import WriteStream
+from odv.common import WriteStream
 
 from ..data_section import Move, Misc, Bgnd, Sght
 from .parser import Parser

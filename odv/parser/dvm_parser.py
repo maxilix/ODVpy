@@ -1,6 +1,6 @@
 from typing import Self
 
-from common import *
+from odv.common import *
 from .parser import Parser
 from odv.odv_object import OdvObject
 

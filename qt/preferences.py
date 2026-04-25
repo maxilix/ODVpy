@@ -1,9 +1,9 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QLabel, QFileDialog
 
-from odv.level import Level, original_name
+from odv.level import Level
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
-from common import *
+from odv.common import *
 # from settings import *
 from config import Config
 

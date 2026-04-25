@@ -1,4 +1,4 @@
-from common import *
+from odv.common import *
 
 from odv.section import Section
 

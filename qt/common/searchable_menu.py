@@ -1,5 +1,4 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QCursor
 from PyQt6.QtWidgets import QVBoxLayout, QLineEdit, QListWidget, QListWidgetItem, QWidget
 
 
@@ -13,14 +12,12 @@ class SearchableMenu(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(4, 4, 4, 4)
 
-        # Recherche
         self.search = QLineEdit()
         self.search.setPlaceholderText("Search...")
         self.search.textChanged.connect(self.filter_items)
         self.search.setFocus()
         layout.addWidget(self.search)
 
-        # Liste
         self.list_widget = QListWidget()
         self.list_widget.setMouseTracking(True)
         self.list_widget.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
@@ -29,19 +26,15 @@ class SearchableMenu(QWidget):
         self.list_widget.itemClicked.connect(self.trigger_action)
         layout.addWidget(self.list_widget)
 
-        # Remplissage
         self.items = []
         for action in self.actions:
             item = QListWidgetItem(action.text())
 
-            # Icône
             if not action.icon().isNull():
                 item.setIcon(action.icon())
 
-            # Stocker l'action
             item.setData(Qt.ItemDataRole.UserRole, action)
 
-            # Respecter enabled/disabled
             item.setFlags(item.flags() if action.isEnabled() else Qt.ItemFlag.NoItemFlags)
             self.list_widget.addItem(item)
             self.items.append(item)

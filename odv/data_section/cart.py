@@ -1,6 +1,6 @@
 from typing import Self
 
-from common import *
+from odv.common import *
 from odv.odv_object import OdvObject, OdvObjectIterable
 
 from odv.section import Section

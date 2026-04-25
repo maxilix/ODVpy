@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QLineEdit, QFileDi
     QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QGraphicsRectItem
 
 from app_context import AppContext as AC
-from common import ReadStream, Image
+from odv.common import ReadStream, Image
 from odv.data_section import Bgnd
 from qt.common.simple_messagebox import QErrorBox
 from qt.common.utils import image_to_qimage

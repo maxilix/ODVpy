@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QPointF
 
-from common import RWStreamable
+from odv.common import RWStreamable
 
 
 class Gateway(RWStreamable):

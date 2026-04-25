@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QLabel, QHBoxLayout, QSpinBox, QPushButton, QDoubleSpinBox
 
-from common import Short, UShort
+from odv.common import Short, UShort
 from odv.data_section import Misc
 from qt.control.generic_inspector import Inspector
 from qt.control.generic_tree import QGenericTreeItem

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from common import *
+from odv.common import *
 from game_data import *
 
 

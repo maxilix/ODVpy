@@ -1,7 +1,7 @@
 import hashlib
 
-from common.rw_stream import ReadStream
-from common.utils import extension
+from odv.common import ReadStream
+from odv.common import extension
 
 extension_list = ["dvf", "dvm", "dvd"]
 

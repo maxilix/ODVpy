@@ -4,7 +4,7 @@ from PyQt6.QtCore import QPointF, QRectF
 from PyQt6.QtGui import QImage, QPixmap, QPolygonF, QColor
 from PyQt6.QtWidgets import QGraphicsRectItem, QGraphicsItem
 
-from common import MaskImage
+from odv.common import MaskImage
 from qt.graphics import OdvPen, OdvLightBrush
 from qt.graphics.base import OdvGraphic, OdvShadow, OdvEditGraphic, GraphicState
 from qt.graphics.pixmap_elem import OdvFixPixmapElement, OdvFixMaskElement, OdvEditMaskElement, OdvEditCardinalElement

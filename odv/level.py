@@ -1,8 +1,7 @@
 import hashlib
 import os
-import re
 
-from common import copy, InvalidHashError, ReadStream, WriteStream, Bytes, original_name
+from odv.common import copy, InvalidHashError, ReadStream, WriteStream, Bytes, original_name
 from config import Config
 from game_data import *
 from .data_section import *

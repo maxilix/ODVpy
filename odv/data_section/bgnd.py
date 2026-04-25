@@ -1,6 +1,6 @@
 import re
 
-from common import *
+from odv.common import *
 from config import Config
 from odv.odv_object import OdvObject
 from odv.section import Section

@@ -2,7 +2,7 @@ from functools import reduce
 
 from PyQt6.QtCore import QRectF
 
-from common import *
+from odv.common import *
 from dev.debug import timeit, T
 
 

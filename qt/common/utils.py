@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QImage, QColor
 
-from common import *
+from odv.common import *
 
 def same_type(l):
     return l==[] or all([type(l[0] == type(e) for e in l)])

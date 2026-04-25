@@ -1,6 +1,6 @@
 from typing import Self
 
-from common import *
+from odv.common import *
 from ..odv_object import OdvObjectIterable, OdvObject
 from .parser import Parser
 from ..scb_native_names import OP_CODE_NAME
