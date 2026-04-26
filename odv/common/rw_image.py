@@ -1,5 +1,5 @@
 
-import gzip
+import zlib
 import bz2
 from typing import Self
 from math import ceil
@@ -7,6 +7,8 @@ from math import ceil
 import cv2 as cv
 import numpy as np
 
+from game_data import TRANSPARENT_GREEN
+from . import CompressionTypeError
 from .rw_stream import RWStreamable, RStreamable, ReadStream, WriteStream
 from .rw_base import UShort, UInt, Bytes, UChar
 
@@ -39,8 +41,9 @@ class Pixel(RStreamable):
 
 
 class Image(RWStreamable):
-	def __init__(self, image):
+	def __init__(self, image, compression):
 		self._image = image  # numpy array stored in BGR format
+		self._compression = compression
 
 	@property
 	def height(self):
@@ -61,20 +64,20 @@ class Image(RWStreamable):
 		image_rgba[:, :, 1] = image_bgr[:, :, 1]
 		image_rgba[:, :, 2] = image_bgr[:, :, 0]
 		image_rgba[:, :, 3] = 255
-		transparency = np.array([0, 248, 0])  # Green
+		transparency = np.array(TRANSPARENT_GREEN)
 		mask = np.all(image_bgr == transparency, axis=-1)
 		image_rgba[mask, 3] = 0
 		return image_rgba
 
-	def debug_show(self):
+	def show(self):
 		cv.imshow("", self._image)
 		cv.waitKey(0)
 		cv.destroyAllWindows()
 
 	@classmethod
-	def from_file(cls, filename):
+	def from_file(cls, filename, compression):
 		image = cv.imread(filename, cv.IMREAD_COLOR)
-		return cls(image)
+		return cls(image, compression)
 
 	@classmethod
 	def from_stream(cls, stream):
@@ -83,18 +86,20 @@ class Image(RWStreamable):
 		compression = stream.read(UInt)
 		size = stream.read(UInt)
 		data = stream.read(Bytes, size)
-		if compression == 2:
-			decompressed = bz2.decompress(data)
-		else:
-			# to_stream always write bz2 compression
-			raise NotImplementedError(f"compression type {compression}")
+		match compression:
+			case 1:
+				decompressed = zlib.decompress(data)
+			case 2:
+				decompressed = bz2.decompress(data)
+			case _:
+				raise CompressionTypeError(f"Compression type {compression} not recognized")
 
 		image_565 = np.frombuffer(decompressed, dtype=np.uint16).reshape((height, width))
 		image = np.zeros((height, width, 3), dtype=np.uint8)
 		image[:, :, 0] = 8*(image_565 & 0x1F)
 		image[:, :, 1] = 4*((image_565 >> 5) & 0x3F)
 		image[:, :, 2] = 8*((image_565 >> 11) & 0x1F)
-		return cls(image)
+		return cls(image, compression)
 
 	def to_stream(self, stream):
 		stream.write(UShort(self.width))
@@ -107,7 +112,14 @@ class Image(RWStreamable):
 		image_565 = ((r_565.astype(np.uint16) << 11) | (g_565.astype(np.uint16) << 5) | b_565)
 
 		decompressed = image_565.tobytes()
-		data = bz2.compress(decompressed)
+		match self._compression:
+			case 1:
+				data = zlib.compress(decompressed)
+			case 2:
+				data = bz2.compress(decompressed)
+			case _:
+				raise CompressionTypeError(f"Compression type {self._compression} not recognized")
+
 		size = len(data)
 		stream.write(UInt(size))
 		stream.write(Bytes(data))
@@ -200,7 +212,7 @@ class MaskImage(RWStreamable):
 		image_rgba[i] = (*(true_color[:3]), 255)
 		return image_rgba
 
-	def debug_show(self):
+	def show(self):
 		cv.imshow("", self._image)
 		cv.waitKey(0)
 		cv.destroyAllWindows()

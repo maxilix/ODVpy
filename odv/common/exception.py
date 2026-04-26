@@ -13,6 +13,10 @@ class WritingError(Exception):
     pass
 
 
+class CompressionTypeError(Exception):
+    pass
+
+
 class NegativeUnsignedError(ValueError):
     pass
 
