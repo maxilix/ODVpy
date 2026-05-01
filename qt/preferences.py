@@ -1,11 +1,10 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QLabel, QFileDialog
 
-from odv.level import Level
-from qt.common.simple_messagebox import QErrorBox, QInfoBox
-from odv.common import *
-# from settings import *
 from config import Config
+from odv.common import *
+from odv.level import InstalledLevel
+from qt.common.simple_messagebox import QErrorBox, QInfoBox
 
 
 class QPreferencesDialog(QDialog):
@@ -26,7 +25,7 @@ class QPreferencesDialog(QDialog):
         label = QLabel(f'Installation path : ')
         installation_path_layout.addWidget(label)
         self.installation_path_label = QLineEdit()
-        self.installation_path_label.setText(Config.installation_path)
+        self.installation_path_label.setText(str(Config.installation_path))
         self.installation_path_label.setReadOnly(True)
         installation_path_layout.addWidget(self.installation_path_label)
         change_button = QPushButton('Change')
@@ -58,17 +57,17 @@ class QPreferencesDialog(QDialog):
         if dialog.exec():
             dirname = dialog.selectedFiles()
             if len(dirname) == 1:
-                Config.installation_path = dirname[0]
-                self.installation_path_label.setText(Config.installation_path)
+                Config.installation_path = Path(dirname[0])
+                self.installation_path_label.setText(str(Config.installation_path))
 
     def check_installation_path(self):
         if self.installation_path_label.text() == "":
             return False
         for index in range(26):
             try:
-                level = Level(original_name(index, root=Config.installation_path), index)
+                level = InstalledLevel(index)
                 if level.is_original() is False:
-                    raise InvalidHashError(f"invalid hash for {index} level")
+                    raise InvalidHashError(f"Invalid hash for level {index}.")
             except (InvalidHashError, FileNotFoundError) as e:
                 # Config.installation_path = ""
                 # self.installation_path_label.setText(Config.installation_path)

@@ -11,7 +11,7 @@ class Bytes(bytes, RWStreamable):
     @classmethod
     def from_stream(cls, stream, length=None):
         if length is None:
-            raise ReadingError(f"length must be specified when reading {cls.__name__}")
+            raise ReadingError(f"Length must be specified when reading {cls.__name__}.")
         raw_bytes = stream.read_raw(length)
         # stream.debug_print(raw_bytes.hex())
         return cls(raw_bytes)
@@ -44,9 +44,9 @@ class LittleEndianInteger(int, RWStreamable):
 
     def __new__(cls, value):
         if value < cls.min():
-            raise TooSmallError(f"{cls.__name__} cannot be smaller than {cls.min()}")
+            raise TooSmallError(f"{cls.__name__} cannot be smaller than {cls.min()}.")
         elif value > cls.max():
-            raise TooBigError(f"{cls.__name__} cannot be greater than {cls.max()}")
+            raise TooBigError(f"{cls.__name__} cannot be greater than {cls.max()}.")
         else:
             return super().__new__(cls, value)
 
@@ -131,9 +131,9 @@ class Float(float, RWStreamable):
 class String(str, RWStreamable):
 
     @classmethod
-    def from_stream(cls, stream, length=None, *, end=""):
+    def from_stream(cls, stream, length:int=None, *, end:str=""):
         if length is None and end == "":
-            raise ReadingError("reading String must specify length or end character")
+            raise ReadingError("Reading String must specify length or end character.")
         if length is None:
             rop = ""
             while (c:= str(stream.read_raw(1), encoding='latin1')) != end:

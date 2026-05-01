@@ -23,7 +23,7 @@ def bounding_rect_of(graphic_list) -> QRectF:
 def image_to_qimage(image: Image):
     h = image.height
     w = image.width
-    return QImage(image.rgba().data, w, h, 4*w, QImage.Format.Format_RGBA8888)
+    return QImage(image.rgba().data, w, h, 4 * w, QImage.Format.Format_RGBA8888)
 
 def mask_image_to_qimage(mask_image: MaskImage, true_color=(0, 0, 0)):
     if isinstance(true_color, QColor):
