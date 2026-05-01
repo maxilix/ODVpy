@@ -6,7 +6,7 @@ from app_context import AppContext as AC
 from odv.common import *
 from config import Config
 from game_data import *
-from odv.level import Level, BackupedLevel, InstalledLevel
+from odv.level import Level, BackedUpLevel, InstalledLevel
 from qt.common.simple_messagebox import QErrorBox, QInfoBox
 from qt.control.main_control import QControl
 from qt.preferences import QPreferencesDialog
@@ -67,8 +67,9 @@ class QWindow(QMainWindow):
         mod_manager_menu = menu.addMenu("Mod")
 
         self.insert_current_level_action = QAction("Insert in game", self)
-        # self.insert_current_level_action.triggered.connect(self.insert_current_level)
+        self.insert_current_level_action.triggered.connect(self.insert_current_level)
         mod_manager_menu.addAction(self.insert_current_level_action)
+        mod_manager_menu.aboutToShow.connect(lambda : self.insert_current_level_action.setEnabled(AC.level.valid))
 
         backup_submenu = mod_manager_menu.addMenu("Backup")
         backup_all_action = QAction("Backup all", self)
@@ -123,7 +124,7 @@ class QWindow(QMainWindow):
 
         AC.set_ui(scene=self.scene, tool_bar=self.tool_bar, control=self.control)
 
-        AC.level = BackupedLevel(4)
+        AC.level = BackedUpLevel(4)
         # AC.level = Level()
 
         self.status_bar.showMessage('Ready', 5000)
@@ -145,7 +146,7 @@ class QWindow(QMainWindow):
     def restore_level(selected):
         for index in selected:
             try:
-                level = BackupedLevel(index)
+                level = BackedUpLevel(index)
                 level.restore()
             except (InvalidHashError, FileNotFoundError) as e:
                 QErrorBox(e).exec()
@@ -153,9 +154,9 @@ class QWindow(QMainWindow):
         if len(selected) > 1:
             QInfoBox("Restore Completed").exec()
 
-    # def insert_current_level(self):
-    #     assert AC.level is not None
-    #     AC.level.insert_in_game()
+    def insert_current_level(self):
+        assert AC.level is not None
+        AC.level.insert_in_game()
 
     def open_preferences_dialog(self):
         dialog = QPreferencesDialog(self)
@@ -179,7 +180,7 @@ class QWindow(QMainWindow):
             AC.level = Level(filename_we)
 
     def open_original_level(self, index):
-        AC.level = BackupedLevel(index)
+        AC.level = BackedUpLevel(index)
 
 
     def close_level(self):

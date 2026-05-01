@@ -1,150 +1,164 @@
 import hashlib
-import os
+from pathlib import Path
+from typing import List
 
-from odv.common import copy, InvalidHashError, ReadStream, WriteStream, Bytes, original_name
 from config import Config
 from game_data import *
+from odv.common import copy, InvalidHashError, ReadStream, WriteStream, Bytes, RWStreamable, original_filename, \
+    guess_level_index
 from .data_section import *
+from .section import Section
+
+
+class Dvd(RWStreamable):
+    _sections: List[Section|None]
+
+    def __init__(self):
+        self._sections = [None]*NB_SECTION
+
+    @classmethod
+    def from_stream(cls, stream: ReadStream):
+        rop = cls()
+        rop._sections = [stream.read(section_types[i]) for i in range(NB_SECTION)]
+        return rop
+
+    def to_stream(self, stream: WriteStream):
+        for i in range(NB_SECTION):
+            stream.write(self._sections[i])
+
+    def __iter__(self):
+        return iter(self._sections)
+
+    def __getitem__(self, index: int):
+        return self._sections[index]
+
+    def __len__(self) -> int:
+        return len(self._sections)
+
+
+
+class Scb(RWStreamable):
+    _tail: Bytes|bytes
+
+    def __init__(self):
+        self._tail = b''
+
+    @classmethod
+    def from_stream(cls, stream: ReadStream):
+        rop = cls()
+        rop._tail = stream.read_raw()
+        return rop
+
+    def to_stream(self, stream: WriteStream):
+        stream.write(Bytes(self._tail))
+
 
 
 
 class Level(object):
-    def __init__(self, abs_filename="", index=None):
-        self.abs_filename = abs_filename  # absolute filename without extension
-        # if index is None:
-        #     try:
-        #         m = re.findall(r"level_(\d\d)", self.abs_filename)
-        #         self.index = int(m[-1])
-        #     except IndexError:
-        #         self.index = -1
-        # else:
-        #     self.index = index
-        if abs_filename:
-            dvd_filename = self.abs_filename + ".dvd"
-            stream = ReadStream.from_file(dvd_filename)
+    base_path: Path
+    index: int
+    data: Dvd
+    script: Scb
 
-            self.data = [stream.read(section_types[i]) for i in range(NB_SECTION)]
+
+    def __init__(self, filename: Path|str|None = None):
+        if filename is None:
+            self.base_path = Path()
+            self.index = -1
+            self.data = Dvd()
+            self.script = Scb()
         else:
-            self.data = [None]*NB_SECTION
+            self.base_path = Path(filename).with_suffix("")  # remove extension
+            self.index = guess_level_index(self.base_path)
+            if self.index == -1:
+                print("[Level] Level index cannot be guessed.")
 
-    # @property
-    # def scb(self):
-    #     if self._scb is None:
-    #         self._scb = ScbParser(self.abs_name + ".scb")
-    #     return self._scb
+            dvd_stream = ReadStream.from_file(self.base_path.with_suffix(".dvd"))
+            self.data = dvd_stream.read(Dvd)
 
-    # @property
-    # def dvm(self):
-    #     if self._dvm is None:
-    #         try:
-    #             self._dvm = DvmParser(self.abs_name + ".dvm")
-    #         except FileNotFoundError as e:
-    #             if 0 <= self.index <= 25 :
-    #                 self._dvm = DvmParser(original_name(self.index, root=CONFIG.backup_path) + ".dvm")
-    #             else:
-    #                 raise e
-    #     return self._dvm
+            scb_stream = ReadStream.from_file(self.base_path.with_suffix(".scb"))
+            self.script = scb_stream.read(Scb)
+
+    @property
+    def valid(self):
+        return 0 <= self.index <= 25
 
     def file_hashes(self):
         hashes = []
         # dvd, dvm and scb files
         for ext in LEVEL_EXTENSIONS[:3]:
-            with open(self.abs_filename + "." + ext, "rb") as f:
+            with open(self.base_path.with_suffix(ext), "rb") as f:
                 hashes.append(hashlib.file_digest(f, 'sha256').hexdigest().lower())
         # stf file
-        temp = [self.abs_filename[:-8], "briefing", f"d00bs{self.index:02}"]
-        with open(os.path.join(*temp), "rb") as f:
+        with open(self.base_path.parent / "briefing" / f"d00bs{self.index:02}", "rb") as f:
             hashes.append(hashlib.file_digest(f, 'sha256').hexdigest().lower())
         # return tuple of 4 hashes
         return tuple(hashes)
 
     def is_original(self):
         return self.file_hashes() == ORIGINAL_LEVEL_HASH[self.index]
-        # hashes = ORIGINAL_LEVEL_HASH[self.index]
-        # if (h := self.dvd.hash()) != hashes[0]:
-        #     print(f"dvd hash {h} should be {hashes[0]}")
-        #     return False
-        # if (h := self.dvm.hash()) != hashes[1]:
-        #     print(f"dvm hash {h} should be {hashes[0]}")
-        #     return False
-        # # if self.scb.hash() == hashes[2]:
-        # #     return False
-        # # if self.stf.hash() == hashes[3]:
-        # #     return False
-        # return True
+
+    def export(self, destination: Path|None = None):
+        if destination is None:
+            destination = Config.installation_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+
+        dvd_stream = WriteStream()
+        dvd_stream.write(self.data)
+        with open(destination.with_suffix(".dvd"), 'wb') as file:
+            file.write(dvd_stream.get_value())
+        print(f"[Level Export] Dvd file saved as {destination.stem}.dvd")
+
+        scb_stream = WriteStream()
+        scb_stream.write(self.script)
+        with open(destination.with_suffix(".scb"), 'wb') as file:
+            file.write(scb_stream.get_value())
+        print(f"[Level Export] Scb file saved as {destination.stem}.scb")
+
+    def copy(self, source:Path, destination:Path):
+        """Copy the dvd, scb, dvm, and skip save (/briefing/d00bsXX) from source to destination."""
+        assert source.with_suffix(".dvd").exists()
+        assert source.with_suffix(".scb").exists()
+        assert source.with_suffix(".dvm").exists()
+        assert (source.parent / "briefing" / f"d00bs{self.index:02}").exists()
+        copy(source.with_suffix(".dvd"), destination.with_suffix(".dvd"))
+        copy(source.with_suffix(".scb"), destination.with_suffix(".scb"))
+        copy(source.with_suffix(".dvm"), destination.with_suffix(".dvm"))
+        copy(source.parent / "briefing" / f"d00bs{self.index:02}", destination.parent / "briefing" / f"d00bs{self.index:02}")
+        print(f"[Level Copy] {source} --> {destination}")
+
+    def _relocated(self, from_root: Path, to_root: Path) -> Path:
+        """Return base_path rebased from from_root to to_root."""
+        assert self.base_path.is_relative_to(from_root), (
+            f"{self.base_path} is not relative to {from_root}"
+        )
+        return to_root / self.base_path.relative_to(from_root)
 
     def backup(self):
-        assert Config.installation_path in self.abs_filename
-        if self.is_original() is False:
-            raise InvalidHashError()
-        source = self.abs_filename
-        destination = self.abs_filename.replace(Config.installation_path, Config.backup_path)
-        copy(f"{source}.dvd", f"{destination}.dvd")
-        copy(f"{source}.dvm", f"{destination}.dvm")
-        copy(f"{source}.scb", f"{destination}.scb")
-        copy(f"{source[:-9]}{os.sep}briefing{os.sep}d00bs{self.index:02}",
-             f"{destination[:-9]}{os.sep}briefing{os.sep}d00bs{self.index:02}")
+        if not self.is_original():
+            raise InvalidHashError("Cannot backup a modified level — restore the original first.")
+        self.copy(self.base_path, self._relocated(Config.installation_path, Config.backup_path))
 
     def restore(self):
-        assert Config.backup_path in self.abs_filename
-        assert self.is_original()
-        source = self.abs_filename
-        destination = self.abs_filename.replace(Config.backup_path, Config.installation_path)
-        copy(f"{source}.dvd", f"{destination}.dvd")
-        copy(f"{source}.dvm", f"{destination}.dvm")
-        copy(f"{source}.scb", f"{destination}.scb")
-        copy(f"{source[:-9]}{os.sep}briefing{os.sep}d00bs{self.index:02}",
-             f"{destination[:-9]}{os.sep}briefing{os.sep}d00bs{self.index:02}")
+        if not self.is_original():
+            raise InvalidHashError("Cannot restore a modified level — backup the original first.")
+        self.copy(self.base_path, self._relocated(Config.backup_path, Config.installation_path))
 
-    def insert_in_game(self):
-        source = self.abs_filename
-        destination = original_name(self.index, root=Config.installation_path)
-
-        stream = WriteStream()
-        stream.write(self.data["MISC"])
-        stream.write(self.data["BGND"])
-        stream.write(self.data["MOVE"])
-        stream.write(self.data["SGHT"])
-        stream.write(self.data["MASK"])
-        stream.write(Bytes(self.tail))
-
-        with open(f"{destination}.dvd", 'wb') as file:
-            file.write(stream.get_value())
-            print(f"DVD: save to {destination}.dvd")
+    def insert_in_game(self, as_index: int = -1):
+        if as_index == -1:
+            as_index = self.index
+        destination = original_filename(as_index, root=Config.installation_path)
+        self.export(destination)
 
 
-        # if self._dvd is None:
-        #     copy(f"{source}.dvd", f"{destination}.dvd")
-        #     print(f"DVD: copy to {destination}.dvd")
-        # else:
-        #     self.dvd.save_to_file(f"{destination}.dvd")
-        #     print(f"DVD: save to {destination}.dvd")
-        #
-        # if self._dvm is None:
-        #     try:
-        #         copy(f"{source}.dvm", f"{destination}.dvm")
-        #         print(f"DVM: copy to {destination}.dvm")
-        #     except FileNotFoundError as e:
-        #         pass
-        # else:
-        #     self.dvm.save_to_file(f"{destination}.dvm")
-        #     print(f"DVM: save to {destination}.dvm")
-        #
-        # if self._scb is None:
-        #     copy(f"{source}.scb", f"{destination}.scb")
-        #     print(f"SCB: copy to {destination}.scb")
-        # else:
-        #     self.scb.save_to_file(f"{destination}.scb")
-        #     print(f"SCB: save to {destination}.scb")
 
-
-class BackupedLevel(Level):
+class BackedUpLevel(Level):
     def __init__(self, index):
-        assert 0 <= index <= 25
-        super().__init__(original_name(index, root=Config.backup_path), index)
+        super().__init__(original_filename(index, Config.backup_path))
+
 
 
 class InstalledLevel(Level):
     def __init__(self, index):
-        assert 0 <= index <= 25
-        super().__init__(original_name(index, root=Config.installation_path), index)
+        super().__init__(original_filename(index, Config.installation_path))

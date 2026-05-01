@@ -2,7 +2,7 @@
 TRANSPARENT_GREEN = (0, 248, 0)
 TRANSPARENT_BLUE = (0, 0, 248)
 
-LEVEL_EXTENSIONS = ['dvd', 'dvm', 'scb', 'stf']
+LEVEL_EXTENSIONS: list[str] = ['.dvd', '.dvm', '.scb', '.stf']
 
 ORIGINAL_LEVEL_HASH = [
     ("a2b3cc0a0cd0e56548f03377e87d1385498e50ea0f333c766d219e694a0b279d",
@@ -109,8 +109,6 @@ ORIGINAL_LEVEL_HASH = [
      "1153d19401c64ac1b8daf9c66b2aaf2f12b479dbf7bcdbaa3b724ad2dde40d17",
      "52108b0136c98cb5312f09fc7a8c6faef3ae9bb94cdc06282d535361a25a4a6e",
      "f228fddf779db5bcb1ffbd1ea417a1ce5eae4c65896ffd3ba62734bbc3f93d7a")]
-
-
 ORIGINAL_LEVEL_NAME = [
     "Demo",
     "An Old Friend",

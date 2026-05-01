@@ -52,7 +52,7 @@ class Section(RWStreamable):
                 stream.seek(-4, os.SEEK_CUR)  # return at the flag position
                 return cls.from_stream(stream)
             else:
-                print(f"[Section {flag}] passed.")
+                print(f"[Section {flag}] Passed.")
                 size = stream.read(UInt)
                 stream.seek(size, os.SEEK_CUR)
 
@@ -64,7 +64,7 @@ class Section(RWStreamable):
             next_byte = substream.read(Bytes, 1)
             assert next_byte == b''
             self._loaded = True
-            print(f"[Section {SECTION_FLAG[self._section_id]}] loaded.")
+            print(f"[Section {SECTION_FLAG[self._section_id]}] Loaded.")
 
     @abstractmethod
     def _load(self, substream: ReadStream, level) -> None:

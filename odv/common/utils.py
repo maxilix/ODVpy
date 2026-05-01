@@ -1,6 +1,9 @@
 import os
 import random
+import re
 import shutil
+from pathlib import Path
+
 
 def auto_id(key):
     auto_id.id[key] = auto_id.id.get(key, -1) + 1
@@ -34,22 +37,27 @@ def temp_filename(prefix=".", suffix=".temp", alphabet="0123456789abcdef", lengt
 
 
 
-def copy(source, destination):
+def copy(source:Path, destination:Path):
     if source != destination:
-        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
 
 
-
-def original_name(index, root=None):
-    if root is None:
-        name = []
-    else:
-        name = [root]
+def original_filename(index: int, root: Path) -> Path:
+    assert 0 <= index <= 25
+    filename = root
     if index == 0:
-        name.append("demo")
-    name.append("data")
-    name.append("levels")
-    name.append(f"level_{index:02}")
+        filename = filename / "demo"
+    filename /= "data"
+    filename /= "levels"
+    filename /= f"level_{index:02}"
+    return filename
 
-    return str(os.path.join(*name))
+
+def guess_level_index(filename: Path|str) -> int:
+    try:
+        m = re.findall(r"_(\d\d)", str(filename))
+        return int(m[-1])
+    except IndexError:
+        # print("[Level] Level index cannot be found")
+        return -1

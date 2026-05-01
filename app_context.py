@@ -59,7 +59,7 @@ class _AppContext(QObject):
     def level(self, level: "Level | None") -> None:
         self._level = level
         self.level_changed.emit()
-        print("[AppContext] Whole Level is set")
+        print("[AppContext] Whole Level is set.")
 
     @property
     def scene(self) -> "QScene":

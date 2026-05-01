@@ -34,9 +34,11 @@ def _write_toml(path: Path, data: dict) -> None:
 
 def _toml_line(key: str, value) -> str:
     if isinstance(value, bool):
-        return f"{key} = {str(value).lower()}"
+        return f'{key} = {str(value).lower()}'
     if isinstance(value, str):
         return f'{key} = "{value}"'
+    if isinstance(value, Path):
+        return f'{key} = "{str(value)}"'
     if isinstance(value, list):
         items = ", ".join(f'"{v}"' if isinstance(v, str) else str(v) for v in value)
         return f"{key} = [{items}]"
@@ -63,15 +65,15 @@ class _Config:
         self.loaded_section: list[str] = ["BGND"]
 
         # paths
-        self.installation_path: str = ""
-        self.backup_path: str = "backup"
+        self.installation_path: Path = Path("")
+        self.backup_path: Path = Path("backup")
 
     def load(self) -> None:
         """Load settings from TOML file. Missing keys fall back to defaults."""
         try:
             with open(self.filename, "rb") as f:
                 data = tomllib.load(f)
-            print(f"[Config] load from '{self.filename}'.")
+            print(f"[Config] Load from '{self.filename}'.")
         except FileNotFoundError:
             print(f"[Config] '{self.filename}' not found — using defaults.")
             return
@@ -83,8 +85,8 @@ class _Config:
         self.loaded_section = loading.get("loaded_section", self.loaded_section)
 
         paths = data.get("paths", {})
-        self.installation_path = paths.get("installation_path", self.installation_path)
-        self.backup_path = paths.get("backup_path", self.backup_path)
+        self.installation_path = Path(paths.get("installation_path", self.installation_path))
+        self.backup_path = Path(paths.get("backup_path", self.backup_path))
 
 
     def save(self) -> None:
